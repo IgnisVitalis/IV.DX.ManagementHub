@@ -1,0 +1,62 @@
+﻿@page "/app/{AppKey}/blocks"
+
+@using IV.ManagementHub.Web.Components.Custom
+@using Microsoft.FluentUI.AspNetCore.Components
+@using IV.DataProvider.WebApp.Services.Web.ApiClients
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using Newtonsoft.Json.Linq
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
+@using System.Linq
+@using IV.DX.Kernel.Models;
+
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@inherits ManagementHubComponentBase
+
+@if (_isInitialLoading)
+{
+    <FluentProgressRing />
+}
+else
+{
+    <FluentCard class="list-card">
+        <FluentSplitter BarHandle="false" Collapsed="_collapse" Orientation="@orientation" OnResized=OnResizedHandler BarSize="6" Panel1MinSize="50%" Panel2MinSize="25%">
+            <Panel1>
+                <FluentToolbar id="toolbar-fluent-components">
+                    <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="@(() => OpenEditDialog())" />
+                </FluentToolbar>
+
+                <FluentDataGrid TGridItem="DXElementDefinitionUnit"
+                                Items="@blocks.AsQueryable()"
+                                GenerateColumns="false"
+                                OnRowClick="@(x => OpenPanelRightAsync(x.Item.ID))" RowSize="@DataGridRowSize.Large">
+
+                    <PropertyColumn Title="Name" Property="@(p => p.DXObjectDefinitionMainElement!.Name)" />
+
+                    <TemplateColumn Title="Actions" Align="Align.Center" Width="10rem">
+                        <ChildContent Context="item">
+                            <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@item.ID" TypeName="DXElementDefinitionUnit" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(item))" />
+                        </ChildContent>
+                    </TemplateColumn>
+                </FluentDataGrid>
+            </Panel1>
+            <Panel2>
+                <FluentToolbar id="toolbar-fluent-components-two" style="width:100%">
+                    <FluentIcon Value="@(new Icons.Filled.Size16.Dismiss())" Slot="end" Color="Color.Accent" OnClick="OnClosed" />
+                </FluentToolbar>
+                <BlockPanel Content="@selectedBlock" AppKey="@AppKey" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(selectedBlock))"></BlockPanel>
+            </Panel2>
+        </FluentSplitter>
+    </FluentCard>
+
+    @if (_showDialog)
+    {
+        <div class="dialog-backdrop" @onclick="CloseDialog">
+            <div class="dialog-window" @onclick:stopPropagation="true">
+                <BlockDialog Content="@selectedBlock" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="SaveDialog" />
+            </div>
+        </div>
+    }
+}

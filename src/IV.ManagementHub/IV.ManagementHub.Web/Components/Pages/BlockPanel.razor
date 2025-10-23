@@ -1,0 +1,35 @@
+﻿@inherits ManagementHubComponentBase
+
+@using IV.ManagementHub.Web.Components.Custom
+
+<FluentCard>
+    <FluentStack Orientation="Orientation.Vertical" Width="100%">
+        <FluentDivider></FluentDivider>
+        <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@Content.ID" TypeName="DXElementDefinitionUnit" OnDeleted="OnDeleted" OnEdited="OnEdited" />
+
+        <FluentCard class="section">
+            <h6 class="section__title">General</h6>
+            <div><strong>Name:</strong> @Content.DXObjectDefinitionMainElement?.Name</div>
+        </FluentCard>
+
+        <FluentDivider></FluentDivider>
+
+        <FluentCard>
+            <h6 class="section__title">Columns</h6>
+            <FluentCard>
+                <FluentDataGrid Items="@Content.DXColumnDefinitionElement.Announced.Where(x => !systemColumns.Contains(x.Name)).AsQueryable()"
+                                GenerateColumns="false"
+                                GridTemplateColumns="auto auto auto auto auto auto auto" style="overflow-x: auto;">
+                    <PropertyColumn Title="Name" Property="@(p => p.Name)" />
+                    <PropertyColumn Title="Column Type" Property="@(p => p.ColumnType)" />
+                    <PropertyColumn Title="Length" Property="@(p => p.Length)" />
+                    <PropertyColumn Title="Allow Null" Property="@(p => p.AllowNull)" />
+                    <PropertyColumn Title="DefaultValue" Property="@(p => p.DefaultValue)" />
+                    <PropertyColumn Title="Precision" Property="@(p => p.Precision)" />
+                    <PropertyColumn Title="Scale" Property="@(p => p.Scale)" />
+                </FluentDataGrid>
+            </FluentCard>
+        </FluentCard>
+        <FluentDivider></FluentDivider>
+    </FluentStack>
+</FluentCard>

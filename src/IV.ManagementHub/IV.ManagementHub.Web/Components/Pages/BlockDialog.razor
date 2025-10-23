@@ -1,0 +1,78 @@
+﻿@inherits ManagementHubComponentBase
+
+@using IV.ManagementHub.Web.Components.Custom
+@using IV.DX.Kernel.Models;
+@using IV.DX.Kernel.Enums;
+
+<FluentStack Orientation="Orientation.Vertical" Width="100%">
+    <FluentDivider></FluentDivider>
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Vertical" Width="100%">
+            <FluentLabel Typo="Typography.Subject">General</FluentLabel>
+            <FluentDivider></FluentDivider>
+            <FluentTextField @bind-Value="@Content.DXObjectDefinitionMainElement.Name">Name</FluentTextField>
+        </FluentStack>
+    </FluentCard>
+
+    <FluentDivider></FluentDivider>
+
+    <FluentCard Class="unclip">
+        <FluentStack Orientation="Orientation.Vertical" Width="100%">
+            <FluentLabel Typo="Typography.Subject">Columns</FluentLabel>
+            <FluentDivider></FluentDivider>
+            <FluentCard Class="unclip">
+                <FluentToolbar id="toolbar-fluent-components-two" style="width:100%">
+                    <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
+                </FluentToolbar>
+                <FluentDataGrid id="defaultGrid"
+                                Items=@Content.DXColumnDefinitionElement.Announced.Where(x=> !systemColumns.Contains(x.Name)).AsQueryable()
+                                TGridItem=DXColumnDefinitionElement
+                                RowSize="@DataGridRowSize.Medium">
+                    <TemplateColumn Title="Name" Align="Align.Center">
+                        <FluentTextField @key="@context.ID" @bind-Value="@context!.Name" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Column type" Style="overflow:visible" Align="Align.Center">
+                        <FluentSelect TOption="IV.DX.Kernel.Enums.DXColumnTypeEnum"
+                                      Items="Enum.GetValues<DXColumnTypeEnum>()"
+                                      Multiple="false"
+                                      @key="@context.ID"
+                                      @bind-SelectedOption="@context.ColumnType"
+                                      Style="overflow:visible" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Length" Align="Align.Center">
+                        <FluentNumberField @key="@context.ID" @bind-Value="@context!.Length" Disabled="@(context.ColumnType != DXColumnTypeEnum.String && context.ColumnType != DXColumnTypeEnum.Blob)" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Allow Null" Align="Align.Center">
+                        <FluentCheckbox @key="@context.ID" @bind-Value="@context!.AllowNull" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Default Value" Align="Align.Center">
+                        <FluentTextField @key="@context.ID" @bind-Value="@context!.DefaultValue" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Precision" Align="Align.Center">
+                        <FluentNumberField @key="@context.ID" @bind-Value="@context!.Precision" Disabled="@(context.ColumnType != DXColumnTypeEnum.Decimal && context.ColumnType != DXColumnTypeEnum.Float && context.ColumnType != DXColumnTypeEnum.Currency)" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Scale" Align="Align.Center">
+                        <FluentNumberField @key="@context.ID" @bind-Value="@context!.Scale" Disabled="@(context.ColumnType != DXColumnTypeEnum.Decimal && context.ColumnType != DXColumnTypeEnum.Float && context.ColumnType != DXColumnTypeEnum.Currency)" />
+                    </TemplateColumn>
+                    <TemplateColumn Title="Actions" Align="@Align.Center">
+                        <FluentButton OnClick="@(() => Remove(context))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                        </FluentButton>
+                    </TemplateColumn>
+                </FluentDataGrid>
+            </FluentCard>
+
+        </FluentStack>
+
+    </FluentCard>
+
+    <FluentDivider></FluentDivider>
+    <MultiItemsFluentDataGrid Items="@items" Definition="@multiItemsDataGridDefinition"></MultiItemsFluentDataGrid>
+
+    <FluentDivider></FluentDivider>
+
+    <FluentStack Orientation="Orientation.Horizontal" Width="100%">
+        <FluentButton Appearance="Appearance.Accent" OnClick="SaveAsync">Save</FluentButton>
+        <FluentButton OnClick="CancelAsync">Cancel</FluentButton>
+    </FluentStack>
+</FluentStack>
