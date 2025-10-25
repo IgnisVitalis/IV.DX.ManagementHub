@@ -10,7 +10,7 @@
         <FluentStack Orientation="Orientation.Vertical" Width="100%">
             <FluentLabel Typo="Typography.Subject">General</FluentLabel>
             <FluentDivider></FluentDivider>
-            <FluentTextField @bind-Value="@Content.DXObjectDefinitionMainElement.Name">Name</FluentTextField>
+            @* <FluentTextField @bind-Value="@Content["DXObjectDefinitionMainElement"]["Name"].ToString()">Name</FluentTextField> *@
         </FluentStack>
     </FluentCard>
 
@@ -19,7 +19,7 @@
     <FluentCard Class="unclip">
         <FluentStack Orientation="Orientation.Vertical" Width="100%">
             <FluentLabel Typo="Typography.Subject">Columns</FluentLabel>
-            <FluentDivider></FluentDivider>
+           @*  <FluentDivider></FluentDivider>
             <FluentCard Class="unclip">
                 <FluentToolbar id="toolbar-fluent-components-two" style="width:100%">
                     <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
@@ -60,14 +60,17 @@
                         </FluentButton>
                     </TemplateColumn>
                 </FluentDataGrid>
-            </FluentCard>
+            </FluentCard> *@
+
+
+
+            <FluentDivider></FluentDivider>
+            <MultiItemsFluentDataGrid Parent="@Content" DXMultiElement="@MultiElement" Definition="@multiItemsDataGridDefinition"></MultiItemsFluentDataGrid>
 
         </FluentStack>
 
     </FluentCard>
 
-    <FluentDivider></FluentDivider>
-    <MultiItemsFluentDataGrid Items="@items" Definition="@multiItemsDataGridDefinition"></MultiItemsFluentDataGrid>
 
     <FluentDivider></FluentDivider>
 

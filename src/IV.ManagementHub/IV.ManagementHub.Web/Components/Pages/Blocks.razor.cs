@@ -1,9 +1,11 @@
 ﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DX.Kernel.Models;
+using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
+using Newtonsoft.Json.Linq;
 
 namespace IV.ManagementHub.Web.Components.Pages
 {
@@ -13,10 +15,13 @@ namespace IV.ManagementHub.Web.Components.Pages
         IApiClientResolver Resolver { get; set; } = default!;
 
         DXElementApiClient ESQLBlockApiCLient = default!;
+        DXUnitCoreApiClient coreApi = default!;
 
         protected override async Task OnParametersSetAsync()
         {
             ESQLBlockApiCLient = Resolver.Get<DXElementApiClient>(base.AppKey);
+            coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
+
             await LoadDataAsync(true);
         }
 
@@ -27,6 +32,15 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private List<DXElementDefinitionUnit> blocks = new();
         private DXElementDefinitionUnit? selectedBlock;
+        private DXModel? selectedDXModel
+        {
+            get
+            {
+                var result = this.selectedBlock?.ToDXModel();
+
+                return result;
+            }
+        }
 
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
 
@@ -70,7 +84,7 @@ namespace IV.ManagementHub.Web.Components.Pages
                 selectedBlock = new DXElementDefinitionUnit
                 {
                     ID = newID,
-                    
+
                     DXObjectDefinitionMainElement = new DXObjectDefinitionMainElement
                     {
                         ID = Guid.NewGuid(),
@@ -116,25 +130,27 @@ namespace IV.ManagementHub.Web.Components.Pages
             _showDialog = false;
         }
 
-        private async Task SaveDialog(DXElementDefinitionUnit editedBlock)
+        private async Task SaveDialog(DXModel editedBlock)
         {
-            var actualBlock = await ESQLBlockApiCLient.Get(editedBlock.ID);
+            //var actualBlock = await ESQLBlockApiCLient.Get(editedBlock.MainElement.Item.ID.Value);
 
-            if (actualBlock == null)
-            {
-                selectedBlock = await ESQLBlockApiCLient.SaveAsync(editedBlock);
-            }
-            else
-            {
-                var columnsToAdd = editedBlock.DXColumnDefinitionElement.Announced.Where(x => !actualBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
-                var columnsToRemove = actualBlock.DXColumnDefinitionElement.Announced.Where(x => !editedBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
+            //if (actualBlock == null)
+            //{
+            //    //selectedBlock = 
+            //        await coreApi.SaveAsync(editedBlock.ConvertToJObject());
+            //}
+            //else
+            //{
+            //    var columnsToAdd = editedBlock.DXColumnDefinitionElement.Announced.Where(x => !actualBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
+            //    var columnsToRemove = actualBlock.DXColumnDefinitionElement.Announced.Where(x => !editedBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
 
-                editedBlock.DXColumnDefinitionElement.Mode = MultiElementsMode.Target;
-                editedBlock.DXColumnDefinitionElement.Announced = Copy(columnsToAdd);
-                editedBlock.DXColumnDefinitionElement.Deleted = Copy(columnsToRemove);
+            //    editedBlock.DXColumnDefinitionElement.Mode = MultiElementsMode.Target;
+            //    editedBlock.DXColumnDefinitionElement.Announced = Copy(columnsToAdd);
+            //    editedBlock.DXColumnDefinitionElement.Deleted = Copy(columnsToRemove);
 
-                selectedBlock = await ESQLBlockApiCLient.SaveAsync(editedBlock);
-            }
+            //    selectedBlock = await ESQLBlockApiCLient.SaveAsync(editedBlock);
+            //}
+            await coreApi.SaveAsync(editedBlock.ConvertToJObject());
 
             await this.LoadDataAsync(false);
 

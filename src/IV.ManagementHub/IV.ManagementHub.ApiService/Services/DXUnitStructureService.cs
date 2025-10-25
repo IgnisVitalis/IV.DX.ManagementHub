@@ -134,7 +134,7 @@ namespace IV.ManagementHub.ApiService.Services
 
                 list.Add(new DXColumnDefinitionStructure()
                 {
-                    Name = enumRelation.DXRelationDefinitionMainElement.ObjectNameRight,
+                    Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
                     ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,
                     AllowNull = false,
                     EnumValues = enumValues
@@ -154,7 +154,7 @@ namespace IV.ManagementHub.ApiService.Services
 
                 list.Add(new DXColumnDefinitionStructure()
                 {
-                    Name = enumRelation.DXRelationDefinitionMainElement.ObjectNameRight,
+                    Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
                     ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,
                     AllowNull = true,
                     EnumValues = enumValues

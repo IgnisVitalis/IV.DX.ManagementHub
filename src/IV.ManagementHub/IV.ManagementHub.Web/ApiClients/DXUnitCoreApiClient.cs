@@ -1,12 +1,28 @@
 ﻿using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace IV.ManagementHub.Web.ApiClients
 {
-    public class DXUnitCoreApiClient(HttpClient httpClient, IJSRuntime JSRuntime)
+    public sealed class DXUnitCoreApiClient(HttpClient httpClient, IJSRuntime JSRuntime)
     {
-        public virtual async Task<JObject> Get(string typeName, Guid id, CancellationToken cancellationToken = default)
+        public async Task<JObject> SaveAsync(JObject jObject, CancellationToken cancellationToken = default)
+        {
+            string typeName = jObject.Value<string>("S_Type");
+
+            var content = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"api/v1.0/{typeName}", content, cancellationToken);
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var result = JObject.Parse(str);
+
+            return result;
+        }
+
+        public async Task<JObject> Get(string typeName, Guid id, CancellationToken cancellationToken = default)
         {
             var response = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}");
 
@@ -24,7 +40,7 @@ namespace IV.ManagementHub.Web.ApiClients
             return item;
         }
 
-        public virtual async Task<JObject> GetDataDefinition(string typeName, CancellationToken cancellationToken = default)
+        public async Task<JObject> GetDataDefinition(string typeName, CancellationToken cancellationToken = default)
         {
             var items = await this.GetItems("DXUnitDefinitionUnit", $"DXObjectDefinitionMainElement.Name = '{typeName}'");
 
@@ -42,7 +58,7 @@ namespace IV.ManagementHub.Web.ApiClients
         }
 
 
-        public virtual async Task<JObject> GetEntityDataDefinition(string typeName, CancellationToken cancellationToken = default)
+        public async Task<JObject> GetEntityDataDefinition(string typeName, CancellationToken cancellationToken = default)
         {
             var items = await this.GetItems("DXUnitDefinitionUnit", $"DXObjectDefinitionMainElement.Name = '{typeName}'");
 
@@ -59,7 +75,7 @@ namespace IV.ManagementHub.Web.ApiClients
             return items.Single();
         }
 
-        public virtual async Task<IEnumerable<JObject>> GetItems(string typeName, string query, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<JObject>> GetItems(string typeName, string query, CancellationToken cancellationToken = default)
         {
             var response = await httpClient.GetAsync($"api/v1.0/{typeName}?filter={query}", cancellationToken);
 
@@ -77,7 +93,7 @@ namespace IV.ManagementHub.Web.ApiClients
             return items.Select(x => (JObject)x).ToList();
         }
 
-        public virtual async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)
         {
             var result = await httpClient.DeleteAsync($"api/v1.0/{typeName}/{itemID}", cancellationToken);
         }

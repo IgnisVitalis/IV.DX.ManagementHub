@@ -55,7 +55,7 @@ else
     {
         <div class="dialog-backdrop" @onclick="CloseDialog">
             <div class="dialog-window" @onclick:stopPropagation="true">
-                <BlockDialog Content="@selectedBlock" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="SaveDialog" />
+                <DXUnitDialog Content="@selectedDXModel" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="SaveDialog" />
             </div>
         </div>
     }
