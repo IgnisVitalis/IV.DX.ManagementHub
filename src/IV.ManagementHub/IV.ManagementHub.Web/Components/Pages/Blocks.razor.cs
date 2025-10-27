@@ -5,7 +5,6 @@ using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Newtonsoft.Json.Linq;
 
 namespace IV.ManagementHub.Web.Components.Pages
 {
@@ -32,17 +31,17 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private List<DXElementDefinitionUnit> blocks = new();
         private DXElementDefinitionUnit? selectedBlock;
-        private DXModel? selectedDXModel
+
+        
+        private Guid selectedItemID{ get; set; }
+
+        private string selectedItemType
         {
             get
             {
-                var result = this.selectedBlock?.ToDXModel();
-
-                return result;
+                return "DXElementDefinitionUnit";
             }
         }
-
-        private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
 
         private bool isEditing = false;
         private bool showDetails = false;
@@ -75,30 +74,11 @@ namespace IV.ManagementHub.Web.Components.Pages
         {
             if (selectedItem != null)
             {
-                selectedBlock = await LoadDetailsAsync(selectedItem.ID);
+                selectedItemID = selectedItem.ID;
             }
             else
             {
-                var newID = Guid.NewGuid();
-
-                selectedBlock = new DXElementDefinitionUnit
-                {
-                    ID = newID,
-
-                    DXObjectDefinitionMainElement = new DXObjectDefinitionMainElement
-                    {
-                        ID = Guid.NewGuid(),
-                        DXUnitID = newID,
-                        Name = string.Empty,
-                        DisplayValue = null
-                    },
-                    DXColumnDefinitionElement = new DXMultiElementsContainer<DXColumnDefinitionElement>
-                    {
-                        Mode = MultiElementsMode.Target,
-                        Announced = new HashSet<DXColumnDefinitionElement>(),
-                        Deleted = new HashSet<DXColumnDefinitionElement>()
-                    }
-                };
+                selectedItemID = Guid.NewGuid();             
             }
 
             _showDialog = true;
@@ -130,50 +110,12 @@ namespace IV.ManagementHub.Web.Components.Pages
             _showDialog = false;
         }
 
-        private async Task SaveDialog(DXModel editedBlock)
+        private async Task OnSaved()
         {
-            //var actualBlock = await ESQLBlockApiCLient.Get(editedBlock.MainElement.Item.ID.Value);
-
-            //if (actualBlock == null)
-            //{
-            //    //selectedBlock = 
-            //        await coreApi.SaveAsync(editedBlock.ConvertToJObject());
-            //}
-            //else
-            //{
-            //    var columnsToAdd = editedBlock.DXColumnDefinitionElement.Announced.Where(x => !actualBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
-            //    var columnsToRemove = actualBlock.DXColumnDefinitionElement.Announced.Where(x => !editedBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
-
-            //    editedBlock.DXColumnDefinitionElement.Mode = MultiElementsMode.Target;
-            //    editedBlock.DXColumnDefinitionElement.Announced = Copy(columnsToAdd);
-            //    editedBlock.DXColumnDefinitionElement.Deleted = Copy(columnsToRemove);
-
-            //    selectedBlock = await ESQLBlockApiCLient.SaveAsync(editedBlock);
-            //}
-            await coreApi.SaveAsync(editedBlock.ConvertToJObject());
-
             await this.LoadDataAsync(false);
 
             this.CloseDialog();
         }
-
-        private HashSet<DXColumnDefinitionElement> Copy(IEnumerable<DXColumnDefinitionElement> columns) =>
-            columns
-                .Where(x => !systemColumns.Contains(x.Name))
-                .Select(x => new DXColumnDefinitionElement
-                {
-                    ID = x.ID,
-                    DXUnitID = selectedBlock!.ID,
-                    Name = x.Name,
-                    ColumnType = x.ColumnType,
-                    AllowNull = x.AllowNull,
-                    Length = x.Length,
-                    Precision = x.Precision,
-                    Scale = x.Scale,
-                    DefaultValue = x.DefaultValue
-                })
-                .ToHashSet();
-
 
         Orientation orientation = Orientation.Horizontal;
 

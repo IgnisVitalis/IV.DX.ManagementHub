@@ -10,7 +10,7 @@ namespace IV.ManagementHub.ApiService.Services
        IDXUnitDataService dxUnitDataService,
        IDXEnumDataService dxEnumDataService) : IDXUnitStructureService
     {
-        public async Task<DXUnitDefinitionStructure> GetAsync(string name, CancellationToken ct = default)
+        public async Task<DXModelDefinition> GetAsync(string name, CancellationToken ct = default)
         {
             var result = await dxUnitDataService.GetItemsAsync<DXUnitDefinitionUnit>($"DXObjectDefinitionMainElement.Name = '{name}'", ct: ct);
 
@@ -22,14 +22,14 @@ namespace IV.ManagementHub.ApiService.Services
 
             var mainDXUnitDefinition = result.Single();
 
-            List<DXElementDefinitionStructure> singleItemMandatory = new List<DXElementDefinitionStructure>();
-            List<DXElementDefinitionStructure> singleItemOptional = new List<DXElementDefinitionStructure>();
-            List<DXElementDefinitionStructure> multiItemsMandatory = new List<DXElementDefinitionStructure>();
-            List<DXElementDefinitionStructure> multiItemsOptional = new List<DXElementDefinitionStructure>();
+            List<DXElementDefinition> singleItemMandatory = new List<DXElementDefinition>();
+            List<DXElementDefinition> singleItemOptional = new List<DXElementDefinition>();
+            List<DXElementDefinition> multiItemsMandatory = new List<DXElementDefinition>();
+            List<DXElementDefinition> multiItemsOptional = new List<DXElementDefinition>();
 
             do
             {
-                var mainDXElementDefintion = new DXElementDefinitionStructure()
+                var mainDXElementDefintion = new DXElementDefinition()
                 {
                     Name = mainDXUnitDefinition.DXObjectDefinitionMainElement.Name,
                     Columns = await this.GetColumnDefinitionsAsync(
@@ -74,7 +74,7 @@ namespace IV.ManagementHub.ApiService.Services
 
             } while (true);
 
-            return new DXUnitDefinitionStructure()
+            return new DXModelDefinition()
             {
                 Name = name,
                 MultiItemsMandatory = multiItemsMandatory.ToList(),
@@ -84,30 +84,30 @@ namespace IV.ManagementHub.ApiService.Services
             };
         }
 
-        private async Task<DXElementDefinitionStructure> GetEnumDefinitionAsync(Guid elementID, CancellationToken ct)
+        private async Task<DXElementDefinition> GetEnumDefinitionAsync(Guid elementID, CancellationToken ct)
         {
             var block = await dxUnitDataService.GetItemAsync<DXElementDefinitionUnit>(elementID, ct: ct);
 
             if (block.DXColumnDefinitionElement == null)
-                return new DXElementDefinitionStructure() { Name = block.DXObjectDefinitionMainElement.Name, Columns = Enumerable.Empty<DXColumnDefinitionStructure>() };
+                return new DXElementDefinition() { Name = block.DXObjectDefinitionMainElement.Name, Columns = Enumerable.Empty<DXColumnDefinition>() };
 
             else
-                return new DXElementDefinitionStructure()
+                return new DXElementDefinition()
                 {
                     Name = block.DXObjectDefinitionMainElement.Name,
                     Columns = await this.GetColumnDefinitionsAsync(block.DXObjectDefinitionMainElement.Name, block.DXColumnDefinitionElement?.Announced, ct)
                 };
         }
 
-        private async Task<IEnumerable<DXColumnDefinitionStructure>> GetColumnDefinitionsAsync(string dxElementName, IEnumerable<DXColumnDefinitionElement> columns, CancellationToken ct)
+        private async Task<IEnumerable<DXColumnDefinition>> GetColumnDefinitionsAsync(string dxElementName, IEnumerable<DXColumnDefinitionElement> columns, CancellationToken ct)
         {
-            var list = new List<DXColumnDefinitionStructure>();
+            var list = new List<DXColumnDefinition>();
 
             var regularColumns = columns?
                 .Where(c => !systemColumns.Contains(c.Name, StringComparer.OrdinalIgnoreCase))
                 .Select(c =>
                 {
-                    return new DXColumnDefinitionStructure()
+                    return new DXColumnDefinition()
                     {
                         Name = c.Name,
                         ColumnType = c.ColumnType,
@@ -117,7 +117,7 @@ namespace IV.ManagementHub.ApiService.Services
                         AllowNull = c.AllowNull,
                         DefaultValue = c.DefaultValue,
                     };
-                }) ?? Enumerable.Empty<DXColumnDefinitionStructure>();
+                }) ?? Enumerable.Empty<DXColumnDefinition>();
 
             list.AddRange(regularColumns);
 
@@ -132,7 +132,7 @@ namespace IV.ManagementHub.ApiService.Services
 
                 var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight, ct: ct);
 
-                list.Add(new DXColumnDefinitionStructure()
+                list.Add(new DXColumnDefinition()
                 {
                     Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
                     ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,
@@ -152,7 +152,7 @@ namespace IV.ManagementHub.ApiService.Services
 
                 var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight, ct: ct);
 
-                list.Add(new DXColumnDefinitionStructure()
+                list.Add(new DXColumnDefinition()
                 {
                     Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
                     ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,

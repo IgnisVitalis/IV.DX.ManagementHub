@@ -1,0 +1,164 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using Newtonsoft.Json.Linq
+@using System.Linq
+@using IV.DX.Kernel.Enums;
+@using System;
+@inherits DXItemFluentDataDialog
+
+@if (Definition == null)
+{
+    <FluentProgressRing />
+}
+else
+{
+    <FluentStack Orientation="Orientation.Vertical" Width="100%">
+        <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
+        <FluentDivider></FluentDivider>
+        <FluentCard Class="unclip">
+            <FluentToolbar id="@Definition.Name" style="width:100%">
+                <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
+            </FluentToolbar>
+            <FluentDataGrid id="@Definition.Name"
+                            Items="@(this.DXMultiElement.Announced.AsQueryable())"
+                            TGridItem="IV.DX.Kernel.Models.DXItem"
+                            RowSize="@DataGridRowSize.Medium">
+                @foreach (var column in Definition.Columns)
+                {
+                    switch (column.ColumnType)
+                    {
+                        // ---- BOOL ----
+                        case DXColumnTypeEnum.Bool:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentCheckbox @key="@(column.Name + context.ID)"
+                                                Value="@(base.GetBool(context.Content, column))"
+                                                ValueChanged="@(v =>  base.SetBool(context.Content, column, v))" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- STRING / TEXT ----
+                        case DXColumnTypeEnum.String:
+                        case DXColumnTypeEnum.Text:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentTextField @key="@(column.Name + context.ID)"
+                                                 Value="@(base.GetStringN(context.Content, column) ?? string.Empty)"
+                                                 ValueChanged="@(v => base.SetStringN(context.Content, column, v))"
+                                                 Style="width:100%;" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- DATETIME? ----
+                        case DXColumnTypeEnum.DateTime:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentDatePicker @key="@(column.Name + context.ID)"
+                                                  Value="@(base.GetDateTime(context.Content, column))"
+                                                  ValueChanged="@(v => base.SetDateTime(context.Content, column, v))" />
+                            </TemplateColumn>
+                            break;
+
+
+                        // ---- INT -> либо селект по EnumValues, либо number ----
+                        case DXColumnTypeEnum.Int:
+                            if (column.EnumValues is { Count: > 0 })
+                            {
+                                <TemplateColumn Title="@column.Name" Style="overflow:visible" Align="Align.Center">
+                                    <FluentSelect @key="@(column.Name + context.ID)"
+                                                  TOption="string"
+                                                  Multiple="false"
+                                                  Style="overflow:visible"
+                                                  Width="100%"
+                                                  Value="@(base.GetIntAsString(context.Content, column))"
+                                                  ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(context.Content, column, v)))"
+                                                  @attributes="base.GetRequiredAttr(column)">
+
+                                        @if (column.AllowNull)
+                                        {
+                                            <!-- пустая строка = null -->
+                                            <FluentOption TOption="string" Value="">—</FluentOption>
+                                        }
+
+                                        @foreach (var kv in column.EnumValues)
+                                        {
+                                            <FluentOption TOption="string" Value="@kv.Key.ToString()">
+                                                @kv.Value
+                                            </FluentOption>
+                                        }
+                                    </FluentSelect>
+                                </TemplateColumn>
+                            }
+                            else
+                            {
+                                <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                    <FluentNumberField @key="@(column.Name + context.ID)"
+                                                       TValue="long?"
+                                                       Value="@(base.GetLongN(context.Content, column))"
+                                                       ValueChanged="@(EventCallback.Factory.Create<long?>(this, v => base.SetLongN(context.Content, column, v)))"
+                                                       @attributes="base.GetRequiredAttr(column)" />
+                                </TemplateColumn>
+                            }
+                            break;
+
+
+                        // ---- SHORT/LONG -> long? ----
+                        case DXColumnTypeEnum.Short:
+                        case DXColumnTypeEnum.Long:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentNumberField @key="@(column.Name + context.ID)"
+                                                   TValue="long?"
+                                                   Value="@(base.GetLongN(context.Content, column))"
+                                                   ValueChanged="@(v => base.SetLongN(context.Content, column, v))"
+                                                   Placeholder="" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- FLOAT -> double? ----
+                        case DXColumnTypeEnum.Float:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentNumberField @key="@(column.Name + context.ID)"
+                                                   TValue="double?"
+                                                   Value="@(base.GetDoubleN(context.Content, column))"
+                                                   ValueChanged="@(v => base.SetDoubleN(context.Content, column, v))"
+                                                   Placeholder="" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- DECIMAL/CURRENCY -> decimal? ----
+                        case DXColumnTypeEnum.Decimal:
+                        case DXColumnTypeEnum.Currency:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentNumberField @key="@(column.Name + context.ID)"
+                                                   TValue="decimal?"
+                                                   Value="@(base.GetDecimalN(context.Content, column))"
+                                                   ValueChanged="@(v => base.SetDecimalN(context.Content, column, v))"
+                                                   Placeholder="" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- GUID (как строка, по умолчанию readonly) ----
+                        case DXColumnTypeEnum.GUID:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentTextField @key="@(column.Name + context.ID)"
+                                                 Value="@(base.GetGuidString(context.Content, column))"
+                                                 ValueChanged="@(v => base.SetGuidString(context.Content, column, v))"
+                                                 ReadOnly="true" />
+                            </TemplateColumn>
+                            break;
+
+                        // ---- BLOB (заглушка под диалог) ----
+                        case DXColumnTypeEnum.Blob:
+                            <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                <FluentButton @key="@(column.Name + context.ID)" OnClick="@(() => base.OpenBlobDialog(context.Content, column))">
+                                    Manage File
+                                </FluentButton>
+                            </TemplateColumn>
+                            break;
+                    }
+                }
+                <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">
+                    <FluentButton OnClick="@(() => Remove(context))">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                    </FluentButton>
+                </TemplateColumn>
+            </FluentDataGrid>
+        </FluentCard>
+    </FluentStack>
+}

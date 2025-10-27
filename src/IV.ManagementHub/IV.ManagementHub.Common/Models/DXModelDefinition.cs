@@ -2,23 +2,25 @@
 
 namespace IV.ManagementHub.Common.Models
 {
-    public class DXUnitDefinitionStructure
+    public class DXModelDefinition
     {
         public string Name { get; set; }
-        public List<DXElementDefinitionStructure> SingleItemMandatory { get; set; }
-        public List<DXElementDefinitionStructure> SingleItemOptional { get; set; }
-        public List<DXElementDefinitionStructure> MultiItemsMandatory { get; set; }
-        public List<DXElementDefinitionStructure> MultiItemsOptional { get; set; }
+        public List<DXElementDefinition> SingleItemMandatory { get; set; }
+        public List<DXElementDefinition> SingleItemOptional { get; set; }
+        public List<DXElementDefinition> MultiItemsMandatory { get; set; }
+        public List<DXElementDefinition> MultiItemsOptional { get; set; }
+
+      
     }
 
-    public class DXElementDefinitionStructure
+    public class DXElementDefinition
     {
         public string Name { get; set; }
 
-        public IEnumerable<DXColumnDefinitionStructure> Columns { get; set; }
+        public IEnumerable<DXColumnDefinition> Columns { get; set; }
     }
 
-    public class DXColumnDefinitionStructure
+    public class DXColumnDefinition
     {
         public string Name { get; set; }
         public string Title { get { return Name; } }

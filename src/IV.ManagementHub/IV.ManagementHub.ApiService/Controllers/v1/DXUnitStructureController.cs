@@ -15,7 +15,7 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DXUnitDefinitionStructure>> GetByName([FromRoute] string name)
+        public async Task<ActionResult<DXModelDefinition>> GetByName([FromRoute] string name)
         {
             return await dxUnitStructureService.GetAsync(name) is not { } result
                 ? NotFound()

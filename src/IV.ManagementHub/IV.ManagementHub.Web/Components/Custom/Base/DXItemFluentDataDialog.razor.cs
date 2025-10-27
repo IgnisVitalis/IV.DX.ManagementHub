@@ -1,75 +1,26 @@
 ﻿using IV.DX.Kernel.Enums;
-using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
 
 namespace IV.ManagementHub.Web.Components.Custom
 {
-    public partial class MultiItemsFluentDataGrid : ComponentBase
+    public abstract class DXItemFluentDataDialog : ComponentBase
     {
-        [Parameter, EditorRequired] public DXElementDefinitionStructure Definition { get; set; } = default!;
-        [Parameter, EditorRequired] public DXMultiElement DXMultiElement { get; set; } = default!;
-        [Parameter, EditorRequired] public DXModel Parent { get; set; } = default!;
-
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
 
-        protected override async Task OnParametersSetAsync()    
-        {
-            if (DXMultiElement != null)
-            {
-                DXMultiElement.Announced = DXMultiElement.Announced.Where(x => !systemColumns.Contains(x.GetValue<string>("Name"))).ToHashSet();
-                DXMultiElement.Deleted = new HashSet<DXItem>();                
-            }
-        }
-
-        private void Add()
-        {
-            var id = Guid.NewGuid();
-
-            var jObject = new JObject();
-
-            jObject["ID"] = id;
-            jObject["DXUnitID"] = Parent.MainElement.Item.ID;
-
-            if (Definition?.Columns != null)
-            {
-                foreach (var col in Definition.Columns)
-                {
-                    if (!TryApplyDefault(jObject, col))
-                    {
-                        if (!col.AllowNull)
-                            ApplyNonNullableFallback(jObject, col);
-                    }
-                }
-            }
-
-            this.DXMultiElement.AddToAnnounced(new DXItem()
-            {
-                ID = id,
-                DXUnitID = Parent.MainElement.Item.ID,
-                Content = jObject
-            });
-        }
-
-        private void Remove(DXItem dxItem)
-        {
-            this.DXMultiElement.RemoveFromAnnounced(dxItem);
-            this.DXMultiElement.AddToDeleted(dxItem);
-        }
-
-        protected IDictionary<string, object> GetRequiredAttr(DXColumnDefinitionStructure col)
+        protected IDictionary<string, object> GetRequiredAttr(DXColumnDefinition col)
             => col.AllowNull ? new Dictionary<string, object>()
                              : new Dictionary<string, object> { ["required"] = true };
 
 
-        string GetIntAsString(JObject row, DXColumnDefinitionStructure col)
+        protected string GetIntAsString(JObject row, DXColumnDefinition col)
         {
             var n = GetIntN(row, col);
             return n.HasValue ? n.Value.ToString() : string.Empty;
         }
 
-        void SetIntFromString(JObject row, DXColumnDefinitionStructure col, string v)
+        protected void SetIntFromString(JObject row, DXColumnDefinition col, string v)
         {
             if (string.IsNullOrEmpty(v))
             {
@@ -91,7 +42,7 @@ namespace IV.ManagementHub.Web.Components.Custom
         }
 
         // -------- INT? for Enum-select --------
-        int? GetIntN(JObject row, DXColumnDefinitionStructure col)
+        protected int? GetIntN(JObject row, DXColumnDefinition col)
         {
             var t = row[col.Name];
             if (t == null || t.Type == JTokenType.Null || t.Type == JTokenType.Undefined) return null;
@@ -100,17 +51,17 @@ namespace IV.ManagementHub.Web.Components.Custom
         }
 
         // -------- BOOL --------
-        bool GetBool(JObject row, DXColumnDefinitionStructure col)
+        protected bool GetBool(JObject row, DXColumnDefinition col)
             => row.Value<bool?>(col.Name) ?? false;
 
-        void SetBool(JObject row, DXColumnDefinitionStructure col, bool v)
+        protected void SetBool(JObject row, DXColumnDefinition col, bool v)
             => row[col.Name] = v;
 
         // -------- STRING (nullable) --------
-        string? GetStringN(JObject row, DXColumnDefinitionStructure col)
+        protected string? GetStringN(JObject row, DXColumnDefinition col)
             => row.Value<string?>(col.Name);
 
-        void SetStringN(JObject row, DXColumnDefinitionStructure col, string? v)
+        protected void SetStringN(JObject row, DXColumnDefinition col, string? v)
         {
             if (string.IsNullOrWhiteSpace(v))
             {
@@ -130,14 +81,14 @@ namespace IV.ManagementHub.Web.Components.Custom
         }
 
         // -------- DATETIME? --------
-        DateTime? GetDateTime(JObject row, DXColumnDefinitionStructure col)
+        protected DateTime? GetDateTime(JObject row, DXColumnDefinition col)
             => row.Value<DateTime?>(col.Name);
 
-        void SetDateTime(JObject row, DXColumnDefinitionStructure col, DateTime? v)
+        protected void SetDateTime(JObject row, DXColumnDefinition col, DateTime? v)
             => row[col.Name] = v.HasValue ? JValue.FromObject(v.Value) : JValue.CreateNull();
 
         // -------- LONG? (for Short/Int/Long) --------
-        long? GetLongN(JObject row, DXColumnDefinitionStructure col)
+        protected long? GetLongN(JObject row, DXColumnDefinition col)
         {
             var t = row[col.Name];
             if (t == null || t.Type == JTokenType.Null || t.Type == JTokenType.Undefined) return null;
@@ -145,11 +96,11 @@ namespace IV.ManagementHub.Web.Components.Custom
             return long.TryParse(t.ToString(), out var parsed) ? parsed : null;
         }
 
-        void SetLongN(JObject row, DXColumnDefinitionStructure col, long? v)
+        protected void SetLongN(JObject row, DXColumnDefinition col, long? v)
             => row[col.Name] = v.HasValue ? JValue.FromObject(v.Value) : JValue.CreateNull();
 
         // -------- DOUBLE? (for Float) --------
-        double? GetDoubleN(JObject row, DXColumnDefinitionStructure col)
+        protected double? GetDoubleN(JObject row, DXColumnDefinition col)
         {
             var t = row[col.Name];
             if (t == null || t.Type == JTokenType.Null || t.Type == JTokenType.Undefined) return null;
@@ -157,11 +108,11 @@ namespace IV.ManagementHub.Web.Components.Custom
             return double.TryParse(t.ToString(), out var parsed) ? parsed : (double?)null;
         }
 
-        void SetDoubleN(JObject row, DXColumnDefinitionStructure col, double? v)
+        protected void SetDoubleN(JObject row, DXColumnDefinition col, double? v)
             => row[col.Name] = v.HasValue ? JValue.FromObject(v.Value) : JValue.CreateNull();
 
         // -------- DECIMAL? (for Decimal/Currency) --------
-        decimal? GetDecimalN(JObject row, DXColumnDefinitionStructure col)
+        protected decimal? GetDecimalN(JObject row, DXColumnDefinition col)
         {
             var t = row[col.Name];
             if (t == null || t.Type == JTokenType.Null || t.Type == JTokenType.Undefined) return null;
@@ -169,17 +120,17 @@ namespace IV.ManagementHub.Web.Components.Custom
             return decimal.TryParse(t.ToString(), out var parsed) ? parsed : (decimal?)null;
         }
 
-        void SetDecimalN(JObject row, DXColumnDefinitionStructure col, decimal? v)
+        protected void SetDecimalN(JObject row, DXColumnDefinition col, decimal? v)
             => row[col.Name] = v.HasValue ? JValue.FromObject(v.Value) : JValue.CreateNull();
 
         // -------- GUID как строка --------
-        string GetGuidString(JObject row, DXColumnDefinitionStructure col)
+        protected string GetGuidString(JObject row, DXColumnDefinition col)
         {
             var g = row.Value<Guid?>(col.Name);
             return g?.ToString() ?? string.Empty;
         }
 
-        void SetGuidString(JObject row, DXColumnDefinitionStructure col, string value)
+        protected void SetGuidString(JObject row, DXColumnDefinition col, string value)
         {
             if (Guid.TryParse(value, out var guid))
                 row[col.Name] = guid;
@@ -188,12 +139,12 @@ namespace IV.ManagementHub.Web.Components.Custom
         }
 
         // -------- BLOB --------
-        void OpenBlobDialog(JObject row, DXColumnDefinitionStructure col)
+        protected void OpenBlobDialog(JObject row, DXColumnDefinition col)
         {
 
         }
 
-        bool TryApplyDefault(JObject row, DXColumnDefinitionStructure col)
+        protected bool TryApplyDefault(JObject row, DXColumnDefinition col)
         {
             if (string.IsNullOrWhiteSpace(col.DefaultValue))
                 return false;
@@ -264,7 +215,7 @@ namespace IV.ManagementHub.Web.Components.Custom
             return false;
         }
 
-        void ApplyNonNullableFallback(JObject row, DXColumnDefinitionStructure col)
+        protected void ApplyNonNullableFallback(JObject row, DXColumnDefinition col)
         {
             switch (col.ColumnType)
             {
