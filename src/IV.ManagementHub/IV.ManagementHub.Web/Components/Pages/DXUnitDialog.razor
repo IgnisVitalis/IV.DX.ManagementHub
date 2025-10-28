@@ -1,8 +1,9 @@
 ﻿@inherits ManagementHubComponentBase
 
-@using IV.ManagementHub.Web.Components.Custom
-@using IV.DX.Kernel.Models;
 @using IV.DX.Kernel.Enums;
+@using IV.DX.Kernel.Models;
+@using IV.ManagementHub.Web.Components.Custom
+@using IV.ManagementHub.Web.Components.Custom.Base
 
 @* <div class="dialog-backdrop" @onclick="CloseDialog"> *@
 <div class="dialog-backdrop">
@@ -12,6 +13,13 @@
             <FluentStack Orientation="Orientation.Vertical" Width="100%">
 
                 <FluentTabs Width="100%">
+
+                    <FluentTab Label="@this.Content.MainElement.ObjectInfo.ObjectName" Id="@this.Content.MainElement.ObjectInfo.ObjectName">
+                        <FluentCard Class="unclip">
+                            <DXMainElementFluentDataDialog @key="@this.Content.MainElement.ObjectInfo.ObjectName" Parent="@Content" DXMainElement="@GetDXMainElement()" Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
+                        </FluentCard>
+                    </FluentTab>
+
                     @foreach (var singleItemMandatory in this._dxUnitDefinitionStructure.SingleItemMandatory.Where(x => x.Columns.Count() > 0).ToList())
                     {
                         <FluentTab Label="@singleItemMandatory.Name" Id="@singleItemMandatory.Name">

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace IV.ManagementHub.Web.Components.Custom
+namespace IV.ManagementHub.Web.Components.Custom.Base
 {
     public abstract class ManagementHubComponentBase : ComponentBase
     {

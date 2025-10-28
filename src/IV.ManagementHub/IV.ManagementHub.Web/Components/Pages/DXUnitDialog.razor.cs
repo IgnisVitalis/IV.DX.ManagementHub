@@ -3,7 +3,7 @@ using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Helpers;
 using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.ApiClients;
-using IV.ManagementHub.Web.Components.Custom;
+using IV.ManagementHub.Web.Components.Custom.Base;
 using Microsoft.AspNetCore.Components;
 
 namespace IV.ManagementHub.Web.Components.Pages
@@ -43,6 +43,16 @@ namespace IV.ManagementHub.Web.Components.Pages
             this.Content = await LoadDXUnit(this.Type, this.ID, this._dxUnitDefinitionStructure);
 
             _isLoaded = true;
+        }
+
+        private DXMainElement GetDXMainElement()
+        {
+            return Content.MainElement;
+        }
+
+        private DXElementDefinition GetDXMainElementStructure()
+        {
+            return this.GetMandatoryDXSingleElementStructure(Content.MainElement.ObjectInfo.ObjectName);
         }
 
         private DXSingleElement GetDXSingleElement(string dxElementName)
@@ -106,35 +116,6 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task SaveAsync()
         {
-
-
-            //var dxItemsToAdd = this.DXMultiElement.Announced.Where(x => !announcedDXItemsOriginal.Any(y => y.ID == x.ID)).ToHashSet();
-            //var dxItemsToDelete = announcedDXItemsOriginal.Where(x => !this.DXMultiElement.Announced.Any(y => y.ID == x.ID)).ToHashSet();
-
-            //this.DXMultiElement.Announced = dxItemsToAdd;
-            //this.DXMultiElement.Deleted = dxItemsToDelete;
-
-
-
-
-            //var actualBlock = await ESQLBlockApiCLient.Get(editedBlock.MainElement.Item.ID.Value);
-
-            //if (actualBlock == null)
-            //{
-            //    //selectedBlock = 
-            //        await coreApi.SaveAsync(editedBlock.ConvertToJObject());
-            //}
-            //else
-            //{
-            //    var columnsToAdd = editedBlock.DXColumnDefinitionElement.Announced.Where(x => !actualBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
-            //    var columnsToRemove = actualBlock.DXColumnDefinitionElement.Announced.Where(x => !editedBlock.DXColumnDefinitionElement.Announced.Any(y => y.ID == x.ID)).ToList();
-
-            //    editedBlock.DXColumnDefinitionElement.Mode = MultiElementsMode.Target;
-            //    editedBlock.DXColumnDefinitionElement.Announced = Copy(columnsToAdd);
-            //    editedBlock.DXColumnDefinitionElement.Deleted = Copy(columnsToRemove);
-
-            //    selectedBlock = await ESQLBlockApiCLient.SaveAsync(editedBlock);
-            //}
             await this._coreApi.SaveAsync(this.Content.ConvertToJObject());
 
             if (OnSaved.HasDelegate)

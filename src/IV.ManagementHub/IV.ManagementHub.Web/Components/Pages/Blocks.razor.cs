@@ -2,7 +2,7 @@
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DX.Kernel.Models;
 using IV.ManagementHub.Web.ApiClients;
-using IV.ManagementHub.Web.Components.Custom;
+using IV.ManagementHub.Web.Components.Custom.Base;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 

@@ -19,12 +19,18 @@ namespace IV.ManagementHub.Common.Helpers
 
             foreach (var item in dxModelDefinition.SingleItemMandatory.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
             {
+                if (item.Name.Equals(original.MainElement.ObjectInfo.ObjectName))
+                    continue;
+
                 var singleElement = GetNewDXSingleElement(dxModelDefinition, item, id, timeStamp, true);
                 original.DXSingleElements.Add(singleElement);
             }
 
             foreach (var item in dxModelDefinition.SingleItemOptional.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
             {
+                if (item.Name.Equals(original.MainElement.ObjectInfo.ObjectName))
+                    continue;
+
                 var singleElement = GetNewDXSingleElement(dxModelDefinition, item, id, timeStamp, false);
                 original.DXSingleElements.Add(singleElement);
             }

@@ -1,13 +1,14 @@
 ﻿@page "/app/{AppKey}/blocks"
 
-@using IV.ManagementHub.Web.Components.Custom
-@using Microsoft.FluentUI.AspNetCore.Components
-@using IV.DataProvider.WebApp.Services.Web.ApiClients
-@using IV.DataProvider.WebApp.Services.Web.Contracts
-@using Newtonsoft.Json.Linq
-@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
 @using System.Linq
 @using IV.DX.Kernel.Models;
+@using IV.DataProvider.WebApp.Services.Web.ApiClients
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.ManagementHub.Web.Components.Custom
+@using IV.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
+@using Newtonsoft.Json.Linq
 
 @attribute [StreamRendering(true)]
 @attribute [OutputCache(Duration = 5)]
