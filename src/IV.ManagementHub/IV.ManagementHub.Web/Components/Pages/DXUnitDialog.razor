@@ -14,9 +14,9 @@
 
                 <FluentTabs Width="100%">
 
-                    <FluentTab Label="@this.Content.MainElement.ObjectInfo.ObjectName" Id="@this.Content.MainElement.ObjectInfo.ObjectName">
+                    <FluentTab Label="@this.Content.DXMainElement.Attribute.Type" Id="@this.Content.DXMainElement.Attribute.Type">
                         <FluentCard Class="unclip">
-                            <DXMainElementFluentDataDialog @key="@this.Content.MainElement.ObjectInfo.ObjectName" Parent="@Content" DXMainElement="@GetDXMainElement()" Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
+                            <DXMainElementFluentDataDialog @key="@this.Content.DXMainElement.Attribute.Type" Parent="@Content" DXMainElement="@GetDXMainElement()" Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
                         </FluentCard>
                     </FluentTab>
 

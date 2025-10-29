@@ -1,6 +1,7 @@
 ﻿using IV.DX.Kernel;
 using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
+using IV.ManagementHub.Web.Components.Custom.Base;
 using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
 
@@ -16,45 +17,34 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         protected override async Task OnInitializedAsync()
         {
-            DXMultiElement.Announced = DXMultiElement.Announced.Where(x => !systemColumns.Contains(x.GetValue<string>("Name"))).ToHashSet();
-            DXMultiElement.Deleted = new HashSet<DXItem>();
+          
         }      
 
         private void Add()
         {
             var id = Guid.NewGuid();
+            var timeStamp = DateTime.UtcNow;
 
-            var jObject = new JObject();
-
-            jObject[Constants.ID] = id;
-            jObject[Constants.DXUnitID] = Parent.MainElement.Item.ID;
-            jObject[Constants.TimeStamp] = DateTime.UtcNow;
-            jObject[Constants.SystemPropertyTypeName] = Definition.Name;
+            var dict = new Dictionary<string, object>();
 
             if (Definition?.Columns != null)
             {
                 foreach (var col in Definition.Columns)
                 {
-                    if (!base.TryApplyDefault(jObject, col))
+                    if (!base.TryApplyDefault(dict, col))
                     {
                         if (!col.AllowNull)
-                            base.ApplyNonNullableFallback(jObject, col);
+                            base.ApplyNonNullableFallback(dict, col);
                     }
                 }
             }
 
-            this.DXMultiElement.AddToAnnounced(new DXItem()
-            {
-                ID = id,
-                DXUnitID = Parent.MainElement.Item.ID,
-                Content = jObject
-            });
+            this.DXMultiElement.Add(new DXItem(Definition.Name, id, Parent.DXMainElement.Item.ID, timeStamp, dict));
         }
 
         private void Remove(DXItem dxItem)
         {
-            this.DXMultiElement.RemoveFromAnnounced(dxItem);
-            this.DXMultiElement.AddToDeleted(dxItem);
+            this.DXMultiElement.Remove(dxItem);
         }    
     }
 }

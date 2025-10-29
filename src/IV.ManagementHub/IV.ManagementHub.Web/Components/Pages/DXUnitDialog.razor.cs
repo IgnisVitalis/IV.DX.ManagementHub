@@ -47,12 +47,12 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private DXMainElement GetDXMainElement()
         {
-            return Content.MainElement;
+            return Content.DXMainElement;
         }
 
         private DXElementDefinition GetDXMainElementStructure()
         {
-            return this.GetMandatoryDXSingleElementStructure(Content.MainElement.ObjectInfo.ObjectName);
+            return this.GetMandatoryDXSingleElementStructure(Content.DXMainElement.Attribute.Type);
         }
 
         private DXSingleElement GetDXSingleElement(string dxElementName)
@@ -108,7 +108,7 @@ namespace IV.ManagementHub.Web.Components.Pages
             }
             else
             {
-                dxModel = DXModelFactory.Normalize(DXModel.Parse(content), structure);
+                dxModel = DXModelFactory.Normalize(DXModel.From(content), structure);
             }
 
             return dxModel;
@@ -116,7 +116,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task SaveAsync()
         {
-            await this._coreApi.SaveAsync(this.Content.ConvertToJObject());
+            await this._coreApi.SaveAsync(this.Content.ToJObject());
 
             if (OnSaved.HasDelegate)
                 await OnSaved.InvokeAsync(this.Content);
