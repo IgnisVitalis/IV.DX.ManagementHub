@@ -5,12 +5,12 @@ namespace IV.ManagementHub.Common.Models
     public class DXModelDefinition
     {
         public string Name { get; set; }
-        public List<DXElementDefinition> SingleItemMandatory { get; set; }
-        public List<DXElementDefinition> SingleItemOptional { get; set; }
-        public List<DXElementDefinition> MultiItemsMandatory { get; set; }
-        public List<DXElementDefinition> MultiItemsOptional { get; set; }
-
-      
+        public DXElementDefinition MainSingleElement { get; set; }
+        public List<DXElementDefinition> BaseSingleElements { get; set; }
+        public List<DXElementDefinition> RequiredSingleElements { get; set; }
+        public List<DXElementDefinition> OptionalSingleElements { get; set; }
+        public List<DXElementDefinition> RequiredMultiElements { get; set; }
+        public List<DXElementDefinition> OptionalMultiElements { get; set; }      
     }
 
     public class DXElementDefinition
@@ -31,5 +31,6 @@ namespace IV.ManagementHub.Common.Models
         public bool AllowNull { get; set; }
         public string DefaultValue { get; set; }
         public IDictionary<int, string> EnumValues { get; set; }
+        public IDictionary<Guid, string> RelationValues { get; set; }
     }
 }

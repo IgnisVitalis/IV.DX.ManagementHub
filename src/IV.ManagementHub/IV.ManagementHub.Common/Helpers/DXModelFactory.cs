@@ -14,7 +14,7 @@ namespace IV.ManagementHub.Common.Helpers
             var singleItemNamesExisting = original.DXSingleElements.Select(x => x.Name).ToList();
             var multiItemNamesExisting = original.DXMultiElements.Select(x => x.Name).ToList();
 
-            foreach (var item in dxModelDefinition.SingleItemMandatory.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
+            foreach (var item in dxModelDefinition.RequiredSingleElements.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
             {
                 if (item.Name.Equals(original.DXMainElement.Attribute.Type))
                     continue;
@@ -23,7 +23,7 @@ namespace IV.ManagementHub.Common.Helpers
                 original.DXSingleElements.Add(singleElement);
             }
 
-            foreach (var item in dxModelDefinition.SingleItemOptional.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
+            foreach (var item in dxModelDefinition.OptionalSingleElements.Where(x => !singleItemNamesExisting.Contains(x.Name)).ToList())
             {
                 if (item.Name.Equals(original.DXMainElement.Attribute.Type))
                     continue;
@@ -32,7 +32,7 @@ namespace IV.ManagementHub.Common.Helpers
                 original.DXSingleElements.Add(singleElement);
             }
 
-            foreach (var item in dxModelDefinition.MultiItemsMandatory.Where(x => !multiItemNamesExisting.Contains(x.Name)).ToList())
+            foreach (var item in dxModelDefinition.RequiredMultiElements.Where(x => !multiItemNamesExisting.Contains(x.Name)).ToList())
             {
                 var dxItem = GetNewDXItem(dxModelDefinition, item, id, timeStamp);
 
@@ -41,7 +41,7 @@ namespace IV.ManagementHub.Common.Helpers
                 original.DXMultiElements.Add(multiElement);
             }
 
-            foreach (var item in dxModelDefinition.MultiItemsOptional.Where(x => !multiItemNamesExisting.Contains(x.Name)).ToList())
+            foreach (var item in dxModelDefinition.OptionalMultiElements.Where(x => !multiItemNamesExisting.Contains(x.Name)).ToList())
             {
                 var multiElement = GetNewDXMultiElement(item, id, timeStamp, new HashSet<DXItem>());
                 original.DXMultiElements.Add(multiElement);
@@ -58,19 +58,19 @@ namespace IV.ManagementHub.Common.Helpers
             var dxSingleElements = new HashSet<DXSingleElement>();
             var dxMultiElements = new HashSet<DXMultiElement>();
 
-            foreach (var item in dxModelDefinition.SingleItemMandatory)
+            foreach (var item in dxModelDefinition.RequiredSingleElements)
             {
                 var singleElement = GetNewDXSingleElement(dxModelDefinition, item, id, timeStamp, true);
                 dxSingleElements.Add(singleElement);
             }
 
-            foreach (var item in dxModelDefinition.SingleItemOptional)
-            {
-                var singleElement = GetNewDXSingleElement(dxModelDefinition, item, id, timeStamp, false);
-                dxSingleElements.Add(singleElement);
-            }
+            //foreach (var item in dxModelDefinition.OptionalSingleElements)
+            //{
+            //    var singleElement = GetNewDXSingleElement(dxModelDefinition, item, id, timeStamp, false);
+            //    dxSingleElements.Add(singleElement);
+            //}
 
-            foreach (var item in dxModelDefinition.MultiItemsMandatory)
+            foreach (var item in dxModelDefinition.RequiredMultiElements)
             {
                 var dxItem = GetNewDXItem(dxModelDefinition, item, id, timeStamp);
 
@@ -79,7 +79,7 @@ namespace IV.ManagementHub.Common.Helpers
                 dxMultiElements.Add(multiElement);
             }
 
-            foreach (var item in dxModelDefinition.MultiItemsOptional)
+            foreach (var item in dxModelDefinition.OptionalMultiElements)
             {
                 var multiElement = GetNewDXMultiElement(item, id, timeStamp, new HashSet<DXItem>());
                 dxMultiElements.Add(multiElement);

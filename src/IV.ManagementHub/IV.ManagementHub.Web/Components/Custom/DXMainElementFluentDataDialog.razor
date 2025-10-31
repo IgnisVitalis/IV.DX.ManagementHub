@@ -112,14 +112,39 @@ else
                                                Placeholder="" />
                             break;
 
-                        // ---- GUID (как строка, по умолчанию readonly) ----
+                        // ---- GUID  ----
                         case DXColumnTypeEnum.GUID:
+                            if (column.RelationValues is { Count: > 0 })
+                            {
+                                <FluentSelect @key="@(column.Name + DXItem.ID)" Label="@column.Name"
+                                              TOption="string"
+                                              Multiple="false"
+                                              Style="overflow:visible"
+                                              Width="100%"
+                                              Value="@(base.GetGuidString(DXItem.Content, column))"
+                                              ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, column, v)))"
+                                              @attributes="base.GetRequiredAttr(column)">
 
-                            <FluentTextField @key="@(column.Name + DXItem.ID)" Label="@column.Name"
-                                             Value="@(base.GetGuidString(DXItem.Content, column))"
-                                             ValueChanged="@(v => base.SetGuidString(DXItem.Content, column, v))"
-                                             ReadOnly="true" />
+                                    @if (column.AllowNull)
+                                    {
+                                        <FluentOption TOption="string" Value="">—</FluentOption>
+                                    }
 
+                                    @foreach (var kv in column.RelationValues)
+                                    {
+                                        <FluentOption TOption="string" Value="@kv.Key.ToString()">
+                                            @kv.Value
+                                        </FluentOption>
+                                    }
+                                </FluentSelect>
+                            }
+                            else
+                            {
+                                <FluentTextField @key="@(column.Name + DXItem.ID)" Label="@column.Name"
+                                                 Value="@(base.GetGuidString(DXItem.Content, column))"
+                                                 ValueChanged="@(v => base.SetGuidString(DXItem.Content, column, v))"
+                                                 Style="width:100%;" />
+                            }
                             break;
 
                         // ---- BLOB (заглушка под диалог) ----

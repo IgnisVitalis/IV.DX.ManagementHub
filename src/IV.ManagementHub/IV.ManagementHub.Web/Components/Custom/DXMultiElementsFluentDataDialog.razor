@@ -57,7 +57,7 @@ else
                             break;
 
 
-                        // ---- INT -> либо селект по EnumValues, либо number ----
+                        // ---- INT -> select by EnumValues or number ----
                         case DXColumnTypeEnum.Int:
                             if (column.EnumValues is { Count: > 0 })
                             {
@@ -133,15 +133,42 @@ else
                                                    Placeholder="" />
                             </TemplateColumn>
                             break;
-
-                        // ---- GUID (как строка, по умолчанию readonly) ----
+                                                 
                         case DXColumnTypeEnum.GUID:
-                            <TemplateColumn Title="@column.Name" Align="Align.Center">
-                                <FluentTextField @key="@(column.Name + context.ID)"
-                                                 Value="@(base.GetGuidString(context.Content, column))"
-                                                 ValueChanged="@(v => base.SetGuidString(context.Content, column, v))"
-                                                 ReadOnly="true" />
-                            </TemplateColumn>
+                            if (column.RelationValues is { Count: > 0 })
+                            {
+                                <TemplateColumn Title="@column.Name" Align="Align.Center" Style="overflow:visible">
+                                    <FluentSelect @key="@(column.Name + context.ID)"
+                                                  TOption="string"
+                                                  Multiple="false"
+                                                  Style="overflow:visible"
+                                                  Width="100%"
+                                                  Value="@(base.GetGuidString(context.Content, column))"
+                                                  ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(context.Content, column, v)))"
+                                                  Required="@(!column.AllowNull)">
+                                        @if (column.AllowNull)
+                                        {
+                                            <FluentOption TOption="string" Value="">—</FluentOption>
+                                        }
+
+                                        @foreach (var kv in column.RelationValues)
+                                        {
+                                            <FluentOption TOption="string" Value="@kv.Key.ToString()">
+                                                @kv.Value
+                                            </FluentOption>
+                                        }
+                                    </FluentSelect>
+                                </TemplateColumn>
+                            }
+                            else
+                            {
+                                <TemplateColumn Title="@column.Name" Align="Align.Center">
+                                    <FluentTextField @key="@(column.Name + context.ID)"
+                                                     Value="@(base.GetGuidString(context.Content, column))"
+                                                     ValueChanged="@(v => base.SetGuidString(context.Content, column, v))"
+                                                     Style="width:100%;" />
+                                </TemplateColumn>
+                            }
                             break;
 
                         // ---- BLOB (заглушка под диалог) ----

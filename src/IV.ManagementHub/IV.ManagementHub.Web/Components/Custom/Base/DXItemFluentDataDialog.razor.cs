@@ -114,6 +114,12 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return n.HasValue ? n.Value.ToString(Inv) : string.Empty;
         }
 
+        //protected string GetGuidAsString(IDictionary<string, object> row, DXColumnDefinition col)
+        //{
+        //    var n = GetGuidString(row, col);
+        //    return n.HasValue ? n.Value.ToString(Inv) : string.Empty;
+        //}
+
         protected void SetIntFromString(IDictionary<string, object> row, DXColumnDefinition col, string v)
         {
             if (string.IsNullOrEmpty(v))
@@ -128,6 +134,29 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             if (!col.AllowNull)
             {
                 if (!TryApplyDefault(row, col)) row[col.Name] = 0;
+            }
+            else
+            {
+                SetNull(row, col.Name);
+            }
+        }
+
+        protected void SetGuidFromString(IDictionary<string, object> row, DXColumnDefinition col, string v)
+        {
+            if (string.IsNullOrEmpty(v))
+            {
+                if (col.AllowNull) { SetNull(row, col.Name); return; }
+                // Need to throw error?
+                //if (!TryApplyDefault(row, col)) row[col.Name] = 0;
+                return;
+            }
+
+            if (Guid.TryParse(v, out var i)) { row[col.Name] = i; return; }
+
+            if (!col.AllowNull)
+            {
+                // Need to throw error?
+                //if (!TryApplyDefault(row, col)) row[col.Name] = 0;
             }
             else
             {
@@ -221,9 +250,14 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         // -------- GUID как строка --------
         protected string GetGuidString(IDictionary<string, object> row, DXColumnDefinition col)
         {
+            return GetGuid(row, col)?.ToString() ?? string.Empty;
+        }
+
+        protected Guid? GetGuid(IDictionary<string, object> row, DXColumnDefinition col)
+        {
             TryGet(row, col.Name, out var v);
             var g = ConvertTo<Guid?>(v);
-            return g?.ToString() ?? string.Empty;
+            return g;
         }
 
         protected void SetGuidString(IDictionary<string, object> row, DXColumnDefinition col, string value)

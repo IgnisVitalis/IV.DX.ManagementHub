@@ -3,8 +3,10 @@
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="/app/base/blocks" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
-            <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
+                <FluentNavLink Href="/app/base/blocks" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
+            
+            <FluentNavLink Href="/app/base/dxUnitSetView/DXUnitDefinitionUnit" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Accent">General. DXUnites</FluentNavLink>
+            <FluentNavLink Href="/app/base/dxUnitSetView/DXElementDefinitionUnit" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Accent">General. DXElements</FluentNavLink>
         </FluentNavMenu>
     </nav>
 </div>

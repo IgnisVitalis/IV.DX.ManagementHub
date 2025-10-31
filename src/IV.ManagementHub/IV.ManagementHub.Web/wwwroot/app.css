@@ -225,7 +225,7 @@ fluent-card.unclip {
 .dialog-window {
     background: white;
     border-radius: 8px;
-    padding: 1rem; 
+    padding: 1rem;
     width: clamp(720px, 80vw, 80%);
     max-height: 90vh;
     box-shadow: 0 4px 12px rgba(0,0,0,.3);
@@ -262,3 +262,6 @@ fluent-button.btn-danger::part(start) {
 fluent-button.btn-danger::part(control):hover {
     background: rgba(220,53,69,.08);
 }
+
+
+

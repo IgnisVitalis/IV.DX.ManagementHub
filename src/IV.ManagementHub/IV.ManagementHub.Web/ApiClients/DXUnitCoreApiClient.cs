@@ -1,6 +1,8 @@
-﻿using Microsoft.JSInterop;
+﻿using IV.DX.Kernel.Models;
+using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace IV.ManagementHub.Web.ApiClients
@@ -91,7 +93,7 @@ namespace IV.ManagementHub.Web.ApiClients
             var items = JArray.Parse(str);
 
             return items.Select(x => (JObject)x).ToList();
-        }
+        }      
 
         public async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)
         {
