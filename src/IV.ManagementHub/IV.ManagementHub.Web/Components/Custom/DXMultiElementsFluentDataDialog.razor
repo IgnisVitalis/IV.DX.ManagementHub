@@ -69,13 +69,13 @@ else
                                                   Width="100%"
                                                   Value="@(base.GetIntAsString(context.Content, column))"
                                                   ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(context.Content, column, v)))"
-                                                  @attributes="base.GetRequiredAttr(column)">
+                                                  Required="!column.AllowNull">
 
-                                        @if (column.AllowNull)
-                                        {
-                                            <!-- пустая строка = null -->
-                                            <FluentOption TOption="string" Value="">—</FluentOption>
-                                        }
+                                        @*   @if (column.AllowNull)
+                                        { *@
+                                        <!-- пустая строка = null -->
+                                        <FluentOption TOption="string" Value="">—</FluentOption>
+                                        @* } *@
 
                                         @foreach (var kv in column.EnumValues)
                                         {
@@ -133,7 +133,7 @@ else
                                                    Placeholder="" />
                             </TemplateColumn>
                             break;
-                                                 
+
                         case DXColumnTypeEnum.GUID:
                             if (column.RelationValues is { Count: > 0 })
                             {
@@ -146,10 +146,10 @@ else
                                                   Value="@(base.GetGuidString(context.Content, column))"
                                                   ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(context.Content, column, v)))"
                                                   Required="@(!column.AllowNull)">
-                                        @if (column.AllowNull)
-                                        {
-                                            <FluentOption TOption="string" Value="">—</FluentOption>
-                                        }
+                                        @*     @if (column.AllowNull)
+                                        { *@
+                                        <FluentOption TOption="string" Value="">—</FluentOption>
+                                        @* } *@
 
                                         @foreach (var kv in column.RelationValues)
                                         {

@@ -56,12 +56,12 @@ else
                                               Width="100%"
                                               Value="@(base.GetIntAsString(DXItem.Content, column))"
                                               ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(DXItem.Content, column, v)))"
-                                              @attributes="base.GetRequiredAttr(column)">
+                                              Required="!column.AllowNull">
 
-                                    @if (column.AllowNull)
-                                    {
-                                        <FluentOption TOption="string" Value="">—</FluentOption>
-                                    }
+                                    @*  @if (column.AllowNull)
+                                    { *@
+                                    <FluentOption TOption="string" Value="">—</FluentOption>
+                                    @* } *@
 
                                     @foreach (var kv in column.EnumValues)
                                     {
@@ -122,12 +122,12 @@ else
                                               Width="100%"
                                               Value="@(base.GetGuidString(DXItem.Content, column))"
                                               ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, column, v)))"
-                                              @attributes="base.GetRequiredAttr(column)">
+                                              Required="!column.AllowNull">
 
-                                    @if (column.AllowNull)
-                                    {
-                                        <FluentOption TOption="string" Value="">—</FluentOption>
-                                    }
+                                    @*   @if (column.AllowNull)
+                                    { *@
+                                    <FluentOption TOption="string" Value="">—</FluentOption>
+                                    @* } *@
 
                                     @foreach (var kv in column.RelationValues)
                                     {
