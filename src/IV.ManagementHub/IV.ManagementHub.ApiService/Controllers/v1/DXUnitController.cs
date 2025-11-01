@@ -6,82 +6,97 @@ using Newtonsoft.Json.Linq;
 
 namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
 {
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/DXUnitDefinitionUnit")]
-    public class DXUnitController : ControllerBase
-    {
-        private readonly IDXUnitDataService _dataService;
+    //[ApiController]
+    //[ApiVersion("1.0")]
+    //[Route("api/v{version:apiVersion}/DXUnitDefinitionUnit")]
+    //public class DXUnitController : ControllerBase
+    //{
+    //    private readonly IDXUnitDataService _dataService;
 
-        public DXUnitController(IDXUnitDataService dataService, ILogger<DXObjectController> logger)
-        {
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-        }
+    //    public DXUnitController(IDXUnitDataService dataService, ILogger<DXObjectController> logger)
+    //    {
+    //        _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
+    //    }
 
-        /// <summary>Get all DXUnitDefinitionUnit objects.</summary>
-        [HttpGet]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JArray>> GetAllAsync([FromQuery] string? filter = null)
-        {
-            var items = string.IsNullOrEmpty(filter)
-                ? await _dataService.GetItemsAsync<DXUnitDefinitionUnit>()
-                : await _dataService.GetItemsAsync<DXUnitDefinitionUnit>(filter);
+    //    /// <summary>Get all DXUnitDefinitionUnit objects.</summary>
+    //    [HttpGet]
+    //    [Produces("application/json")]
+    //    [ProducesResponseType(StatusCodes.Status200OK)]
+    //    public async Task<ActionResult<JArray>> GetAllAsync([FromQuery] string? filter = null)
+    //    {
+    //        var items = string.IsNullOrEmpty(filter)
+    //            ? await _dataService.GetItemsAsync<DXUnitDefinitionUnit>()
+    //            : await _dataService.GetItemsAsync<DXUnitDefinitionUnit>(filter);
 
-            var jarray = new JArray(items.Select(x => x.ToJObject()));
+    //        var jarray = new JArray(items.Select(x => x.ToJObject()));
 
-            return jarray;
-        }
+    //        return jarray;
+    //    }
 
-        /// <summary>Search using long filter (POST, JSON).</summary>
-        [HttpPost("search")]
-        [Consumes("application/json")]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JArray>> SearchAsync([FromBody] JToken body)
-        {
-            var items = await _dataService.GetItemsAsync<DXUnitDefinitionUnit>(body.ToString());
+    //    /// <summary>Search using long filter (POST, JSON).</summary>
+    //    [HttpPost("search")]
+    //    [Consumes("application/json")]
+    //    [Produces("application/json")]
+    //    [ProducesResponseType(StatusCodes.Status200OK)]
+    //    public async Task<ActionResult<JArray>> SearchAsync([FromBody] JToken body)
+    //    {
+    //        var items = await _dataService.GetItemsAsync<DXUnitDefinitionUnit>(body.ToString());
 
-            var jarray = new JArray(items.Select(x => x.ToJObject()));
+    //        var jarray = new JArray(items.Select(x => x.ToJObject()));
 
-            return jarray;
-        }
+    //        return jarray;
+    //    }
 
-        /// <summary>Get DXUnitDefinitionUnit object by ID.</summary>
-        [HttpGet("{id:guid}")]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<JObject>> GetByIdAsync([FromRoute] Guid id)
-        {
-            var result = await _dataService.GetItemAsync<DXUnitDefinitionUnit>(id);
+    //    /// <summary>Get DXUnitDefinitionUnit object by ID.</summary>
+    //    [HttpGet("{id:guid}")]
+    //    [Produces("application/json")]
+    //    [ProducesResponseType(StatusCodes.Status200OK)]
+    //    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    //    public async Task<ActionResult<JObject>> GetByIdAsync([FromRoute] Guid id)
+    //    {
+    //        var result = await _dataService.GetItemAsync<DXUnitDefinitionUnit>(id);
 
-            var jObject = result?.ToJObject();
+    //        var jObject = result?.ToJObject();
 
-            return jObject is null ? NotFound() : jObject;
-        }
+    //        return jObject is null ? NotFound() : jObject;
+    //    }
 
-        /// <summary>Create or update an object of the specified type.</summary>
-        [HttpPost]
-        [Consumes("application/json")]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        public async Task<ActionResult<JObject>> CreateOrUpdateAsync([FromBody] JObject body)
-        {
-            var item = await _dataService.InsertOrUpdateAsync(body);
+    //    /// <summary>Create or update an object of the specified type.</summary>
+    //    [HttpPost]
+    //    [Consumes("application/json")]
+    //    [Produces("application/json")]
+    //    [ProducesResponseType(StatusCodes.Status201Created)]
+    //    public async Task<ActionResult<JObject>> CreateOrUpdateAsync([FromBody] JObject body)
+    //    {
+    //        var item = await _dataService.InsertOrUpdateAsync(body);
 
-            //Guid id = item.Value<Guid>("ID");
+    //        //Guid id = item.Value<Guid>("ID");
 
-            //var typeName = "DXUnitDefinitionUnit";
+    //        //var typeName = "DXUnitDefinitionUnit";
 
-            //var version = HttpContext.GetRequestedApiVersion()?.ToString() ?? "1.0";
+    //        //var version = HttpContext.GetRequestedApiVersion()?.ToString() ?? "1.0";
 
-            //return CreatedAtAction(
-            //    nameof(GetByIdAsync),
-            //    new { version, typeName, id },
-            //    item);
+    //        //return CreatedAtAction(
+    //        //    nameof(GetByIdAsync),
+    //        //    new { version, typeName, id },
+    //        //    item);
 
-            return item;
-        }
-    }
+    //        return item;
+    //    }
+
+    //    /// <summary>Remove an object of the specified type by ID.</summary>
+    //    [HttpDelete("{id:guid}")]
+    //    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    //    public async virtual Task<IActionResult> DeleteAsync([FromRoute] string typeName, [FromRoute] Guid id)
+    //    {
+    //        var existingItem = await this._dataService.GetItemAsync(typeName, id);
+
+    //        if (existingItem != null)
+    //        {
+    //            await _dataService.DeleteAsync(existingItem);
+    //        }
+
+    //        return NoContent();
+    //    }
+    //}
 }

@@ -9,7 +9,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/{typeName}")]
-    [ExcludeTypeName("DXUnitDefinitionUnit")]
+    //[ExcludeTypeName("DXUnitDefinitionUnit")]
     public class DXObjectController : ControllerBase
     {
         private readonly IDXUnitDataService _dataService;
