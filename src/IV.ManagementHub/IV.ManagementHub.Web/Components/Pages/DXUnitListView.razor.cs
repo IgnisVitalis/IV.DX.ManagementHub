@@ -151,10 +151,8 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private static Dictionary<string, string> MakeUniqueColumnNames(IList<string> paths)
         {
-            // базовые хвосты
             var tails = paths.ToDictionary(p => p, p => p.Split('.').Last());
 
-            // ищем дубликаты
             var groups = tails.GroupBy(kv => kv.Value)
                               .Where(g => g.Count() > 1)
                               .ToList();
@@ -164,11 +162,10 @@ namespace IV.ManagementHub.Web.Components.Pages
             var result = new Dictionary<string, string>(tails);
             foreach (var g in groups)
             {
-                // для каждой группы с одинаковым хвостом расширяем имя слева направо
                 var members = g.Select(kv => kv.Key).ToList();
-                var expanded = members.ToDictionary(m => m, m => new List<string> { g.Key }); // начально = хвост
+                var expanded = members.ToDictionary(m => m, m => new List<string> { g.Key });
 
-                int step = 2; // берём предпоследний сегмент, потом ещё и т.д.
+                int step = 2;
                 bool unique = false;
 
                 while (!unique)
@@ -178,11 +175,10 @@ namespace IV.ManagementHub.Web.Components.Pages
                     {
                         var segs = m.Split('.');
                         var take = Math.Min(step, segs.Length);
-                        var name = string.Join("_", segs.Skip(segs.Length - take)); // last, prev.last, ...
+                        var name = string.Join("_", segs.Skip(segs.Length - take));
                         proposals[m] = name;
                     }
 
-                    // проверяем уникальность
                     if (proposals.Values.Distinct(StringComparer.OrdinalIgnoreCase).Count() == proposals.Count)
                     {
                         foreach (var m in members) result[m] = proposals[m];
@@ -191,8 +187,8 @@ namespace IV.ManagementHub.Web.Components.Pages
                     else
                     {
                         step++;
-                        // на всякий пожарный предел
-                        if (step > 10) // достаточный предел для обычных путей
+                        
+                        if (step > 10)
                         {
                             foreach (var m in members) result[m] = m.Replace('.', '_');
                             unique = true;
@@ -216,16 +212,13 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             if (value == DBNull.Value || value == null)
                 return default(Guid);
-
-            // если уже Guid
+                       
             if (value is Guid g)
                 return g;
-
-            // если строка
+                        
             if (value is string s && Guid.TryParse(s, out g))
                 return g;
-
-            // если байты
+                      
             if (value is byte[] bytes && bytes.Length == 16)
                 return new Guid(bytes);
 

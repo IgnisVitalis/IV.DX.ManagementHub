@@ -21,6 +21,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         DXModelDefinition _dxUnitDefinitionStructure;
 
         DXModel dxModel;
+        DXModel dxModelOriginal;
 
         bool isAccordion = true;
 
@@ -30,9 +31,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         [Inject]
         IApiClientResolver Resolver { get; set; } = default!;
 
-
         bool _isLoaded = false;
-
 
 
         protected override async Task OnInitializedAsync()
@@ -42,7 +41,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             this._dxUnitDefinitionStructure = await this._dxUnitStructureApiCLient.GetAsync(Type);
 
-            this.dxModel = await LoadDXUnit(this.Type, this.ID, this._dxUnitDefinitionStructure);
+            await LoadDXUnit(this.Type, this.ID, this._dxUnitDefinitionStructure);
 
             _isLoaded = true;
         }
@@ -99,31 +98,130 @@ namespace IV.ManagementHub.Web.Components.Pages
             return multiItemsDataGridDefinition;
         }
 
-        private async Task<DXModel> LoadDXUnit(string type, Guid id, DXModelDefinition structure)
+        private async Task LoadDXUnit(string type, Guid id, DXModelDefinition structure)
         {
             var content = await this._coreApi.Get(this.Type, this.ID);
-            DXModel dxModel;
 
             if (content == null)
             {
                 dxModel = DXModelFactory.GetDefault(structure);
+                dxModelOriginal = null;
             }
             else
             {
                 dxModel = DXModel.From(content);
-                DXModelFactory.Normalize(DXModel.From(content), structure);
+                dxModelOriginal = dxModel.DeepClone();
+                //DXModelFactory.Normalize(DXModel.From(content), structure);
             }
-
-            return dxModel;
         }
 
         private async Task SaveAsync()
         {
-            await this._coreApi.SaveAsync(this.dxModel.ToJObject());
+            var dxModelToUpdate = GetChanges(dxModel, dxModelOriginal);
+
+            await this._coreApi.SaveAsync(dxModelToUpdate.ToJObject());
 
             if (OnSaved.HasDelegate)
                 await OnSaved.InvokeAsync(this.dxModel);
         }
+
+        private DXModel GetChanges(DXModel actual, DXModel original)
+        {
+            if (original == null)
+                return actual;
+
+            var mainElement = actual.DXMainElement.DeepClone();
+            var singleElements = GetChanges(actual.DXSingleElements, original.DXSingleElements);
+            var multiElements = GetChanges(actual.DXMultiElements, original.DXMultiElements);
+
+            var dxModelToUpdate = new DXModel(mainElement, singleElements, multiElements);
+
+            return dxModelToUpdate;
+        }
+
+        private HashSet<DXSingleElement> GetChanges(HashSet<DXSingleElement> actual, HashSet<DXSingleElement> original)
+        {
+            var originalNames = original.Select(x => x.Name).ToList();
+
+            var singleElements = actual.Where(x => !originalNames.Contains(x.Name)).ToHashSet();
+
+            var sameSingleElements = actual.Where(x => originalNames.Contains(x.Name)).ToHashSet();
+
+            foreach (var sameSingleElement in sameSingleElements)
+            {
+                var originalSingleElement = original.Single(x => x.Name == sameSingleElement.Name);
+
+                var areSame = sameSingleElement.DeepEquals(originalSingleElement);
+
+                if (!areSame || _dxUnitDefinitionStructure.IsRequired(sameSingleElement.Name))
+                {
+                    singleElements.Add(sameSingleElement);
+                }
+            }
+
+            return singleElements;
+        }
+
+        private HashSet<DXMultiElement> GetChanges(HashSet<DXMultiElement> actual, HashSet<DXMultiElement> original)
+        {
+            var originalNames = original.Select(x => x.Name).ToList();
+
+            var multiElements = actual.Where(x => !originalNames.Contains(x.Name)).ToHashSet();
+
+            var sameMultiElements = actual.Where(x => originalNames.Contains(x.Name)).ToHashSet();
+
+            foreach (var sameMultiElement in sameMultiElements)
+            {
+                var originalMultiElement = original.Single(x => x.Name == sameMultiElement.Name);
+
+                var areSame = sameMultiElement.DeepEquals(originalMultiElement);
+
+                if (!areSame)
+                {
+                    var deleted = originalMultiElement.Announced.Where(x => sameMultiElement.Deleted.Select(y => y.ID).Contains(x.ID)).ToHashSet();
+
+                    HashSet<DXItem> announced = new HashSet<DXItem>();
+
+                    foreach (var item in sameMultiElement.Announced)
+                    {
+                        var itemOriginal = originalMultiElement.Announced.SingleOrDefault(x => x.ID == item.ID);
+
+                        if (itemOriginal == null)
+                        {
+                            announced.Add(item);
+                        }
+                        else
+                        {
+                            if (!item.DeepEquals(itemOriginal))
+                            {
+                                announced.Add(item);
+                            }
+                        }
+                    }
+
+                    var multiElement = DXMultiElement.CreateForTargetMode(
+                        sameMultiElement.Name,
+                        sameMultiElement.Attribute,
+                        announced,
+                        deleted);
+
+                    multiElements.Add(multiElement);
+                }
+                else
+                {
+                    var multiElement = DXMultiElement.CreateForTargetMode(
+                       sameMultiElement.Name,
+                       sameMultiElement.Attribute,
+                       new HashSet<DXItem>(),
+                       new HashSet<DXItem>());
+
+                    multiElements.Add(multiElement);
+                }
+            }
+
+            return multiElements;
+        }
+
 
         private bool IsDXModelContainsSingleElement(DXElementDefinition dxElementDefinition)
         {
@@ -153,7 +251,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private void DeleteSingleElement(DXElementDefinition dxElementDefinition)
         {
             var existingSingleElement = GetDXSingleElement(dxElementDefinition.Name);
-      
+
             this.dxModel.RemoveSingleElement(existingSingleElement);
         }
 

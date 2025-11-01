@@ -10,7 +10,25 @@ namespace IV.ManagementHub.Common.Models
         public List<DXElementDefinition> RequiredSingleElements { get; set; }
         public List<DXElementDefinition> OptionalSingleElements { get; set; }
         public List<DXElementDefinition> RequiredMultiElements { get; set; }
-        public List<DXElementDefinition> OptionalMultiElements { get; set; }      
+        public List<DXElementDefinition> OptionalMultiElements { get; set; }
+
+
+        public bool IsRequired(string name)
+        {
+            if (MainSingleElement.Name == name)
+                return true;
+
+            if (BaseSingleElements != null && BaseSingleElements.Select(x => x.Name).Contains(name))
+                return true;
+
+            if (RequiredSingleElements != null && RequiredSingleElements.Select(x => x.Name).Contains(name))
+                return true;
+
+            if (RequiredMultiElements != null && RequiredMultiElements.Select(x => x.Name).Contains(name))
+                return true;
+
+            return false;
+        }
     }
 
     public class DXElementDefinition
