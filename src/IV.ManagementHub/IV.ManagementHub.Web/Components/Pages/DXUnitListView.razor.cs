@@ -51,7 +51,7 @@ namespace IV.ManagementHub.Web.Components.Pages
             {
                 dxUnits = await coreApi.GetItems(DXUnitTypeName, string.Empty);
 
-                values = ToTable(dxUnits, new[] { "ID", "DXObjectDefinitionMainElement.Name" });
+                values = ToTable(dxUnits, new[] { "ID", "DXObjectDefinitionMainElement.Name", "DXObjectDefinitionMainElement.Kind" });
             }
             finally
             {

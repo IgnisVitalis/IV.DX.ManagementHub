@@ -1,0 +1,144 @@
+﻿@using IV.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Newtonsoft.Json.Linq
+@using System.Linq
+@using IV.DX.Kernel.Enums;
+@using System;
+
+@inherits DXItemEditorBaseComponent
+
+@switch (ColumnDefinition.ColumnType)
+                    {
+                        // ---- BOOL ----
+                        case DXColumnTypeEnum.Bool:
+<FluentCheckbox @key="@(ColumnDefinition.Name + DXItem.ID)"
+                Value="@(base.GetBool(DXItem.Content, ColumnDefinition))"
+                ValueChanged="@(v =>  base.SetBool(DXItem.Content, ColumnDefinition, v))" />
+                            break;
+
+                        // ---- STRING / TEXT ----
+                        case DXColumnTypeEnum.String:
+                        case DXColumnTypeEnum.Text:
+<FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                 Value="@(base.GetStringN(DXItem.Content, ColumnDefinition) ?? string.Empty)"
+                 ValueChanged="@(v => base.SetStringN(DXItem.Content, ColumnDefinition, v))"
+                 Style="width:100%;" />
+                            break;
+
+                        // ---- DATETIME? ----
+                        case DXColumnTypeEnum.DateTime:
+<FluentDatePicker @key="@(ColumnDefinition.Name + DXItem.ID)"
+                  Value="@(base.GetDateTime(DXItem.Content, ColumnDefinition))"
+                  ValueChanged="@(v => base.SetDateTime(DXItem.Content, ColumnDefinition, v))" />
+                            break;
+
+
+                        // ---- INT -> либо селект по EnumValues, либо number ----
+                        case DXColumnTypeEnum.Int:
+                            if (ColumnDefinition.EnumValues is { Count: > 0 })
+                            {
+<FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
+              TOption="string"
+              Multiple="false"
+              Style="overflow:visible"
+              Width="100%"
+              Value="@(base.GetIntAsString(DXItem.Content, ColumnDefinition))"
+              ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(DXItem.Content, ColumnDefinition, v)))"
+              Required="!ColumnDefinition.AllowNull">
+
+    @*  @if (ColumnDefinition.AllowNull)
+                                    { *@
+    <FluentOption TOption="string" Value="">—</FluentOption>
+    @* } *@
+
+    @foreach (var kv in ColumnDefinition.EnumValues)
+    {
+        <FluentOption TOption="string" Value="@kv.Key.ToString()">
+            @kv.Value
+        </FluentOption>
+    }
+</FluentSelect>
+                            }
+                            else
+                            {
+<FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                   TValue="long?"
+                   Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
+                   ValueChanged="@(EventCallback.Factory.Create<long?>(this, v => base.SetLongN(DXItem.Content, ColumnDefinition, v)))"
+                   @attributes="base.GetRequiredAttr(ColumnDefinition)" />
+                            }
+                            break;
+
+
+                        // ---- SHORT/LONG -> long? ----
+                        case DXColumnTypeEnum.Short:
+                        case DXColumnTypeEnum.Long:
+<FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                   TValue="long?"
+                   Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
+                   ValueChanged="@(v => base.SetLongN(DXItem.Content, ColumnDefinition, v))"
+                   Placeholder="" />
+                            break;
+
+                        // ---- FLOAT -> double? ----
+                        case DXColumnTypeEnum.Float:
+<FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                   TValue="double?"
+                   Value="@(base.GetDoubleN(DXItem.Content, ColumnDefinition))"
+                   ValueChanged="@(v => base.SetDoubleN(DXItem.Content, ColumnDefinition, v))"
+                   Placeholder="" />
+                            break;
+
+                        // ---- DECIMAL/CURRENCY -> decimal? ----
+                        case DXColumnTypeEnum.Decimal:
+                        case DXColumnTypeEnum.Currency:
+<FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                   TValue="decimal?"
+                   Value="@(base.GetDecimalN(DXItem.Content, ColumnDefinition))"
+                   ValueChanged="@(v => base.SetDecimalN(DXItem.Content, ColumnDefinition, v))"
+                   Placeholder="" />
+                            break;
+
+                        // ---- GUID ----
+                        case DXColumnTypeEnum.GUID:
+                            if (ColumnDefinition.RelationValues is { Count: > 0 })
+                            {
+<FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
+              TOption="string"
+              Multiple="false"
+              Style="overflow:visible"
+              Width="100%"
+              Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
+              ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, ColumnDefinition, v)))"
+              Required="!ColumnDefinition.AllowNull">
+
+    @*   @if (ColumnDefinition.AllowNull)
+                                    { *@
+    <FluentOption TOption="string" Value="">—</FluentOption>
+    @* } *@
+
+    @foreach (var kv in ColumnDefinition.RelationValues)
+    {
+        <FluentOption TOption="string" Value="@kv.Key.ToString()">
+            @kv.Value
+        </FluentOption>
+    }
+</FluentSelect>
+                            }
+                            else
+                            {
+<FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
+                 Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
+                 ValueChanged="@(v => base.SetGuidString(DXItem.Content, ColumnDefinition, v))"
+                 Style="width:100%;" />
+                            }
+                            break;
+
+                        // ---- BLOB (заглушка под диалог) ----
+                        case DXColumnTypeEnum.Blob:
+
+<FluentButton @key="@(ColumnDefinition.Name + DXItem.ID)" OnClick="@(() => base.OpenBlobDialog(DXItem.Content, ColumnDefinition))">
+    Manage File
+</FluentButton>
+                            break;
+                    }

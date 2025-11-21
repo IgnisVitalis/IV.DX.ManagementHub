@@ -1,13 +1,11 @@
-﻿using IV.DX.Kernel;
-using IV.DX.Kernel.Models;
+﻿using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.Components.Custom.Base;
 using Microsoft.AspNetCore.Components;
-using Newtonsoft.Json.Linq;
 
 namespace IV.ManagementHub.Web.Components.Custom
 {
-    public partial class DXMultiElementsFluentDataDialog : DXItemFluentDataDialog
+    public partial class DXMultiElementsFluentDataDialog : ComponentBase
     {
         [Parameter, EditorRequired] public DXElementDefinition Definition { get; set; } = default!;
         [Parameter, EditorRequired] public DXMultiElement DXMultiElement { get; set; } = default!;
@@ -31,10 +29,10 @@ namespace IV.ManagementHub.Web.Components.Custom
             {
                 foreach (var col in Definition.Columns)
                 {
-                    if (!base.TryApplyDefault(dict, col))
+                    if (!DXItemEditorBaseComponent.TryApplyDefault(dict, col))
                     {
                         if (!col.AllowNull)
-                            base.ApplyNonNullableFallback(dict, col);
+                            DXItemEditorBaseComponent.ApplyNonNullableFallback(dict, col);
                     }
                 }
             }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace IV.ManagementHub.Web.Components.Custom
 {
-    public partial class DXMainElementFluentDataDialog : DXItemFluentDataDialog
+    public partial class DXMainElementFluentDataDialog : ComponentBase
     {
         [Parameter, EditorRequired] public DXElementDefinition Definition { get; set; } = default!;
         [Parameter, EditorRequired] public DXMainElement DXMainElement { get; set; } = default!;

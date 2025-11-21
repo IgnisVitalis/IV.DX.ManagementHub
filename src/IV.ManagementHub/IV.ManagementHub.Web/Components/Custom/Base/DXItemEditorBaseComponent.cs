@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace IV.ManagementHub.Web.Components.Custom.Base
 {
-    public abstract class DXItemFluentDataDialog : ComponentBase
+    public abstract class DXItemEditorBaseComponent : ComponentBase
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
@@ -275,7 +275,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         }
 
         // -------- Defaults --------
-        protected bool TryApplyDefault(IDictionary<string, object> row, DXColumnDefinition col)
+        public static bool TryApplyDefault(IDictionary<string, object> row, DXColumnDefinition col)
         {
             if (string.IsNullOrWhiteSpace(col.DefaultValue))
                 return false;
@@ -349,7 +349,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return false;
         }
 
-        protected void ApplyNonNullableFallback(IDictionary<string, object> row, DXColumnDefinition col)
+        public static void ApplyNonNullableFallback(IDictionary<string, object> row, DXColumnDefinition col)
         {
             switch (col.ColumnType)
             {

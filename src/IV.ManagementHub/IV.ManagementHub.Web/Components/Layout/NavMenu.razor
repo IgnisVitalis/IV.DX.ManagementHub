@@ -3,11 +3,18 @@
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-                <FluentNavLink Href="/app/base/blocks" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
-            
-            <FluentNavLink Href="/app/base/dxUnitSetView/DXUnitDefinitionUnit" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Accent">General. DXUnites</FluentNavLink>
-            <FluentNavLink Href="/app/base/dxUnitSetView/DXElementDefinitionUnit" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Accent">General. DXElements</FluentNavLink>
-            <FluentNavLink Href="/app/base/dxUnitSetView/DXRelationDefinitionUnit" Icon="@(new Icons.Regular.Size20.ArrowBidirectionalLeftRight())" IconColor="Color.Accent">General. DXRelations</FluentNavLink>
+            <FluentNavLink Href="/app/base/blocks" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
+
+            <FluentNavGroup Title="Data structure" Icon="@(new Icons.Regular.Size20.EarthLeaf())">               
+                <ChildContent>
+                    <FluentNavLink Href="/app/base/dxUnitSetView/DXUnitDefinitionUnit" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Accent">Units</FluentNavLink>
+                    <FluentNavLink Href="/app/base/dxUnitSetView/DXElementDefinitionUnit" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Accent">Elements</FluentNavLink>
+                    <FluentNavLink Href="/app/base/dxUnitSetView/DXEnumDefinitionUnit" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Accent">Enums</FluentNavLink>
+                    <FluentNavLink Href="/app/base/dxUnitSetView/DXRelationDefinitionUnit" Icon="@(new Icons.Regular.Size20.ArrowBidirectionalLeftRight())" IconColor="Color.Accent">Relations</FluentNavLink>
+                </ChildContent>
+            </FluentNavGroup>
+
+        
         </FluentNavMenu>
     </nav>
 </div>
