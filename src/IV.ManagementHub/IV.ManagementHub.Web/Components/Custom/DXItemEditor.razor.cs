@@ -9,10 +9,5 @@ namespace IV.ManagementHub.Web.Components.Custom
     {
         [Parameter, EditorRequired] public DXColumnDefinition ColumnDefinition { get; set; } = default!;
         [Parameter, EditorRequired] public DXItem DXItem { get; set; } = default!;
-
-        protected override async Task OnInitializedAsync()
-        {
-
-        }
     }
 }
