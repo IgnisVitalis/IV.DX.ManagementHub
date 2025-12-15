@@ -1,0 +1,58 @@
+[
+    {
+        "S_Type": "DXUnitDefinitionUnit",
+        "ID": "a8e5858b-fe0e-4de3-a750-073568417fc0",
+        "TimeStamp": "2025-12-11T09:22:58.177269Z",
+        "Name": "DXDataSetViewUnit",
+        "DisplayValue": "Name",
+        "Kind": 1,
+
+        "DXColumnDefinitionElement": {
+            "S_Type": "DXColumnDefinitionElement",
+            "Mode": 1,
+            "Announced": [
+                {
+                    "S_Type": "DXColumnDefinitionElement",
+                    "ID": "34b9a82d-b6ba-4437-9dc1-99623fc72215",
+                    "TimeStamp": "2025-12-12T11:55:54.91472Z",
+                    "Name": "Name",
+                    "Length": 50,
+                    "Precision": null,
+                    "Scale": null,
+                    "AllowNull": false,
+                    "DefaultValue": null,
+                    "DXUnitID": "a8e5858b-fe0e-4de3-a750-073568417fc0",
+                    "ColumnType": 3
+                }
+            ],
+            "Deleted": []
+        },
+        "DXUnitRelationElement": {
+            "S_Type": "DXUnitRelationElement",
+            "Mode": 1,
+            "Announced": [
+                {
+                    "S_Type": "DXUnitRelationElement",
+                    "ID": "8f81280b-b492-4956-abd7-bcc93925cb34",
+                    "TimeStamp": "2025-12-11T09:22:58.182836Z",
+                    "OwnRelationName": "DXDataSetViews",
+                    "TargetRelationName": "DXQuery",
+                    "DXUnitID": "a8e5858b-fe0e-4de3-a750-073568417fc0",
+                    "RelationType": 4,
+                    "TargetDXUnit": "080b018b-8b38-45a7-a9db-0eb0d74c132a"
+                },
+                {
+                    "S_Type": "DXUnitRelationElement",
+                    "ID": "3b28c497-b40c-42be-bb4f-cbc9d2e7874a",
+                    "TimeStamp": "2025-12-11T09:22:58.18289Z",
+                    "OwnRelationName": "DXDataSetViews",
+                    "TargetRelationName": "DXFilter",
+                    "DXUnitID": "a8e5858b-fe0e-4de3-a750-073568417fc0",
+                    "RelationType": 6,
+                    "TargetDXUnit": "bc1b495f-ace9-4b83-a08f-46247badfd08"
+                }
+            ],
+            "Deleted": []
+        }
+    }
+]

@@ -34,7 +34,7 @@ else
                                 GenerateColumns="false"
                                 OnRowClick="@(x => OpenPanelRightAsync(x.Item.ID))" RowSize="@DataGridRowSize.Large">
 
-                    <PropertyColumn Title="Name" Property="@(p => p.DXObjectDefinitionMainElement!.Name)" />
+                    <PropertyColumn Title="Name" Property="@(p => p.Name)" />
 
                     <TemplateColumn Title="Actions" Align="Align.Center" Width="10rem">
                         <ChildContent Context="item">

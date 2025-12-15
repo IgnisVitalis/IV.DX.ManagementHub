@@ -14,10 +14,22 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
-        <PackageReference Include="IV.DX" Version="0.148.0" />
+        <PackageReference Include="IV.DX" Version="0.182.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.9" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Migration\Scripts\01_01_0002_MH_DXNavigationItemUnit.dat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Migration\Scripts\01_01_0001_MH_DXDataSetViewUnit.dat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Migration\Scripts\01_01_0010_MH_DXQueries.dat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

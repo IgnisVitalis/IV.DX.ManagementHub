@@ -1,8 +1,7 @@
-﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
-using IV.DataProvider.WebApp.Services.Web.Contracts;
-using IV.DX.Kernel.Models;
+﻿using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom.Base;
+using IV.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
@@ -16,14 +15,33 @@ namespace IV.ManagementHub.Web.Components.Pages
         IApiClientResolver Resolver { get; set; } = default!;
 
         DXUnitCoreApiClient coreApi = default!;
+        DXQueryApiClient dxQueryApi = default!;
 
 
-        [Parameter, EditorRequired] public string DXUnitTypeName { get; set; } = default!;
+        //[Parameter, EditorRequired] public string DXUnitTypeName { get; set; } = default!;
 
+        private Guid _dxQueryID;
+
+        [Parameter, EditorRequired]
+        public string DXQueryID
+        {
+            get
+            {
+                return this._dxQueryID.ToString();
+            }
+            set
+            {
+                this._dxQueryID = Guid.Parse(value);
+            }
+        }
+
+        private DXQueryResult dxQueryResult;
+        private IDictionary<string, object> rows;
 
         protected override async Task OnParametersSetAsync()
         {
             coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
+            dxQueryApi = Resolver.Get<DXQueryApiClient>(base.AppKey);
 
             await LoadDataAsync(true);
         }
@@ -49,9 +67,10 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             try
             {
-                dxUnits = await coreApi.GetItems(DXUnitTypeName, string.Empty);
+                dxQueryResult = await dxQueryApi.GetAsync(_dxQueryID);
+                dxUnits = await coreApi.GetItems(dxQueryResult.TypeName);
 
-                values = ToTable(dxUnits, new[] { "ID", "DXObjectDefinitionMainElement.Name", "DXObjectDefinitionMainElement.Kind" });
+                values = dxQueryResult.AsDataTable();
             }
             finally
             {
@@ -84,16 +103,14 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task OpenPanelRightAsync(Guid selectedBlockID)
         {
-            //selectedBlock = await LoadDetailsAsync(selectedBlockID);
-
             _collapse = false;
         }
 
-        private async Task<JObject> LoadDetailsAsync(Guid id)
-        {
-            var item = await coreApi.Get(DXUnitTypeName, id);
-            return item;
-        }
+        //private async Task<JObject> LoadDetailsAsync(Guid id)
+        //{
+        //    var item = await coreApi.Get(DXUnitTypeName, id);
+        //    return item;
+        //}
 
         private void OnClosed()
         {
@@ -121,85 +138,6 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         }
 
-        public static DataTable ToTable(IEnumerable<JObject> array, IEnumerable<string> dotPaths)
-        {
-            if (array is null) throw new ArgumentNullException(nameof(array));
-            if (dotPaths is null) throw new ArgumentNullException(nameof(dotPaths));
-
-            var paths = dotPaths.ToList();
-            var colNames = MakeUniqueColumnNames(paths);
-
-            var table = new DataTable();
-            foreach (var name in colNames.Values)
-                table.Columns.Add(name, typeof(object));
-
-            foreach (var item in array)
-            {
-                var row = table.NewRow();
-                foreach (var p in paths)
-                {
-                    var token = item.SelectToken(p);
-                    row[colNames[p]] = token is JValue v ? v.Value ?? DBNull.Value
-                                      : token is null ? DBNull.Value
-                                      : token.ToString();
-                }
-                table.Rows.Add(row);
-            }
-
-            return table;
-        }
-
-        private static Dictionary<string, string> MakeUniqueColumnNames(IList<string> paths)
-        {
-            var tails = paths.ToDictionary(p => p, p => p.Split('.').Last());
-
-            var groups = tails.GroupBy(kv => kv.Value)
-                              .Where(g => g.Count() > 1)
-                              .ToList();
-
-            if (!groups.Any()) return tails;
-
-            var result = new Dictionary<string, string>(tails);
-            foreach (var g in groups)
-            {
-                var members = g.Select(kv => kv.Key).ToList();
-                var expanded = members.ToDictionary(m => m, m => new List<string> { g.Key });
-
-                int step = 2;
-                bool unique = false;
-
-                while (!unique)
-                {
-                    var proposals = new Dictionary<string, string>();
-                    foreach (var m in members)
-                    {
-                        var segs = m.Split('.');
-                        var take = Math.Min(step, segs.Length);
-                        var name = string.Join("_", segs.Skip(segs.Length - take));
-                        proposals[m] = name;
-                    }
-
-                    if (proposals.Values.Distinct(StringComparer.OrdinalIgnoreCase).Count() == proposals.Count)
-                    {
-                        foreach (var m in members) result[m] = proposals[m];
-                        unique = true;
-                    }
-                    else
-                    {
-                        step++;
-                        
-                        if (step > 10)
-                        {
-                            foreach (var m in members) result[m] = m.Replace('.', '_');
-                            unique = true;
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
         public Guid GetGuid(DataRow row, string columnName)
         {
             if (row == null)
@@ -212,13 +150,13 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             if (value == DBNull.Value || value == null)
                 return default(Guid);
-                       
+
             if (value is Guid g)
                 return g;
-                        
+
             if (value is string s && Guid.TryParse(s, out g))
                 return g;
-                      
+
             if (value is byte[] bytes && bytes.Length == 16)
                 return new Guid(bytes);
 

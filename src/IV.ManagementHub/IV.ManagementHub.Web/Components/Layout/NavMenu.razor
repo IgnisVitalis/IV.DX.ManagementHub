@@ -1,20 +1,58 @@
-﻿<div class="navmenu">
+﻿@using IV.ManagementHub.Web.Components.Custom.Base
+@inherits ManagementHubComponentBase
+
+<div class="navmenu">
     <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
             <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-            <FluentNavLink Href="/app/base/blocks" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
+            <FluentNavLink Href="@($"/app/{AppKey}/blocks")" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Blocks</FluentNavLink>
 
-            <FluentNavGroup Title="Data structure" Icon="@(new Icons.Regular.Size20.EarthLeaf())">               
-                <ChildContent>
-                    <FluentNavLink Href="/app/base/dxUnitSetView/DXUnitDefinitionUnit" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Accent">Units</FluentNavLink>
-                    <FluentNavLink Href="/app/base/dxUnitSetView/DXElementDefinitionUnit" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Accent">Elements</FluentNavLink>
-                    <FluentNavLink Href="/app/base/dxUnitSetView/DXEnumDefinitionUnit" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Accent">Enums</FluentNavLink>
-                    <FluentNavLink Href="/app/base/dxUnitSetView/DXRelationDefinitionUnit" Icon="@(new Icons.Regular.Size20.ArrowBidirectionalLeftRight())" IconColor="Color.Accent">Relations</FluentNavLink>
-                </ChildContent>
+            <FluentNavGroup Title="Data definition" Icon="@(new Icons.Regular.Size20.DatabaseWindow())">
+                <FluentNavGroup Title="Structure" Icon="@(new Icons.Regular.Size20.DatabaseWindow())">
+                    <ChildContent>
+                        <FluentNavGroup Title="Core" Icon="@(new Icons.Regular.Size20.Database())" IconColor="Color.Error">
+                            <ChildContent>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/664a996a-bf83-46f9-aebb-c55f89deb6eb")" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Error">Queries</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/9ebc60db-4461-4cee-968b-292a6d892c0c")" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Error">Units</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/b67fcd02-25ee-4be6-9c2a-a599cb98afb0")" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Error">Elements</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/3d90dd2e-98a9-4f2c-a178-01650ed7b316")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Error">Enums</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/9d34e74c-dcfd-4805-99d4-e72aef4e6853")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Error">Filters</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/bfca0871-f22b-4783-bc90-14139de0f35f")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Error">DataSet Views</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/622f1a24-64d4-4fb2-919c-3c631bcc3189")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Error">Navigation Items</FluentNavLink>
+                            </ChildContent>
+                        </FluentNavGroup>
+
+                        <FluentNavGroup Title="Custom" Icon="@(new Icons.Regular.Size20.Database())" IconColor="Color.Success">
+                            <ChildContent>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXUnitDefinitionUnit/2")" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Success">Units</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXElementDefinitionUnit/2")" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Success">Elements</FluentNavLink>
+                                <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXEnumDefinitionUnit/2")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Success">Enums</FluentNavLink>
+                            </ChildContent>
+                        </FluentNavGroup>
+                    </ChildContent>
+                </FluentNavGroup>
+                <FluentNavGroup Title="Content" Icon="@(new Icons.Regular.Size20.ContentView())">
+                    <ChildContent>
+                        <FluentNavGroup Title="Core" Icon="@(new Icons.Regular.Size20.ContentView())" IconColor="Color.Error">
+                            <ChildContent>
+                                <FluentNavGroup Title="DX Units" Icon="@(new Icons.Regular.Size20.PuzzleCube())">
+                                    <ChildContent>
+                                        <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXUnitDefinitionUnit")" Icon="@(new Icons.Regular.Size20.PuzzleCube())" IconColor="Color.Accent">Units</FluentNavLink>
+                                        <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXElementDefinitionUnit")" Icon="@(new Icons.Regular.Size20.Cube())" IconColor="Color.Accent">Elements</FluentNavLink>
+                                        <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXQueryUnit/1")" Icon="@(new Icons.Regular.Size20.AppsListDetail())" IconColor="Color.Accent">Queries</FluentNavLink>
+                                    </ChildContent>
+                                </FluentNavGroup>
+                                <FluentNavGroup Title="DX Enums" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())">
+                                    <ChildContent>
+                                        <FluentNavLink Href="@($"/app/{AppKey}/dxUnitSetView/DXEnumDefinitionUnit")" Icon="@(new Icons.Regular.Size20.TextNumberListLtr())" IconColor="Color.Accent">Enums</FluentNavLink>
+                                    </ChildContent>
+                                </FluentNavGroup>
+                            </ChildContent>
+                        </FluentNavGroup>
+                    </ChildContent>
+                </FluentNavGroup>
             </FluentNavGroup>
-
-        
         </FluentNavMenu>
     </nav>
 </div>

@@ -4,19 +4,18 @@ using IV.DX.Kernel.Enums;
 using IV.DX.Kernel.Models;
 using IV.ManagementHub.ApiService.Contracts.Services;
 using IV.ManagementHub.Common.Models;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace IV.ManagementHub.ApiService.Services
 {
     internal class DXUnitStructureService(
        IDXUnitDataService dxUnitDataService,
        IDXEnumDataService dxEnumDataService,
-       IDXStructureService dxStructureService) : IDXUnitStructureService
+       IDXStructureService dxStructureService,
+       IDXQueryResultProvider dxQueryResultProvider) : IDXUnitStructureService
     {
         public async Task<DXModelDefinition> GetAsync(string name, CancellationToken ct = default)
         {
-            var result = await dxUnitDataService.GetItemsAsync<DXUnitDefinitionUnit>($"DXObjectDefinitionMainElement.Name = '{name}'", ct: ct);
+            var result = await dxUnitDataService.GetItemsAsync<DXUnitDefinitionUnit>($"Name = '{name}'", ct: ct);
 
             if (result.Count() == 0)
                 return null;
@@ -27,7 +26,6 @@ namespace IV.ManagementHub.ApiService.Services
             var mainDXUnitDefinition = result.Single();
 
             DXElementDefinition mainSingleElement = null;
-            List<DXElementDefinition> baseSingleElements = new List<DXElementDefinition>();
             List<DXElementDefinition> singleItemMandatory = new List<DXElementDefinition>();
             List<DXElementDefinition> singleItemOptional = new List<DXElementDefinition>();
             List<DXElementDefinition> multiItemsMandatory = new List<DXElementDefinition>();
@@ -36,28 +34,28 @@ namespace IV.ManagementHub.ApiService.Services
             do
             {
                 var columns = await this.GetColumnDefinitionsAsync(
-                       mainDXUnitDefinition.DXObjectDefinitionMainElement.Name,
+                       mainDXUnitDefinition.Name,
                        mainDXUnitDefinition.DXColumnDefinitionElement?.Announced, ct: ct);
 
-                var enumsAsColumns = await this.GetEnumsAsColumns(mainDXUnitDefinition.DXObjectDefinitionMainElement.Name, ct: ct);
-                var relationAsColumns = await this.GetRelationsAsColumnsAsync(mainDXUnitDefinition.DXObjectDefinitionMainElement.Name, ct: ct);
+                var enumsAsColumns = await this.GetEnumsAsColumns(mainDXUnitDefinition.Name, ct: ct);
+                var relationAsColumns = await this.GetRelationsAsColumnsAsync(mainDXUnitDefinition.Name, ct: ct);
 
                 var combined = columns.Concat(enumsAsColumns).Concat(relationAsColumns);
 
                 var mainDXElementDefintion = new DXElementDefinition()
                 {
-                    Name = mainDXUnitDefinition.DXObjectDefinitionMainElement.Name,
+                    Name = mainDXUnitDefinition.Name,
                     Columns = combined
                 };
 
-                if(mainSingleElement==null)
+                if (mainSingleElement == null)
                 {
                     mainSingleElement = mainDXElementDefintion;
                 }
                 else
                 {
-                    baseSingleElements.Add(mainDXElementDefintion);
-                }                 
+                    mainSingleElement.AddColumns(mainDXElementDefintion.Columns);
+                }
 
                 var blockInEntityDefinitions = mainDXUnitDefinition.DXElementInUnitDefinitionElement?.Announced;
 
@@ -85,7 +83,7 @@ namespace IV.ManagementHub.ApiService.Services
                     }
                 }
 
-                var baseDXUnitID = mainDXUnitDefinition.DXUnitInheritanceElement?.BaseDXUnit;
+                var baseDXUnitID = mainDXUnitDefinition.BaseDXUnit;
 
                 if (!baseDXUnitID.HasValue)
                     break;
@@ -93,12 +91,11 @@ namespace IV.ManagementHub.ApiService.Services
                 mainDXUnitDefinition = await dxUnitDataService.GetItemAsync<DXUnitDefinitionUnit>(baseDXUnitID.Value, ct: ct);
 
             } while (true);
-                   
+
             return new DXModelDefinition()
             {
                 Name = name,
                 MainSingleElement = mainSingleElement,
-                BaseSingleElements = baseSingleElements,
                 RequiredMultiElements = multiItemsMandatory,
                 OptionalMultiElements = multiItemsOptional,
                 RequiredSingleElements = singleItemMandatory,
@@ -111,18 +108,18 @@ namespace IV.ManagementHub.ApiService.Services
             var block = await dxUnitDataService.GetItemAsync<DXElementDefinitionUnit>(elementID, ct: ct);
 
             if (block.DXColumnDefinitionElement == null)
-                return new DXElementDefinition() { Name = block.DXObjectDefinitionMainElement.Name, Columns = Enumerable.Empty<DXColumnDefinition>() };
+                return new DXElementDefinition() { Name = block.Name, Columns = Enumerable.Empty<DXColumnDefinition>() };
             else
             {
-                var columns = await this.GetColumnDefinitionsAsync(block.DXObjectDefinitionMainElement.Name, block.DXColumnDefinitionElement?.Announced, ct);
-                var enumsAsColumns = await this.GetEnumsAsColumns(block.DXObjectDefinitionMainElement.Name, ct: ct);
-                var relationAsColumns = await this.GetRelationsAsColumnsAsync(block.DXObjectDefinitionMainElement.Name, ct: ct);
+                var columns = await this.GetColumnDefinitionsAsync(block.Name, block.DXColumnDefinitionElement?.Announced, ct);
+                var enumsAsColumns = await this.GetEnumsAsColumns(block.Name, ct: ct);
+                var relationAsColumns = await this.GetRelationsAsColumnsAsync(block.Name, ct: ct);
 
                 var combined = columns.Concat(enumsAsColumns).Concat(relationAsColumns);
 
                 return new DXElementDefinition()
                 {
-                    Name = block.DXObjectDefinitionMainElement.Name,
+                    Name = block.Name,
                     Columns = combined
                 };
             }
@@ -156,48 +153,48 @@ namespace IV.ManagementHub.ApiService.Services
             var enums = dxStructureService.GetDXRelations(dxElementName).ToList();
 
             var notNullEnumRelations = enums.Where(x =>
-                x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ManyToOne
-                && x.DXRelationDefinitionMainElement.RelationColumnTypeRight == DXColumnTypeEnum.Int)
+                x.RelationType == DXRelationTypeEnum.ManyToOne
+                && x.RelationColumnTypeRight == DXColumnTypeEnum.Int)
                 .ToList();
             // dxUnitDataService.GetItemsAsync<DXRelationDefinitionUnit>($"DXRelationDefinitionMainElement.ObjectNameLeft = '{dxElementName}' AND DXRelationDefinitionMainElement.RelationType = 4", ct: ct);
 
             foreach (var enumRelation in notNullEnumRelations)
             {
-                var enumDefinition = await this.GetEnumAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight);
+                var enumDefinition = await this.GetEnumAsync(enumRelation.ObjectNameRight);
 
                 if (enumDefinition == null)
                     continue;
 
-                var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight, ct: ct);
+                var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.ObjectNameRight, ct: ct);
 
                 list.Add(new DXColumnDefinition()
                 {
-                    Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
-                    ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,
+                    Name = enumRelation.RelationNameRight,
+                    ColumnType = enumRelation.RelationColumnTypeRight.Value,
                     AllowNull = false,
                     EnumValues = enumValues
                 });
             }
 
             var nullableEnumRelations = enums.Where(x =>
-                x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ManyToZeroOne
-                && x.DXRelationDefinitionMainElement.RelationColumnTypeRight == DXColumnTypeEnum.Int)
+                x.RelationType == DXRelationTypeEnum.ManyToZeroOne
+                && x.RelationColumnTypeRight == DXColumnTypeEnum.Int)
                 .ToList();
             // dxUnitDataService.GetItemsAsync<DXRelationDefinitionUnit>($"DXRelationDefinitionMainElement.ObjectNameLeft = '{dxElementName}' AND DXRelationDefinitionMainElement.RelationType = 6", ct: ct);
 
             foreach (var enumRelation in nullableEnumRelations)
             {
-                var enumDefinition = await this.GetEnumAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight);
+                var enumDefinition = await this.GetEnumAsync(enumRelation.ObjectNameRight);
 
                 if (enumDefinition == null)
                     continue;
 
-                var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.DXRelationDefinitionMainElement.ObjectNameRight, ct: ct);
+                var enumValues = await dxEnumDataService.GetItemsAsync(enumRelation.ObjectNameRight, ct: ct);
 
                 list.Add(new DXColumnDefinition()
                 {
-                    Name = enumRelation.DXRelationDefinitionMainElement.RelationNameRight,
-                    ColumnType = enumRelation.DXRelationDefinitionMainElement.RelationColumnTypeRight.Value,
+                    Name = enumRelation.RelationNameRight,
+                    ColumnType = enumRelation.RelationColumnTypeRight.Value,
                     AllowNull = true,
                     EnumValues = enumValues
                 });
@@ -211,61 +208,61 @@ namespace IV.ManagementHub.ApiService.Services
             var allRelations = dxStructureService.GetDXRelations(dxElementName);
 
             var dxUnitValues = dxStructureService.DXUnits.Select
-                (x => new KeyValuePair<Guid, string>(x.ID, x.DXObjectDefinitionMainElement.Name))
+                (x => new KeyValuePair<Guid, string>(x.ID, x.Name))
                 .ToDictionary(x => x.Key, x => x.Value);
 
             var relationsToObject = allRelations
                 .Where(x =>
-                    x.DXRelationDefinitionMainElement.RelationColumnNameRight == "ID"
-                    && x.DXRelationDefinitionMainElement.RelationColumnTypeRight == DXColumnTypeEnum.GUID
-                    && !x.DXRelationDefinitionMainElement.RelationNameRight.EndsWith(Constants.DXUnitIDSuffix))
+                    x.RelationColumnNameRight == "ID"
+                    && x.RelationColumnTypeRight == DXColumnTypeEnum.GUID
+                    && !x.RelationNameRight.EndsWith(Constants.DXUnitIDSuffix))
                 .ToList();
 
-            var manyToOneRelations = relationsToObject.Where(x => x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ManyToOne).Select(
+            var manyToOneRelations = relationsToObject.Where(x => x.RelationType == DXRelationTypeEnum.ManyToOne).Select(
                 x =>
                 {
                     return new DXColumnDefinition()
                     {
-                        Name = x.DXRelationDefinitionMainElement.RelationNameRight,
+                        Name = x.RelationNameRight,
                         AllowNull = false,
                         ColumnType = DXColumnTypeEnum.GUID,
-                        RelationValues = this.GetSelectValues(x.DXRelationDefinitionMainElement.ObjectNameRight)
+                        RelationValues = this.GetSelectValues(x.ObjectNameRight)
                     };
                 }).ToList();
 
-            var manyToZeroOneRelations = relationsToObject.Where(x => x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ManyToZeroOne).Select(
+            var manyToZeroOneRelations = relationsToObject.Where(x => x.RelationType == DXRelationTypeEnum.ManyToZeroOne).Select(
                 x =>
                 {
                     return new DXColumnDefinition()
                     {
-                        Name = x.DXRelationDefinitionMainElement.RelationNameRight,
+                        Name = x.RelationNameRight,
                         AllowNull = true,
                         ColumnType = DXColumnTypeEnum.GUID,
-                        RelationValues = this.GetSelectValues(x.DXRelationDefinitionMainElement.ObjectNameRight)
+                        RelationValues = this.GetSelectValues(x.ObjectNameRight)
                     };
                 }).ToList();
 
-            var zeroOneToOneRelations = relationsToObject.Where(x => x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ZeroOneToOne).Select(
+            var zeroOneToOneRelations = relationsToObject.Where(x => x.RelationType == DXRelationTypeEnum.ZeroOneToOne).Select(
                 x =>
                 {
                     return new DXColumnDefinition()
                     {
-                        Name = x.DXRelationDefinitionMainElement.RelationNameRight,
+                        Name = x.RelationNameRight,
                         AllowNull = false,
                         ColumnType = DXColumnTypeEnum.GUID,
-                        RelationValues = this.GetSelectValues(x.DXRelationDefinitionMainElement.ObjectNameRight)
+                        RelationValues = this.GetSelectValues(x.ObjectNameRight)
                     };
                 }).ToList();
 
-            var zeroOneToZeroOneRelations = relationsToObject.Where(x => x.DXRelationDefinitionMainElement.RelationType == DXRelationTypeEnum.ZeroOneToZeroOne).Select(
+            var zeroOneToZeroOneRelations = relationsToObject.Where(x => x.RelationType == DXRelationTypeEnum.ZeroOneToZeroOne).Select(
                 x =>
                 {
                     return new DXColumnDefinition()
                     {
-                        Name = x.DXRelationDefinitionMainElement.RelationNameRight,
+                        Name = x.RelationNameRight,
                         AllowNull = false,
                         ColumnType = DXColumnTypeEnum.GUID,
-                        RelationValues = this.GetSelectValues(x.DXRelationDefinitionMainElement.ObjectNameRight)
+                        RelationValues = this.GetSelectValues(x.ObjectNameRight)
                     };
                 }).ToList();
 
@@ -276,19 +273,25 @@ namespace IV.ManagementHub.ApiService.Services
 
         private IDictionary<Guid, string> GetSelectValues(string objectNameRight)
         {
-            IDictionary<Guid, string> values = null;
+            IDictionary<Guid, string> values = new Dictionary<Guid, string>();
 
             if (objectNameRight == "DXUnitDefinitionUnit")
             {
                 values = dxStructureService.DXUnits.Select
-                   (x => new KeyValuePair<Guid, string>(x.ID, x.DXObjectDefinitionMainElement.Name))
+                   (x => new KeyValuePair<Guid, string>(x.ID, x.Name))
                    .ToDictionary(x => x.Key, x => x.Value);
             }
             else if (objectNameRight == "DXElementDefinitionUnit")
             {
                 values = dxStructureService.DXElements.Select
-                   (x => new KeyValuePair<Guid, string>(x.ID, x.DXObjectDefinitionMainElement.Name))
+                   (x => new KeyValuePair<Guid, string>(x.ID, x.Name))
                    .ToDictionary(x => x.Key, x => x.Value);
+            }
+            else
+            {
+                var displayValues = dxQueryResultProvider.GetDisplayValuesAsync(objectNameRight).Result;
+
+                values = displayValues.ToDictionary(x => x.ID, x => x.DisplayValue);
             }
 
             return values;
@@ -296,12 +299,18 @@ namespace IV.ManagementHub.ApiService.Services
 
         private async Task<DXEnumDefinitionUnit> GetEnumAsync(string name, CancellationToken ct = default)
         {
-            var items = await dxUnitDataService.GetItemsAsync<DXEnumDefinitionUnit>($"DXObjectDefinitionMainElement.Name = '{name}'", ct: ct);
+            var items = await dxUnitDataService.GetItemsAsync<DXEnumDefinitionUnit>($"Name = '{name}'", ct: ct);
 
             if (items.Count() > 1)
                 throw new Exception($"There more than 1 entry for DXEnumDefinitionUnit by name '{name}'");
 
             return items.SingleOrDefault();
+        }
+
+        public Task<DXColumnDefinition> GetDXColumnDefinition(string dxObjectName, string dxColumnName, string? dxSqlFilter = null)
+        {
+            //var columnDefinition = this.dat
+            throw new NotImplementedException();
         }
 
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };

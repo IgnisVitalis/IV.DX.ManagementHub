@@ -6,7 +6,6 @@ namespace IV.ManagementHub.Common.Models
     {
         public string Name { get; set; }
         public DXElementDefinition MainSingleElement { get; set; }
-        public List<DXElementDefinition> BaseSingleElements { get; set; }
         public List<DXElementDefinition> RequiredSingleElements { get; set; }
         public List<DXElementDefinition> OptionalSingleElements { get; set; }
         public List<DXElementDefinition> RequiredMultiElements { get; set; }
@@ -16,9 +15,6 @@ namespace IV.ManagementHub.Common.Models
         public bool IsRequired(string name)
         {
             if (MainSingleElement.Name == name)
-                return true;
-
-            if (BaseSingleElements != null && BaseSingleElements.Select(x => x.Name).Contains(name))
                 return true;
 
             if (RequiredSingleElements != null && RequiredSingleElements.Select(x => x.Name).Contains(name))
@@ -36,6 +32,11 @@ namespace IV.ManagementHub.Common.Models
         public string Name { get; set; }
 
         public IEnumerable<DXColumnDefinition> Columns { get; set; }
+
+        public void AddColumns(IEnumerable<DXColumnDefinition> columns)
+        {
+            this.Columns = this.Columns.Concat(columns);
+        }
     }
 
     public class DXColumnDefinition
@@ -50,5 +51,21 @@ namespace IV.ManagementHub.Common.Models
         public string DefaultValue { get; set; }
         public IDictionary<int, string> EnumValues { get; set; }
         public IDictionary<Guid, string> RelationValues { get; set; }
+
+        public DXColumnDefinition DeepClone()
+        {
+            return new DXColumnDefinition()
+            {
+                Name = this.Name,
+                ColumnType = this.ColumnType,
+                Length = this.Length,
+                Precision = this.Precision,
+                Scale = this.Scale,
+                AllowNull = this.AllowNull,
+                DefaultValue = this.DefaultValue,
+                EnumValues = this.EnumValues,
+                RelationValues = this.RelationValues,
+            };
+        }
     }
 }

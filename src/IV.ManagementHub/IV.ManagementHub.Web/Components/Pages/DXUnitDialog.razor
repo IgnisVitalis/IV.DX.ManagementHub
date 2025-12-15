@@ -10,11 +10,11 @@
     <div class="dialog-window" @onclick:stopPropagation="true">
         @if (_isLoaded)
         {
-            <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="overflow-y: auto;">
+            <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="overflow-y: auto; overflow:visible;">
 
                 @if (isAccordion)
                 {
-                    <FluentAccordion ActiveId="@this.dxModel.DXMainElement.Item.ID.ToString()" Style="width:100%;">
+                    <FluentAccordion ActiveId="@this.dxModel.DXMainElement.Item.ID.ToString()" Style="width:100%">
                         <FluentAccordionItem Expanded="true" Heading="@this.dxModel.DXMainElement.Attribute.Type">
                             <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent" Slot="start" />
                             <FluentCard Class="unclip">
@@ -43,7 +43,7 @@
                             <FluentAccordionItem Expanded="true" Heading="@multiItemMandatory.Name">
                                 <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Accent" Slot="start" />
                                 <FluentCard Class="unclip">
-                                    <DXMultiElementsFluentDataDialog @key="multiItemMandatory.Name" Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)" Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)"></DXMultiElementsFluentDataDialog>
+                                    <DXMultiElementsFluentDataDialog @key="multiItemMandatory.Name" AppKey="@AppKey" Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)" Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)"></DXMultiElementsFluentDataDialog>
                                 </FluentCard>
                             </FluentAccordionItem>
                         }
@@ -75,7 +75,7 @@
                             <FluentAccordionItem Heading="@multiItemOptional.Name">
                                 <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Neutral" Slot="start" />
                                 <FluentCard Class="unclip">
-                                    <DXMultiElementsFluentDataDialog @key="multiItemOptional.Name" Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)" Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)"></DXMultiElementsFluentDataDialog>
+                                    <DXMultiElementsFluentDataDialog @key="multiItemOptional.Name" AppKey="@AppKey" Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)" Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)"></DXMultiElementsFluentDataDialog>
                                 </FluentCard>
                             </FluentAccordionItem>
                         }

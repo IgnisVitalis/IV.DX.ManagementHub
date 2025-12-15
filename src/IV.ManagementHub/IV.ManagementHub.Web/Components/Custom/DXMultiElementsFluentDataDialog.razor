@@ -5,6 +5,8 @@
 @using IV.DX.Kernel.Enums;
 @using System;
 
+@inherits ManagementHubComponentBase
+
 @if (Definition == null)
 {
     <FluentProgressRing />
@@ -25,7 +27,7 @@ else
                 @foreach (var column in Definition.Columns)
                 {
                     <TemplateColumn Title="@column.Name" Align="Align.Center" Style="overflow:visible">
-                        <DXItemEditor ColumnDefinition="column" DXItem="context"></DXItemEditor>
+                        <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context"></DXItemEditor>
                     </TemplateColumn>                 
                 }
                 <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">

@@ -68,14 +68,6 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         public async virtual Task<ActionResult<JObject>> CreateOrUpdateAsync([FromRoute] string typeName, [FromBody] JObject body)
         {
             var actualItem = await _dataService.InsertOrUpdateAsync(body);
-            //Guid id = actualItem.Value<Guid>("ID");
-
-            //var version = HttpContext.GetRequestedApiVersion()?.ToString() ?? "1.0";
-
-            //var result = CreatedAtAction(
-            //    nameof(GetByIdAsync),
-            //    new { version, typeName, id },
-            //    actualItem);
 
             return actualItem;
         }

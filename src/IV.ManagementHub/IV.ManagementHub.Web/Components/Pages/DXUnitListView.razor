@@ -1,4 +1,4 @@
-﻿@page "/app/{AppKey}/dxUnitSetView/{DXUnitTypeName}"
+﻿@page "/app/{AppKey}/dxUnitSetView/{DXQueryID}"
 
 @using System.Linq
 @using IV.DX.Kernel.Models;
@@ -30,19 +30,19 @@ else
                     <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="@(() => OpenEditDialog(default(Guid)))" />
                 </FluentToolbar>
 
-                <FluentDataGrid TGridItem="System.Data.DataRow"
-                                Items="@AsQueryableRows(values)"
-                                GenerateColumns="false"                              
+                <FluentDataGrid TGridItem="Newtonsoft.Json.Linq.JObject"
+                                Items="@dxQueryResult.AsQueryable()"
+                                GenerateColumns="false"
                                 RowSize="@DataGridRowSize.Large">
 
-                    @foreach (DataColumn column in values.Columns)
+                    @foreach (string column in dxQueryResult.Columns)
                     {
-                        <PropertyColumn Title="@column.ColumnName" Property="@(p => p[column.ColumnName])" />
+                        <PropertyColumn Title="@column" Property="@(p => dxQueryResult.GetValue(p, column))" />
                     }
 
                     <TemplateColumn Title="Actions" Align="Align.Center" Width="10rem">
                         <ChildContent Context="item">
-                            <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@GetGuid(item, "ID")" TypeName="@DXUnitTypeName" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(GetGuid(item, "ID")))" />
+                            <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@dxQueryResult.GetID(item)" TypeName="@dxQueryResult.TypeName" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(dxQueryResult.GetID(item)))" />
                         </ChildContent>
                     </TemplateColumn>
                 </FluentDataGrid>
@@ -59,6 +59,6 @@ else
 
     @if (_showDialog)
     {
-        <DXUnitDialog Type="@DXUnitTypeName" ID="@selectedItemID" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="OnSaved" />
+        <DXUnitDialog Type="@dxQueryResult.TypeName" ID="@selectedItemID" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="OnSaved" />
     }
 }

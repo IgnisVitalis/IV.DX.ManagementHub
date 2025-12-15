@@ -52,7 +52,7 @@ namespace IV.ManagementHub.Web.Components.Pages
             if (initial) _isInitialLoading = true; else _isRefreshing = true;
             try
             {
-                var blks = await ESQLBlockApiCLient.GetAllAsync();
+                var blks = await ESQLBlockApiCLient.GetItemsAsync();
                 blocks = blks?.ToList() ?? new();
             }
             finally

@@ -39,7 +39,7 @@ builder.Services
 
 
 builder.Configuration["Database:Type"] = "PostgreSQL";
-builder.Configuration["Database:ConnectionString"] = "Server=localhost;Database=TestDB;User ID=postgres;password=root;";
+builder.Configuration["Database:ConnectionString"] = "Server=localhost;Database=IV.ManagementHub;User ID=postgres;password=root;";
 
 builder.Services.AddDXCore(builder.Configuration);
 builder.Services.AddDXPipeline();
@@ -66,7 +66,7 @@ using (var scope = app.Services.CreateScope())
 {
     var init = scope.ServiceProvider.GetRequiredService<IDXInitializer>();
     await init.InitCoreDataAsync();
-    await init.InitCacheAsync();
+    await init.InitCustomDataAsync("Migration/MH.json");
 }
 
 app.MapControllers();

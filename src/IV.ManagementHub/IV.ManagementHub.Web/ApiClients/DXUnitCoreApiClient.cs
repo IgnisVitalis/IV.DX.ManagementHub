@@ -44,7 +44,7 @@ namespace IV.ManagementHub.Web.ApiClients
 
         public async Task<JObject> GetDataDefinition(string typeName, CancellationToken cancellationToken = default)
         {
-            var items = await this.GetItems("DXUnitDefinitionUnit", $"DXObjectDefinitionMainElement.Name = '{typeName}'");
+            var items = await this.GetItems("DXUnitDefinitionUnit", $"Name = '{typeName}'");
 
             if (items.Count() == 0)
             {
@@ -62,7 +62,7 @@ namespace IV.ManagementHub.Web.ApiClients
 
         public async Task<JObject> GetEntityDataDefinition(string typeName, CancellationToken cancellationToken = default)
         {
-            var items = await this.GetItems("DXUnitDefinitionUnit", $"DXObjectDefinitionMainElement.Name = '{typeName}'");
+            var items = await this.GetItems("DXUnitDefinitionUnit", $"Name = '{typeName}'");
 
             if (items.Count() == 0)
             {
@@ -77,9 +77,16 @@ namespace IV.ManagementHub.Web.ApiClients
             return items.Single();
         }
 
-        public async Task<IEnumerable<JObject>> GetItems(string typeName, string query, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<JObject>> GetItems(string typeName, string? query = default, CancellationToken cancellationToken = default)
         {
-            var response = await httpClient.GetAsync($"api/v1.0/{typeName}?filter={query}", cancellationToken);
+            var request = $"api/v1.0/{typeName}";
+
+            if(!string.IsNullOrEmpty(query))
+            {
+                request += $"?filter={query}";
+            }
+
+            var response = await httpClient.GetAsync(request, cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {

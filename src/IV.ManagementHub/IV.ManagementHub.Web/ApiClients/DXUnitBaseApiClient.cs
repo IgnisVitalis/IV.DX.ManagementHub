@@ -6,16 +6,23 @@ using System.Text;
 
 namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 {
-    internal abstract class DXUnitBaseApiClient<T>(HttpClient httpClient, IJSRuntime JSRuntime) 
-        : DXUnitGenericApiClient<T>(httpClient, JSRuntime) 
+    internal abstract class DXUnitBaseApiClient<T>(HttpClient httpClient, IJSRuntime JSRuntime)
+        : DXUnitGenericApiClient<T>(httpClient, JSRuntime)
         where T : DXUnit
     {
         private readonly string typeName = DXUnit.GetTypeName<T>();
 
-        public virtual async Task<IEnumerable<T>> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<IEnumerable<T>> GetItemsAsync(string? dxFilter = default, CancellationToken cancellationToken = default)
         {
-            var result = await httpClient.GetAsync($"api/v1.0/{typeName}?filter=DXObjectDefinitionMainElement.Kind <> 1", cancellationToken);
-            
+            var requestUri = $"api/v1.0/{typeName}";
+
+            if (dxFilter != default)
+            {
+                requestUri += $"?filter={dxFilter}";
+            }
+
+            var result = await httpClient.GetAsync(requestUri, cancellationToken);
+
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 
             var items = DXUnit.ParseItems<T>(str);
@@ -68,12 +75,12 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
             var result = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}", cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
-            
+
             var jObject = JsonConvert.DeserializeObject<JObject>(str);
 
             var formatted = jObject.ToString(Formatting.Indented);
 
-            var name = (string)jObject["DXObjectDefinitionMainElement"]["Name"];
+            var name = (string)jObject["Name"];
 
             await JSRuntime.InvokeVoidAsync("downloadJsonFile", $"01_01_0001_UIUX_{name}.dat", formatted);
         }

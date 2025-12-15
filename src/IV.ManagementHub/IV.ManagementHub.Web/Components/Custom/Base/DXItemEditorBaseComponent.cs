@@ -1,4 +1,5 @@
-﻿using IV.DX.Kernel.Enums;
+﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DX.Kernel.Enums;
 using IV.ManagementHub.Common.Models;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
@@ -8,8 +9,6 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
     public abstract class DXItemEditorBaseComponent : ComponentBase
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
-
-        private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
 
         protected IDictionary<string, object> GetRequiredAttr(DXColumnDefinition col)
             => col.AllowNull ? new Dictionary<string, object>()
