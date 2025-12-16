@@ -1,28 +1,28 @@
 ﻿@using IV.ManagementHub.Common.Models.DXUnits
 @using IV.ManagementHub.Web.Models.Tree
+@inject NavigationManager Nav
 
 @if (Node.Children.Count > 0)
 {
-    <FluentNavGroup Title="@Item.Name"
-                   Href="@GroupHref">
+    <FluentNavGroup @bind-Expanded="IsExpanded">
+        <TitleTemplate>
+            <span class="dx-navgroup-title"
+                  @onclick="OnGroupTitleClick"
+                  @onclick:stopPropagation="true"
+                  @onclick:preventDefault="true">
+                @Item.Name
+            </span>
+        </TitleTemplate>
 
         <ChildContent>
-            @if (ShowDataSetViewLinkInsideGroup && Item.DataSetView is Guid viewId)
-            {
-                <FluentNavLink Href="@DataSetViewHrefFactory(viewId)" Match="NavLinkMatch.Prefix">
-                    @Item.Name
-                </FluentNavLink>
-            }
-
             @foreach (var child in Node.Children)
             {
                 <DXNavMenuNode Node="child"
+                               ExpandedState="ExpandedState"
                                DataSetViewHrefFactory="DataSetViewHrefFactory"
-                               ShowDataSetViewLinkInsideGroup="ShowDataSetViewLinkInsideGroup"
                                @key="child.Id" />
             }
         </ChildContent>
-
     </FluentNavGroup>
 }
 else if (Item.DataSetView is Guid viewIdLeaf)
@@ -33,20 +33,27 @@ else if (Item.DataSetView is Guid viewIdLeaf)
 }
 else
 {
-    <FluentNavLink Disabled="true">
-        @Item.Name
-    </FluentNavLink>
+    <FluentNavLink Disabled="true">@Item.Name</FluentNavLink>
 }
 
 @code {
     [Parameter, EditorRequired] public BiTreeNode<DXNavigationItemUnit> Node { get; set; } = default!;
+    [Parameter, EditorRequired] public IDictionary<Guid, bool> ExpandedState { get; set; } = default!;
     [Parameter, EditorRequired] public Func<Guid, string> DataSetViewHrefFactory { get; set; } = default!;
-    [Parameter] public bool ShowDataSetViewLinkInsideGroup { get; set; } = true;
 
     private DXNavigationItemUnit Item => Node.Item;
 
-    private string? GroupHref =>
-        (!ShowDataSetViewLinkInsideGroup && Item.DataSetView is Guid viewId)
-            ? DataSetViewHrefFactory(viewId)
-            : null;
+    private bool IsExpanded
+    {
+        get => ExpandedState.TryGetValue(Node.Id, out var v) && v;
+        set => ExpandedState[Node.Id] = value;
+    }
+
+    private void OnGroupTitleClick()
+    {
+        IsExpanded = true;
+
+        if (Item.DataSetView is Guid viewId)
+            Nav.NavigateTo(DataSetViewHrefFactory(viewId));
+    }
 }

@@ -21,6 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="Migration\Scripts\01_01_0013_MH_DXNavigationItemUnits.dat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
       <None Update="Migration\Scripts\01_01_0012_MH_DXDataSetViewUnits.dat">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

@@ -203,13 +203,25 @@ fluent-card.unclip {
 
 
 
+.dialog-header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding-bottom: .75rem;
+    margin-bottom: .75rem;
+    border-bottom: 1px solid rgba(0,0,0,.08);
+}
 
-
-
-
-
-
-
+.dialog-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 
 .dialog-backdrop {
@@ -219,7 +231,9 @@ fluent-card.unclip {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1000; 
+    overflow: auto;
+    padding: 1rem;
 }
 
 .dialog-window {
@@ -231,9 +245,22 @@ fluent-card.unclip {
     box-shadow: 0 4px 12px rgba(0,0,0,.3);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     min-width: 0;
 }
 
+.dialog-body {
+    flex: 1 1 auto;
+    overflow: auto;
+    min-height: 0;
+}
+
+.dialog-footer {
+    flex: 0 0 auto;
+    background: var(--neutral-layer-1);
+    padding: 1% 0 0 0;
+    z-index: 10;
+}
 
 
 
@@ -241,27 +268,26 @@ fluent-card.unclip {
 
 
 
-
-
-/* красим саму кнопку (текст/иконка) */
 fluent-button.btn-danger::part(control) {
     color: #dc3545;
 }
-/* на всякий случай красим слоты иконок */
+
 fluent-button.btn-danger::part(end),
 fluent-button.btn-danger::part(start) {
     color: #dc3545;
 }
-    /* если SVG не наследует currentColor — принудительно */
     fluent-button.btn-danger::part(end) svg,
     fluent-button.btn-danger::part(start) svg {
         fill: currentColor;
     }
 
-/* опционально: danger-фон при hover */
 fluent-button.btn-danger::part(control):hover {
     background: rgba(220,53,69,.08);
 }
 
-
-
+.dx-navgroup-title {
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+    width: 100%;
+}
