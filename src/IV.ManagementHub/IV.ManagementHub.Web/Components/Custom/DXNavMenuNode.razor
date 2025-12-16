@@ -1,0 +1,52 @@
+﻿@using IV.ManagementHub.Common.Models.DXUnits
+@using IV.ManagementHub.Web.Models.Tree
+
+@if (Node.Children.Count > 0)
+{
+    <FluentNavGroup Title="@Item.Name"
+                   Href="@GroupHref">
+
+        <ChildContent>
+            @if (ShowDataSetViewLinkInsideGroup && Item.DataSetView is Guid viewId)
+            {
+                <FluentNavLink Href="@DataSetViewHrefFactory(viewId)" Match="NavLinkMatch.Prefix">
+                    @Item.Name
+                </FluentNavLink>
+            }
+
+            @foreach (var child in Node.Children)
+            {
+                <DXNavMenuNode Node="child"
+                               DataSetViewHrefFactory="DataSetViewHrefFactory"
+                               ShowDataSetViewLinkInsideGroup="ShowDataSetViewLinkInsideGroup"
+                               @key="child.Id" />
+            }
+        </ChildContent>
+
+    </FluentNavGroup>
+}
+else if (Item.DataSetView is Guid viewIdLeaf)
+{
+    <FluentNavLink Href="@DataSetViewHrefFactory(viewIdLeaf)" Match="NavLinkMatch.Prefix">
+        @Item.Name
+    </FluentNavLink>
+}
+else
+{
+    <FluentNavLink Disabled="true">
+        @Item.Name
+    </FluentNavLink>
+}
+
+@code {
+    [Parameter, EditorRequired] public BiTreeNode<DXNavigationItemUnit> Node { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<Guid, string> DataSetViewHrefFactory { get; set; } = default!;
+    [Parameter] public bool ShowDataSetViewLinkInsideGroup { get; set; } = true;
+
+    private DXNavigationItemUnit Item => Node.Item;
+
+    private string? GroupHref =>
+        (!ShowDataSetViewLinkInsideGroup && Item.DataSetView is Guid viewId)
+            ? DataSetViewHrefFactory(viewId)
+            : null;
+}

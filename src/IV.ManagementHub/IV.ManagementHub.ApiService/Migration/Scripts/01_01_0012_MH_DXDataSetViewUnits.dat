@@ -1,0 +1,58 @@
+[
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "6cf5a2ba-13b0-40c4-a615-04493c8c8f23",
+        "TimeStamp": "2025-12-16T12:29:07.786293Z",
+        "Name": "DXFilter DataSetView",
+        "DXQuery": "9d34e74c-dcfd-4805-99d4-e72aef4e6853",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "a6807546-c3aa-4e3f-a4fa-62775b99e3ab",
+        "TimeStamp": "2025-12-16T12:28:40.716847Z",
+        "Name": "DXNavigationItem DataSetView",
+        "DXQuery": "622f1a24-64d4-4fb2-919c-3c631bcc3189",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "337861d7-58fd-49ed-a1fd-e273905a995e",
+        "TimeStamp": "2025-12-16T12:28:16.340059Z",
+        "Name": "DXDataSetView DataSetView",
+        "DXQuery": "bfca0871-f22b-4783-bc90-14139de0f35f",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "4946e148-0f2e-4288-a047-90a5a978bc37",
+        "TimeStamp": "2025-12-16T12:27:47.92006Z",
+        "Name": "DXEnum DataSetView",
+        "DXQuery": "3d90dd2e-98a9-4f2c-a178-01650ed7b316",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "5e3f4f2b-a37d-4dc9-924c-2e263e2f7610",
+        "TimeStamp": "2025-12-16T12:27:30.182875Z",
+        "Name": "DXElement DataSetView",
+        "DXQuery": "b67fcd02-25ee-4be6-9c2a-a599cb98afb0",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "dd761563-8bb4-4d8e-9f37-4ae727e80590",
+        "TimeStamp": "2025-12-16T12:27:19.968477Z",
+        "Name": "DXUnit DataSetView",
+        "DXQuery": "9ebc60db-4461-4cee-968b-292a6d892c0c",
+        "DXFilter": null
+    },
+    {
+        "S_Type": "DXDataSetViewUnit",
+        "ID": "cd00aa0c-0a91-4ee6-b35b-8ad641fcec86",
+        "TimeStamp": "2025-12-16T12:27:03.560508Z",
+        "Name": "DXQuery DataSetView",
+        "DXQuery": "664a996a-bf83-46f9-aebb-c55f89deb6eb",
+        "DXFilter": null
+    }
+]

@@ -7,17 +7,17 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/DXQuery")]
-    public class DXQueryController(IDXQueryResultProvider dxQueryResultProvider) : ControllerBase
+    [Route("api/v{version:apiVersion}/DXQueryResult")]
+    public class DXQueryResultController(IDXQueryResultProvider dxQueryResultProvider) : ControllerBase
     {
         /// <summary>Get DXUnitStructure object by Name.</summary>
-        [HttpGet("{dxQueryID:guid}")]
+        [HttpGet("{dxQueryID:guid}/{dxFilterID:guid?}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryID)
+        public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryID, [FromRoute] Guid? dxFilterID)
         {
-            var dxQueryResult = await dxQueryResultProvider.GetAsync(dxQueryID);
+            var dxQueryResult = await dxQueryResultProvider.GetAsync(dxQueryID, dxFilterID);
 
             if (dxQueryResult == null)
                 return NotFound();

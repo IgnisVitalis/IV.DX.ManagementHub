@@ -19,7 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\IV.ManagementHub.Common\IV.ManagementHub.Common.csproj" />
         <ProjectReference Include="..\IV.ManagementHub.ServiceDefaults\IV.ManagementHub.ServiceDefaults.csproj" />
-        <PackageReference Include="IV.DX" Version="0.182.0" />
+        <PackageReference Include="IV.DX" Version="0.184.0" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.1" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
@@ -27,9 +27,5 @@
 
     <ItemGroup>
       <TypeScriptCompile Include="wwwroot\scripts.js" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Models\DXQueryResult\" />
     </ItemGroup>
 </Project>

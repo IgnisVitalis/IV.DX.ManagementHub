@@ -23,6 +23,19 @@
                     "DefaultValue": null,
                     "DXUnitID": "2ef23570-46a2-43b5-be40-9949a8834db6",
                     "ColumnType": 3
+                },
+                {
+                    "S_Type": "DXColumnDefinitionElement",
+                    "ID": "569274ec-c51e-4ba1-afe6-df70dafffdd8",
+                    "TimeStamp": "2025-12-16T12:39:47.614394Z",
+                    "Name": "Order",
+                    "Length": null,
+                    "Precision": null,
+                    "Scale": null,
+                    "AllowNull": false,
+                    "DefaultValue": null,
+                    "DXUnitID": "2ef23570-46a2-43b5-be40-9949a8834db6",
+                    "ColumnType": 8
                 }
             ],
             "Deleted": []
@@ -38,7 +51,7 @@
                     "OwnRelationName": "Children",
                     "TargetRelationName": "Parent",
                     "DXUnitID": "2ef23570-46a2-43b5-be40-9949a8834db6",
-                    "RelationType": 4,
+                    "RelationType": 6,
                     "TargetDXUnit": "2ef23570-46a2-43b5-be40-9949a8834db6"
                 },
                 {

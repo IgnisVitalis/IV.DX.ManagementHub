@@ -15,23 +15,21 @@ namespace IV.ManagementHub.Web.Components.Pages
         IApiClientResolver Resolver { get; set; } = default!;
 
         DXUnitCoreApiClient coreApi = default!;
-        DXQueryApiClient dxQueryApi = default!;
+        DXQueryResultApiClient dxQueryApi = default!;
+        DXDataSetViewApiClient dxDataSetViewApiClient = default!;
 
-
-        //[Parameter, EditorRequired] public string DXUnitTypeName { get; set; } = default!;
-
-        private Guid _dxQueryID;
+        private Guid _dxDataSetViewID;
 
         [Parameter, EditorRequired]
-        public string DXQueryID
+        public string dxDataSetViewID
         {
             get
             {
-                return this._dxQueryID.ToString();
+                return this._dxDataSetViewID.ToString();
             }
             set
             {
-                this._dxQueryID = Guid.Parse(value);
+                this._dxDataSetViewID = Guid.Parse(value);
             }
         }
 
@@ -41,7 +39,8 @@ namespace IV.ManagementHub.Web.Components.Pages
         protected override async Task OnParametersSetAsync()
         {
             coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
-            dxQueryApi = Resolver.Get<DXQueryApiClient>(base.AppKey);
+            dxQueryApi = Resolver.Get<DXQueryResultApiClient>(base.AppKey);
+            dxDataSetViewApiClient = Resolver.Get<DXDataSetViewApiClient>(base.AppKey);
 
             await LoadDataAsync(true);
         }
@@ -67,7 +66,9 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             try
             {
-                dxQueryResult = await dxQueryApi.GetAsync(_dxQueryID);
+                var dxDataSetView = await dxDataSetViewApiClient.Get(_dxDataSetViewID);
+
+                dxQueryResult = await dxQueryApi.GetAsync(dxDataSetView.DXQuery, dxDataSetView.DXFilter);
                 dxUnits = await coreApi.GetItems(dxQueryResult.TypeName);
 
                 values = dxQueryResult.AsDataTable();
