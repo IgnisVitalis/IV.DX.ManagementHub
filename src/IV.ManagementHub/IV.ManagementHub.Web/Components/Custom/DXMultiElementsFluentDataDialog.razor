@@ -13,14 +13,15 @@
 }
 else
 {
-    <FluentStack Orientation="Orientation.Vertical" Width="100%">
-        <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
-        <FluentDivider></FluentDivider>
-        <FluentCard Class="unclip">
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
+        @* <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
+        <FluentDivider></FluentDivider> *@
+        @* <FluentCard Class="unclip"> *@
             <FluentToolbar id="@Definition.Name" style="width:100%">
                 <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
             </FluentToolbar>
             <FluentDataGrid id="@Definition.Name"
+                            Style="width:100%;"
                             Items="@(this.DXMultiElement.GetAnnounced(true).AsQueryable())"
                             TGridItem="IV.DX.Kernel.Models.DXItem"
                             RowSize="@DataGridRowSize.Medium">
@@ -36,6 +37,6 @@ else
                     </FluentButton>
                 </TemplateColumn>
             </FluentDataGrid>
-        </FluentCard>
+        @* </FluentCard> *@
     </FluentStack>
 }

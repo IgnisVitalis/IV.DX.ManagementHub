@@ -29,7 +29,8 @@
     case DXColumnTypeEnum.DateTime:
         <FluentDatePicker @key="@(ColumnDefinition.Name + DXItem.ID)"
                           Value="@(base.GetDateTime(DXItem.Content, ColumnDefinition))"
-                          ValueChanged="@(v => base.SetDateTime(DXItem.Content, ColumnDefinition, v))" />
+                          ValueChanged="@(v => base.SetDateTime(DXItem.Content, ColumnDefinition, v))"
+                          Style="width:100%;" />
         break;
 
     // ---- INT -> либо селект по EnumValues, либо number ----
@@ -39,7 +40,7 @@
             <FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
                           TOption="string"
                           Multiple="false"
-                          Style="overflow:visible"
+                          Style="overflow:visible;width:100%;"
                           Width="100%"
                           Value="@(base.GetIntAsString(DXItem.Content, ColumnDefinition))"
                           ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(DXItem.Content, ColumnDefinition, v)))"
@@ -64,6 +65,7 @@
                                TValue="long?"
                                Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
                                ValueChanged="@(EventCallback.Factory.Create<long?>(this, v => base.SetLongN(DXItem.Content, ColumnDefinition, v)))"
+                               Style="width:100%;"
                                @attributes="base.GetRequiredAttr(ColumnDefinition)" />
         }
         break;
@@ -75,7 +77,8 @@
                            TValue="long?"
                            Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetLongN(DXItem.Content, ColumnDefinition, v))"
-                           Placeholder="" />
+                           Placeholder=""
+                           Style="width:100%;" />
         break;
 
     // ---- FLOAT -> double? ----
@@ -84,7 +87,8 @@
                            TValue="double?"
                            Value="@(base.GetDoubleN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetDoubleN(DXItem.Content, ColumnDefinition, v))"
-                           Placeholder="" />
+                           Placeholder=""
+                           Style="width:100%;" />
         break;
 
     // ---- DECIMAL/CURRENCY -> decimal? ----
@@ -94,7 +98,8 @@
                            TValue="decimal?"
                            Value="@(base.GetDecimalN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetDecimalN(DXItem.Content, ColumnDefinition, v))"
-                           Placeholder="" />
+                           Placeholder=""
+                           Style="width:100%;" />
         break;
 
     // ---- GUID ----
@@ -104,7 +109,7 @@
             <FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
                           TOption="string"
                           Multiple="false"
-                          Style="overflow:visible"
+                          Style="overflow:visible;width:100%;"
                           Width="100%"
                           Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
                           ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, ColumnDefinition, v)))"
@@ -134,8 +139,28 @@
 
     // ---- BLOB ----
     case DXColumnTypeEnum.Blob:
-        <FluentButton @key="@(ColumnDefinition.Name + DXItem.ID)" OnClick="@(() => base.OpenBlobDialog(DXItem.Content, ColumnDefinition))">
-            Manage File
-        </FluentButton>
+        <FluentStack Orientation="Orientation.Vertical" Style="gap:8px; width:100%;">
+            <FluentStack Orientation="Orientation.Horizontal" Style="gap:8px; align-items:center; width:100%;">
+                <InputFile OnChange="@(e => base.SetBlobAsync(DXItem.Content, ColumnDefinition, e))" />
+
+                <FluentButton Appearance="Appearance.Neutral"
+                              Disabled="@(!base.HasBlob(DXItem.Content, ColumnDefinition))"
+                              OnClick="@(() => base.ClearBlob(DXItem.Content, ColumnDefinition))">
+                    Clear
+                </FluentButton>
+
+                @if (base.TryGetBlobMeta(DXItem.Content, ColumnDefinition, out var name, out var type, out var size))
+                {
+                    <FluentLabel Style="margin-left:auto;">
+                        @(string.IsNullOrWhiteSpace(name) ? "" : name + " — ")@type (@size bytes)
+                    </FluentLabel>
+                }
+            </FluentStack>
+
+            @if (base.TryGetImagePreviewDataUrl(DXItem.Content, ColumnDefinition, out var url))
+            {
+                <img src="@url" style="max-height:120px; border-radius:6px;" />
+            }
+        </FluentStack>
         break;
 }

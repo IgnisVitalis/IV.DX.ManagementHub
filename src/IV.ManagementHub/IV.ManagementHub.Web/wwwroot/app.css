@@ -190,11 +190,19 @@ code {
     }
 }
 
-
-
 fluent-card.unclip {
     contain: none;
     content-visibility: visible;
+}
+
+.stack-stretch {
+    width: 100%;
+    align-items: stretch;
+}
+
+.stack-stretch > * {
+    width: 100%;
+    min-width: 0;
 }
 
 #defaultGrid td[align="center"] fluent-checkbox {
@@ -231,7 +239,7 @@ fluent-card.unclip {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000; 
+    z-index: 1000;
     overflow: auto;
     padding: 1rem;
 }
@@ -276,6 +284,7 @@ fluent-button.btn-danger::part(end),
 fluent-button.btn-danger::part(start) {
     color: #dc3545;
 }
+
     fluent-button.btn-danger::part(end) svg,
     fluent-button.btn-danger::part(start) svg {
         fill: currentColor;

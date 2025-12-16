@@ -1,7 +1,9 @@
 ﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DX.Kernel.Enums;
 using IV.ManagementHub.Common.Models;
+using IV.ManagementHub.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using System.Globalization;
 
 namespace IV.ManagementHub.Web.Components.Custom.Base
@@ -365,6 +367,116 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
                 case DXColumnTypeEnum.GUID: row[col.Name] = Guid.NewGuid(); break;
                 case DXColumnTypeEnum.Blob: row[col.Name] = null!; break;
             }
+        }
+
+        protected async Task SetBlobAsync(IDictionary<string, object> row, DXColumnDefinition col, InputFileChangeEventArgs e)
+        {
+            var file = e.File;
+            const long maxAllowedSize = 50 * 1024 * 1024;
+
+            using var s = file.OpenReadStream(maxAllowedSize);
+            using var ms = new MemoryStream();
+            await s.CopyToAsync(ms);
+
+            var raw = ms.ToArray();
+
+            var packed = DXBlobContainer.Pack(
+                data: raw,
+                meta: new DXBlobContainer.Meta
+                {
+                    Mime = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType,
+                    FileName = file.Name
+                },
+                includeSha256: true,
+                includeCreatedUtc: true);
+
+            row[col.Name] = packed; // <-- одно свойство, byte[]
+        }
+
+        protected void ClearBlob(IDictionary<string, object> row, DXColumnDefinition col)
+        {
+            if (col.AllowNull) row[col.Name] = null!;
+            else row[col.Name] = Array.Empty<byte>();
+        }
+
+        protected bool HasBlob(IDictionary<string, object> row, DXColumnDefinition col)
+            => TryGetBlobPacked(row, col, out var packed) && packed.Length > 0;
+
+        protected bool TryGetBlobMeta(IDictionary<string, object> row, DXColumnDefinition col,
+                                      out string fileName, out string mime, out long sizeBytes)
+        {
+            fileName = "";
+            mime = "application/octet-stream";
+            sizeBytes = 0;
+
+            if (!TryGetBlobPacked(row, col, out var packed) || packed.Length == 0)
+                return false;
+
+            if (DXBlobContainer.TryUnpack(packed, out var meta, out var data))
+            {
+                fileName = meta.FileName ?? "";
+                mime = string.IsNullOrWhiteSpace(meta.Mime) ? "application/octet-stream" : meta.Mime;
+                sizeBytes = data.LongLength;
+                return true;
+            }
+
+            // fallback: raw bytes without container
+            sizeBytes = packed.LongLength;
+            return true;
+        }
+
+        protected bool TryGetImagePreviewDataUrl(IDictionary<string, object> row, DXColumnDefinition col, out string dataUrl)
+        {
+            dataUrl = "";
+
+            if (!TryGetBlobPacked(row, col, out var packed) || packed.Length == 0)
+                return false;
+
+            string mime;
+            byte[] data;
+
+            if (DXBlobContainer.TryUnpack(packed, out var meta, out var raw))
+            {
+                mime = string.IsNullOrWhiteSpace(meta.Mime) ? "application/octet-stream" : meta.Mime;
+                data = raw;
+            }
+            else
+            {
+                // raw bytes without mime => preview не делаем
+                return false;
+            }
+
+            if (!mime.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            dataUrl = $"data:{mime};base64,{Convert.ToBase64String(data)}";
+            return true;
+        }
+
+        /// <summary>
+        /// Достаёт сырой файл (без хедера), удобно для записи в bytea/varbinary или для отдачи наружу.
+        /// </summary>
+        protected byte[]? GetBlobRawBytes(IDictionary<string, object> row, DXColumnDefinition col)
+        {
+            if (!TryGetBlobPacked(row, col, out var packed) || packed.Length == 0)
+                return null;
+
+            if (DXBlobContainer.TryUnpack(packed, out _, out var data))
+                return data;
+
+            return packed; // fallback: raw bytes
+        }
+
+        private static bool TryGetBlobPacked(IDictionary<string, object> row, DXColumnDefinition col, out byte[] packed)
+        {
+            packed = Array.Empty<byte>();
+            if (row is null) return false;
+            if (!row.TryGetValue(col.Name, out var v) || v is null) return false;
+
+            // Важно: у тебя иногда может приходить base64 string из JObject — это место можно расширить.
+            if (v is byte[] b) { packed = b; return true; }
+
+            return false;
         }
     }
 }

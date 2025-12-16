@@ -11,17 +11,17 @@
 }
 else
 {
-    <FluentStack Orientation="Orientation.Vertical" Width="100%">
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
 @*         <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
         <FluentDivider></FluentDivider> *@
-        <FluentCard Class="unclip">
-            <FluentStack Orientation="Orientation.Vertical" Width="100%">
+        @* <FluentCard Class="unclip"> *@
+            @* <FluentStack Orientation="Orientation.Vertical" Width="100%"> *@
                 @foreach (var column in Definition.Columns)
                 {
                     <FluentLabel>@column.Name</FluentLabel>
                     <DXItemEditor ColumnDefinition="column" DXItem="DXItem"></DXItemEditor>
                 }
-            </FluentStack>
-        </FluentCard>
+            @* </FluentStack> *@
+        @* </FluentCard> *@
     </FluentStack>
 }
