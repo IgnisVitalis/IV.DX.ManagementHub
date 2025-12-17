@@ -1,5 +1,6 @@
 ﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DX.Kernel.Enums;
+using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.Services;
 using Microsoft.AspNetCore.Components;
@@ -473,8 +474,30 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             if (row is null) return false;
             if (!row.TryGetValue(col.Name, out var v) || v is null) return false;
 
-            // Важно: у тебя иногда может приходить base64 string из JObject — это место можно расширить.
-            if (v is byte[] b) { packed = b; return true; }
+            // уже bytes
+            if (v is byte[] b)
+            {
+                packed = b;
+                return packed.Length > 0;
+            }
+
+            // Newtonsoft JValue / JToken string
+            if (v is Newtonsoft.Json.Linq.JValue jv) v = jv.Value!;
+            if (v is Newtonsoft.Json.Linq.JToken jt && jt.Type == Newtonsoft.Json.Linq.JTokenType.String) v = jt.ToString();
+
+            // base64 string
+            if (v is string s)
+            {
+                if (string.IsNullOrWhiteSpace(s)) return false;
+
+                // если вдруг data-url
+                var comma = s.IndexOf(',');
+                if (s.StartsWith("data:", StringComparison.OrdinalIgnoreCase) && comma >= 0)
+                    s = s[(comma + 1)..];
+
+                packed = Convert.FromBase64String(s);
+                return packed.Length > 0;
+            }
 
             return false;
         }
