@@ -65,7 +65,9 @@ app.Services.InitializeDXHandlers();
 using (var scope = app.Services.CreateScope())
 {
     var init = scope.ServiceProvider.GetRequiredService<IDXInitializer>();
-    await init.InitCoreDataAsync();
+    await init.InitDXCoreDataAsync();
+    await init.InitDXQueryDataAsync();
+    await init.InitDXSecurityDataAsync();
     await init.InitCustomDataAsync("Migration/MH.json");
 }
 

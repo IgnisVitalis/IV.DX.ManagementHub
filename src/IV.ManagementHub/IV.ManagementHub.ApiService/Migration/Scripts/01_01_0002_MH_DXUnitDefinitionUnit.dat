@@ -40,12 +40,12 @@
             ],
             "Deleted": []
         },
-        "DXUnitRelationElement": {
-            "S_Type": "DXUnitRelationElement",
+        "DXUnitToUnitRelationElement": {
+            "S_Type": "DXUnitToUnitRelationElement",
             "Mode": 1,
             "Announced": [
                 {
-                    "S_Type": "DXUnitRelationElement",
+                    "S_Type": "DXUnitToUnitRelationElement",
                     "ID": "0efa303c-f5a0-456b-8090-df8a9bee6e3a",
                     "TimeStamp": "2025-12-12T11:28:09.285258Z",
                     "OwnRelationName": "Children",
@@ -55,7 +55,7 @@
                     "TargetDXUnit": "2ef23570-46a2-43b5-be40-9949a8834db6"
                 },
                 {
-                    "S_Type": "DXUnitRelationElement",
+                    "S_Type": "DXUnitToUnitRelationElement",
                     "ID": "43b6363f-d003-4fef-b41e-cdcb32d3ba07",
                     "TimeStamp": "2025-12-12T11:41:05.55577Z",
                     "OwnRelationName": "NavigationItems",

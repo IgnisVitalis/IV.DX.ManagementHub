@@ -27,12 +27,12 @@
             ],
             "Deleted": []
         },
-        "DXUnitRelationElement": {
-            "S_Type": "DXUnitRelationElement",
+        "DXUnitToUnitRelationElement": {
+            "S_Type": "DXUnitToUnitRelationElement",
             "Mode": 1,
             "Announced": [
                 {
-                    "S_Type": "DXUnitRelationElement",
+                    "S_Type": "DXUnitToUnitRelationElement",
                     "ID": "8f81280b-b492-4956-abd7-bcc93925cb34",
                     "TimeStamp": "2025-12-11T09:22:58.182836Z",
                     "OwnRelationName": "DXDataSetViews",
@@ -42,7 +42,7 @@
                     "TargetDXUnit": "080b018b-8b38-45a7-a9db-0eb0d74c132a"
                 },
                 {
-                    "S_Type": "DXUnitRelationElement",
+                    "S_Type": "DXUnitToUnitRelationElement",
                     "ID": "3b28c497-b40c-42be-bb4f-cbc9d2e7874a",
                     "TimeStamp": "2025-12-11T09:22:58.18289Z",
                     "OwnRelationName": "DXDataSetViews",

@@ -4,22 +4,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    <ItemGroup>
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\CorePostInit.json" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\CorePreInit.json" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0000_Core_DPEnumDescObject.dat" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0001_Core_DXElementDefinitionUnit.dat" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0002_Core_DXUnitDefinitionUnit.dat" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0003_Core_DPRelationObject.dat" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0004_Core_DPInheritanceInitCore.dat" />
-      <Content Remove="C:\Users\victo\.nuget\packages\iv.dataprovider.persistence\0.36.0\contentFiles\any\net9.0\MigrationScripts\Core\01_01_0005_Core_DPEnumDescObject.dat" />
-      <Content Remove="wwwroot\scripts.js" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\IV.ManagementHub.Common\IV.ManagementHub.Common.csproj" />
         <ProjectReference Include="..\IV.ManagementHub.ServiceDefaults\IV.ManagementHub.ServiceDefaults.csproj" />
-        <PackageReference Include="IV.DX" Version="0.185.0" />
+        <PackageReference Include="IV.DX" Version="0.202.0" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.1" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
