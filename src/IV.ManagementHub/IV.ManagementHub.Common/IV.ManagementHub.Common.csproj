@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IV.DX" Version="0.202.0" />
+    <PackageReference Include="IV.DX" Version="0.204.0" />
   </ItemGroup>
 
   <ItemGroup>
