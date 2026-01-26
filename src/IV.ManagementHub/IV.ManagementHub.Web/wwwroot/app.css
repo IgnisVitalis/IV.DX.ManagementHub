@@ -253,13 +253,13 @@ fluent-card.unclip {
     box-shadow: 0 4px 12px rgba(0,0,0,.3);
     display: flex;
     flex-direction: column;
-    overflow: visible;
+    overflow: hidden;
     min-width: 0;
 }
 
 .dialog-body {
     flex: 1 1 auto;
-    overflow: visible;
+    overflow: auto;
     min-height: 0;
 }
 
