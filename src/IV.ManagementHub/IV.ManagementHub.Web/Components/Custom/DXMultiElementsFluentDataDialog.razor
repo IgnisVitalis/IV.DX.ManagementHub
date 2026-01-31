@@ -22,8 +22,8 @@ else
             </FluentToolbar>
             <FluentDataGrid id="@Definition.Name"
                             Style="width:100%;"
-                            Items="@(this.DXMultiElement.GetAnnounced(true).AsQueryable())"
-                            TGridItem="IV.DX.Kernel.Models.DXItem"
+                            Items="@(this.DXMultiElement.Announced.AsQueryable())"
+                            TGridItem="IV.ManagementHub.Web.Models.DXRecordItem"
                             RowSize="@DataGridRowSize.Medium">
                 @foreach (var column in Definition.Columns)
                 {

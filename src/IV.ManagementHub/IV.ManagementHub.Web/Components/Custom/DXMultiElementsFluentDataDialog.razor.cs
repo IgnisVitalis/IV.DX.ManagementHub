@@ -1,6 +1,7 @@
-﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DX.Kernel.Models;
+using IV.ManagementHub.Web.Models;
 using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.Components.Custom.Base;
 using Microsoft.AspNetCore.Components;
@@ -10,8 +11,8 @@ namespace IV.ManagementHub.Web.Components.Custom
     public partial class DXMultiElementsFluentDataDialog : ManagementHubComponentBase
     {
         [Parameter, EditorRequired] public DXElementDefinition Definition { get; set; } = default!;
-        [Parameter, EditorRequired] public DXMultiElement DXMultiElement { get; set; } = default!;
-        [Parameter, EditorRequired] public DXModel Parent { get; set; } = default!;
+        [Parameter, EditorRequired] public DXRecordMultiElement DXMultiElement { get; set; } = default!;
+        [Parameter, EditorRequired] public DXUnitRecordModel Parent { get; set; } = default!;
 
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
         DXEnumApiClient _dxEnumApiClient = default!;
@@ -45,7 +46,7 @@ namespace IV.ManagementHub.Web.Components.Custom
             var id = Guid.NewGuid();
             var timeStamp = DateTime.UtcNow;
 
-            var dict = new Dictionary<string, object>();
+            var dict = new Dictionary<string, object?>();
 
             if (Definition?.Columns != null)
             {
@@ -59,10 +60,10 @@ namespace IV.ManagementHub.Web.Components.Custom
                 }
             }
 
-            this.DXMultiElement.Add(new DXItem(Definition.Name, id, Parent.DXMainElement.Item.ID, timeStamp, dict));
+            this.DXMultiElement.Add(new DXRecordItem(Definition.Name, id, Parent.MainItem.ID, timeStamp, dict));
         }
 
-        private DXColumnDefinition GetColumnDefinition(DXColumnDefinition columnDefinition, DXItem dxItem)
+        private DXColumnDefinition GetColumnDefinition(DXColumnDefinition columnDefinition, DXRecordItem dxItem)
         {
             if (dxItem.Type.Equals("DXObjectEnumElement"))
             {
@@ -78,8 +79,12 @@ namespace IV.ManagementHub.Web.Components.Custom
                 {
                     var customColumnDefintion = columnDefinition.DeepClone();
 
-                    var enumTypeAsGuid = dxItem.Content["EnumType"] is Guid
-                        ? (Guid)dxItem.Content["EnumType"] : Guid.Parse(dxItem.Content["EnumType"].ToString());
+                    if (!dxItem.Content.TryGetValue("EnumType", out var enumValue) || enumValue == null)
+                        return columnDefinition;
+
+                    var enumTypeAsGuid = enumValue is Guid
+                        ? (Guid)enumValue
+                        : Guid.Parse(enumValue.ToString()!);
 
                     var selectedEnumTypeDefinition = enumDefinitions.SingleOrDefault(x => x.ID == enumTypeAsGuid);
 
@@ -87,7 +92,7 @@ namespace IV.ManagementHub.Web.Components.Custom
                     {
                         customColumnDefintion.RelationValues =
                             selectedEnumTypeDefinition.DXColumnDefinitionElement.Announced
-                            .Where(x => x.ColumnType == DX.Kernel.Enums.DXColumnTypeEnum.Int)
+                            .Where(x => x.ColumnType == IV.DX.Kernel.Enums.DXColumnTypeEnum.Int)
                             .ToDictionary(x => x.ID, x => x.Name);
 
                         return customColumnDefintion;
@@ -98,7 +103,7 @@ namespace IV.ManagementHub.Web.Components.Custom
             return columnDefinition;
         }
 
-        private void Remove(DXItem dxItem)
+        private void Remove(DXRecordItem dxItem)
         {
             this.DXMultiElement.Remove(dxItem);
         }

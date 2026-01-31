@@ -1,6 +1,6 @@
-﻿using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.Components.Custom.Base;
+using IV.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using System.Globalization;
@@ -10,7 +10,7 @@ namespace IV.ManagementHub.Web.Components.Custom
     public partial class DXItemEditor : DXItemEditorBaseComponent
     {
         [Parameter, EditorRequired] public DXColumnDefinition ColumnDefinition { get; set; } = default!;
-        [Parameter, EditorRequired] public DXItem DXItem { get; set; } = default!;
+        [Parameter, EditorRequired] public DXRecordItem DXItem { get; set; } = default!;
 
         private int _blobProgressPercent;
         private string? _blobProgressTitle;

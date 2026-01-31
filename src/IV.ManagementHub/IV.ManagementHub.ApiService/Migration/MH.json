@@ -1,8 +1,8 @@
 [
 
-    "Scripts/01_01_0001_MH_DXUnitDefinitionUnit.dat",
-    "Scripts/01_01_0002_MH_DXUnitDefinitionUnit.dat",
-    "Scripts/01_01_0010_MH_DXQueryUnits.dat",
-    "Scripts/01_01_0012_MH_DXDataSetViewUnits.dat",
-    "Scripts/01_01_0013_MH_DXNavigationItemUnits.dat"
+    "Scripts/01_01_0001_MH_DXUnitDefinitionUnit.dx",
+    "Scripts/01_01_0002_MH_DXUnitDefinitionUnit.dx",
+    "Scripts/01_01_0010_MH_DXQueryUnits.dx",
+    "Scripts/01_01_0012_MH_DXDataSetViewUnits.dx",
+    "Scripts/01_01_0013_MH_DXNavigationItemUnits.dx"
 ]

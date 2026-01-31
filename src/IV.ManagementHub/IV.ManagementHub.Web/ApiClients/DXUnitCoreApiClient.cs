@@ -1,8 +1,7 @@
-﻿using IV.DX.Kernel.Models;
+using IV.DX.Kernel.Models;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 
 namespace IV.ManagementHub.Web.ApiClients
@@ -23,7 +22,26 @@ namespace IV.ManagementHub.Web.ApiClients
 
             return result;
         }
+        public async Task<DXDataBlock<DXUnitRecord>?> SaveRecordAsync(DXDataBlock<DXUnitRecord> block, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(block);
 
+            var typeName = block.Meta?.Type;
+            if (string.IsNullOrWhiteSpace(typeName))
+                throw new InvalidOperationException("DXDataBlock.Meta.Type is required.");
+
+            var json = JsonConvert.SerializeObject(block);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"api/v1.0/{typeName}", content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(str))
+                return null;
+
+            return JsonConvert.DeserializeObject<DXDataBlock<DXUnitRecord>>(str);
+        }
         public async Task<JObject> Get(string typeName, Guid id, CancellationToken cancellationToken = default)
         {
             var response = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}");
@@ -41,7 +59,21 @@ namespace IV.ManagementHub.Web.ApiClients
 
             return item;
         }
+        public async Task<DXDataBlock<DXUnitRecord>?> GetRecord(string typeName, Guid id, CancellationToken cancellationToken = default)
+        {
+            var response = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}", cancellationToken);
 
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (string.IsNullOrWhiteSpace(str))
+                return null;
+
+            return JsonConvert.DeserializeObject<DXDataBlock<DXUnitRecord>>(str);
+        }
         public async Task<JObject> GetDataDefinition(string typeName, CancellationToken cancellationToken = default)
         {
             var items = await this.GetItems("DXUnitDefinitionUnit", $"Name = '{typeName}'");
@@ -121,3 +153,4 @@ namespace IV.ManagementHub.Web.ApiClients
         }
     }
 }
+

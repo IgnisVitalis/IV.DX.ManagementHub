@@ -1,7 +1,6 @@
-﻿@inherits ManagementHubComponentBase
+@inherits ManagementHubComponentBase
 
 @using IV.DX.Kernel.Enums;
-@using IV.DX.Kernel.Models;
 @using IV.ManagementHub.Web.Components.Custom
 @using IV.ManagementHub.Web.Components.Custom.Base
 
@@ -13,7 +12,7 @@
         {
             <div class="dialog-header">
                 <div class="dialog-title">
-                    @this.dxModel?.DXMainElement?.Attribute?.Type
+                    @this.dxModel?.Type
                 </div>
 
                 <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size20.Dismiss())"
@@ -25,13 +24,13 @@
                 <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="flex: 1 1 auto; min-height: 0;">
                     @if (isAccordion)
                     {
-                        <FluentAccordion ActiveId="@this.dxModel.DXMainElement.Item.ID.ToString()" Style="width:100%">
-                            <FluentAccordionItem Expanded="true" Heading="@this.dxModel.DXMainElement.Attribute.Type">
+                        <FluentAccordion ActiveId="@this.dxModel.MainItem.ID.ToString()" Style="width:100%">
+                            <FluentAccordionItem Expanded="true" Heading="@this.dxModel.Type">
                                 <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent"
                                     Slot="start" />
                                 <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataDialog @key="@this.dxModel.DXMainElement.Attribute.Type"
-                                        Parent="@dxModel" DXMainElement="@GetDXMainElement()"
+                                    <DXMainElementFluentDataDialog @key="@this.dxModel.Type"
+                                        Parent="@dxModel" MainItem="@GetDXMainElement()"
                                         Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
                                 </FluentCard>
                             </FluentAccordionItem>
@@ -117,11 +116,11 @@
                     else
                     {
                         <FluentTabs Width="100%">
-                            <FluentTab Label="@this.dxModel.DXMainElement.Attribute.Type"
-                                Id="@this.dxModel.DXMainElement.Attribute.Type">
+                            <FluentTab Label="@this.dxModel.Type"
+                                Id="@this.dxModel.Type">
                                 <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataDialog @key="@this.dxModel.DXMainElement.Attribute.Type"
-                                        Parent="@dxModel" DXMainElement="@GetDXMainElement()"
+                                    <DXMainElementFluentDataDialog @key="@this.dxModel.Type"
+                                        Parent="@dxModel" MainItem="@GetDXMainElement()"
                                         Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
                                 </FluentCard>
                             </FluentTab>
@@ -203,3 +202,4 @@
 
 
 @* </div> *@
+

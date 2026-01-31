@@ -1,6 +1,5 @@
-﻿using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
-using IV.ManagementHub.Web.Components.Custom.Base;
+using IV.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace IV.ManagementHub.Web.Components.Custom
@@ -8,22 +7,20 @@ namespace IV.ManagementHub.Web.Components.Custom
     public partial class DXSingleElementFluentDataDialog : ComponentBase
     {
         [Parameter, EditorRequired] public DXElementDefinition Definition { get; set; } = default!;
-        [Parameter, EditorRequired] public DXSingleElement DXSingleElement { get; set; } = default!;
-        [Parameter, EditorRequired] public DXModel Parent { get; set; } = default!;
+        [Parameter, EditorRequired] public DXRecordSingleElement DXSingleElement { get; set; } = default!;
+        [Parameter, EditorRequired] public DXUnitRecordModel Parent { get; set; } = default!;
 
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
 
-        private DXItem DXItem
+        private DXRecordItem DXItem
         {
             get
             {
-                return DXSingleElement.Item;
+                return DXSingleElement.Item ?? throw new InvalidOperationException("DXSingleElement item is null.");
             }
         }
 
-        protected override async Task OnInitializedAsync()
-        {
-            
-        }        
     }
 }
+
+

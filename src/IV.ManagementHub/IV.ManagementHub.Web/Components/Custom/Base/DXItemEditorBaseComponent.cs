@@ -1,4 +1,4 @@
-﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DX.Kernel.Enums;
 using IV.DX.Kernel.Models;
 using IV.ManagementHub.Common.Models;
@@ -13,12 +13,12 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
     {
         private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-        protected IDictionary<string, object> GetRequiredAttr(DXColumnDefinition col)
-            => col.AllowNull ? new Dictionary<string, object>()
-                             : new Dictionary<string, object> { ["required"] = true };
+        protected IDictionary<string, object?> GetRequiredAttr(DXColumnDefinition col)
+            => col.AllowNull ? new Dictionary<string, object?>()
+                             : new Dictionary<string, object?> { ["required"] = true };
 
         // -------------------- helpers --------------------
-        private static bool TryGet(IDictionary<string, object> row, string name, out object? value)
+        private static bool TryGet(IDictionary<string, object?> row, string name, out object? value)
         {
             if (row is null) { value = null; return false; }
             if (!row.TryGetValue(name, out var v)) { value = null; return false; }
@@ -106,23 +106,23 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return default;
         }
 
-        private static void SetNull(IDictionary<string, object> row, string name)
+        private static void SetNull(IDictionary<string, object?> row, string name)
             => row[name] = null!;
 
         // -------------------- INT as string (для Select) --------------------
-        protected string GetIntAsString(IDictionary<string, object> row, DXColumnDefinition col)
+        protected string GetIntAsString(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             var n = GetIntN(row, col);
             return n.HasValue ? n.Value.ToString(Inv) : string.Empty;
         }
 
-        //protected string GetGuidAsString(IDictionary<string, object> row, DXColumnDefinition col)
+        //protected string GetGuidAsString(IDictionary<string, object?> row, DXColumnDefinition col)
         //{
         //    var n = GetGuidString(row, col);
         //    return n.HasValue ? n.Value.ToString(Inv) : string.Empty;
         //}
 
-        protected void SetIntFromString(IDictionary<string, object> row, DXColumnDefinition col, string v)
+        protected void SetIntFromString(IDictionary<string, object?> row, DXColumnDefinition col, string v)
         {
             if (string.IsNullOrEmpty(v))
             {
@@ -143,7 +143,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             }
         }
 
-        protected void SetGuidFromString(IDictionary<string, object> row, DXColumnDefinition col, string v)
+        protected void SetGuidFromString(IDictionary<string, object?> row, DXColumnDefinition col, string v)
         {
             if (string.IsNullOrEmpty(v))
             {
@@ -167,30 +167,30 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         }
 
         // -------- INT? for Enum-select --------
-        protected int? GetIntN(IDictionary<string, object> row, DXColumnDefinition col)
+        protected int? GetIntN(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<int?>(v);
         }
 
         // -------- BOOL --------
-        protected bool GetBool(IDictionary<string, object> row, DXColumnDefinition col)
+        protected bool GetBool(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<bool?>(v) ?? false;
         }
 
-        protected void SetBool(IDictionary<string, object> row, DXColumnDefinition col, bool v)
+        protected void SetBool(IDictionary<string, object?> row, DXColumnDefinition col, bool v)
             => row[col.Name] = v;
 
         // -------- STRING (nullable) --------
-        protected string? GetStringN(IDictionary<string, object> row, DXColumnDefinition col)
+        protected string? GetStringN(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<string>(v);
         }
 
-        protected void SetStringN(IDictionary<string, object> row, DXColumnDefinition col, string? v)
+        protected void SetStringN(IDictionary<string, object?> row, DXColumnDefinition col, string? v)
         {
             if (string.IsNullOrWhiteSpace(v))
             {
@@ -210,59 +210,59 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         }
 
         // -------- DATETIME? --------
-        protected DateTime? GetDateTime(IDictionary<string, object> row, DXColumnDefinition col)
+        protected DateTime? GetDateTime(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<DateTime?>(v);
         }
 
-        protected void SetDateTime(IDictionary<string, object> row, DXColumnDefinition col, DateTime? v)
+        protected void SetDateTime(IDictionary<string, object?> row, DXColumnDefinition col, DateTime? v)
             => row[col.Name] = v;
 
         // -------- LONG? (Short/Int/Long) --------
-        protected long? GetLongN(IDictionary<string, object> row, DXColumnDefinition col)
+        protected long? GetLongN(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<long?>(v);
         }
 
-        protected void SetLongN(IDictionary<string, object> row, DXColumnDefinition col, long? v)
+        protected void SetLongN(IDictionary<string, object?> row, DXColumnDefinition col, long? v)
             => row[col.Name] = v;
 
         // -------- DOUBLE? (Float) --------
-        protected double? GetDoubleN(IDictionary<string, object> row, DXColumnDefinition col)
+        protected double? GetDoubleN(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<double?>(v);
         }
 
-        protected void SetDoubleN(IDictionary<string, object> row, DXColumnDefinition col, double? v)
+        protected void SetDoubleN(IDictionary<string, object?> row, DXColumnDefinition col, double? v)
             => row[col.Name] = v;
 
         // -------- DECIMAL? (Decimal/Currency) --------
-        protected decimal? GetDecimalN(IDictionary<string, object> row, DXColumnDefinition col)
+        protected decimal? GetDecimalN(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             return ConvertTo<decimal?>(v);
         }
 
-        protected void SetDecimalN(IDictionary<string, object> row, DXColumnDefinition col, decimal? v)
+        protected void SetDecimalN(IDictionary<string, object?> row, DXColumnDefinition col, decimal? v)
             => row[col.Name] = v;
 
         // -------- GUID как строка --------
-        protected string GetGuidString(IDictionary<string, object> row, DXColumnDefinition col)
+        protected string GetGuidString(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             return GetGuid(row, col)?.ToString() ?? string.Empty;
         }
 
-        protected Guid? GetGuid(IDictionary<string, object> row, DXColumnDefinition col)
+        protected Guid? GetGuid(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             TryGet(row, col.Name, out var v);
             var g = ConvertTo<Guid?>(v);
             return g;
         }
 
-        protected void SetGuidString(IDictionary<string, object> row, DXColumnDefinition col, string value)
+        protected void SetGuidString(IDictionary<string, object?> row, DXColumnDefinition col, string value)
         {
             if (Guid.TryParse(value, out var guid))
                 row[col.Name] = guid;
@@ -271,13 +271,13 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         }
 
         // -------- BLOB --------
-        protected void OpenBlobDialog(IDictionary<string, object> row, DXColumnDefinition col)
+        protected void OpenBlobDialog(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             // no-op placeholder
         }
 
         // -------- Defaults --------
-        public static bool TryApplyDefault(IDictionary<string, object> row, DXColumnDefinition col)
+        public static bool TryApplyDefault(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             if (string.IsNullOrWhiteSpace(col.DefaultValue))
                 return false;
@@ -351,7 +351,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return false;
         }
 
-        public static void ApplyNonNullableFallback(IDictionary<string, object> row, DXColumnDefinition col)
+        public static void ApplyNonNullableFallback(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             switch (col.ColumnType)
             {
@@ -370,7 +370,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             }
         }
 
-        protected async Task SetBlobAsync(IDictionary<string, object> row, DXColumnDefinition col, InputFileChangeEventArgs e)
+        protected async Task SetBlobAsync(IDictionary<string, object?> row, DXColumnDefinition col, InputFileChangeEventArgs e)
         {
             var file = e.File;
             const long maxAllowedSize = 50 * 1024 * 1024;
@@ -394,16 +394,16 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             row[col.Name] = packed; // <-- одно свойство, byte[]
         }
 
-        protected void ClearBlob(IDictionary<string, object> row, DXColumnDefinition col)
+        protected void ClearBlob(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             if (col.AllowNull) row[col.Name] = null!;
             else row[col.Name] = Array.Empty<byte>();
         }
 
-        protected bool HasBlob(IDictionary<string, object> row, DXColumnDefinition col)
+        protected bool HasBlob(IDictionary<string, object?> row, DXColumnDefinition col)
             => TryGetBlobPacked(row, col, out var packed) && packed.Length > 0;
 
-        protected bool TryGetBlobMeta(IDictionary<string, object> row, DXColumnDefinition col,
+        protected bool TryGetBlobMeta(IDictionary<string, object?> row, DXColumnDefinition col,
                                       out string fileName, out string mime, out long sizeBytes)
         {
             fileName = "";
@@ -426,7 +426,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return true;
         }
 
-        protected bool TryGetImagePreviewDataUrl(IDictionary<string, object> row, DXColumnDefinition col, out string dataUrl)
+        protected bool TryGetImagePreviewDataUrl(IDictionary<string, object?> row, DXColumnDefinition col, out string dataUrl)
         {
             dataUrl = "";
 
@@ -457,7 +457,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
         /// <summary>
         /// Достаёт сырой файл (без хедера), удобно для записи в bytea/varbinary или для отдачи наружу.
         /// </summary>
-        protected byte[]? GetBlobRawBytes(IDictionary<string, object> row, DXColumnDefinition col)
+        protected byte[]? GetBlobRawBytes(IDictionary<string, object?> row, DXColumnDefinition col)
         {
             if (!TryGetBlobPacked(row, col, out var packed) || packed.Length == 0)
                 return null;
@@ -468,7 +468,7 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
             return packed; // fallback: raw bytes
         }
 
-        private static bool TryGetBlobPacked(IDictionary<string, object> row, DXColumnDefinition col, out byte[] packed)
+        private static bool TryGetBlobPacked(IDictionary<string, object?> row, DXColumnDefinition col, out byte[] packed)
         {
             packed = Array.Empty<byte>();
             if (row is null) return false;
