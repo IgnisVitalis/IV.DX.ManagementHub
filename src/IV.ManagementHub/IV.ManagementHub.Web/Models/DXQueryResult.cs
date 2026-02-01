@@ -1,4 +1,4 @@
-﻿using Microsoft.FluentUI.AspNetCore.Components;
+﻿using IV.DX.Kernel.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
@@ -45,12 +45,28 @@ namespace IV.ManagementHub.Web.Models
             if (!jObject.ContainsKey("ID"))
                 throw new ArgumentException($"Property 'ID' not found.", nameof(jObject));
 
-            var value = jObject.Value<string>("ID");
+            var token = jObject["ID"];
+            if (token == null || token.Type == JTokenType.Null)
+                throw new ArgumentException("Property 'ID' is null.", nameof(jObject));
 
             Guid id;
-
-            if(!Guid.TryParse(value, out id))
-                throw new ArgumentException($"Property 'ID' {value} couldn't be parsed.", nameof(jObject));
+            if (token.Type == JTokenType.Guid)
+            {
+                id = token.Value<Guid>();
+            }
+            else if (token.Type == JTokenType.String)
+            {
+                var value = token.Value<string>();
+                if (!Guid.TryParse(value, out id))
+                    throw new ArgumentException($"Property 'ID' {value} couldn't be parsed.", nameof(jObject));
+            }
+            else
+            {
+                // Fallback for numeric/other types that can be converted to string
+                var value = token.ToString();
+                if (!Guid.TryParse(value, out id))
+                    throw new ArgumentException($"Property 'ID' {value} couldn't be parsed.", nameof(jObject));
+            }
 
             if (id == default(Guid))
                 throw new ArgumentException($"Property 'ID' has default value.", nameof(jObject));
@@ -83,14 +99,49 @@ namespace IV.ManagementHub.Web.Models
             var dataDefinition = dataDefToken.ToObject<List<QueryDefinition>>()
                                ?? new List<QueryDefinition>();
 
-            var contentToken = jObject["Content"] as JArray
-                               ?? throw new JsonException("Property 'Content' is missing or not an array.");
-
-            var content = contentToken
-                .OfType<JObject>()
-                .ToList();
+            var content = ParseContent(jObject["Content"]);
 
             return new DXQueryResult(typeName, dataDefinition, content);
+        }
+
+        private static IReadOnlyList<JObject> ParseContent(JToken? token)
+        {
+            if (token is JArray array)
+            {
+                return array.OfType<JObject>().ToList();
+            }
+
+            if (token is JObject obj)
+            {
+                var block = obj.ToObject<DXDataBlock<DXUnitRecord>>();
+                if (block?.Data?.Upsert == null)
+                    return Array.Empty<JObject>();
+
+                return block.Data.Upsert
+                    .Select(ToRowObject)
+                    .ToList();
+            }
+
+            throw new JsonException("Property 'Content' is missing or has unsupported format.");
+        }
+
+        private static JObject ToRowObject(DXUnitRecord record)
+        {
+            var row = new JObject
+            {
+                ["ID"] = JToken.FromObject(record.ID),
+                ["TimeStamp"] = JToken.FromObject(record.TimeStamp)
+            };
+
+            if (record.Fields != null)
+            {
+                foreach (var kvp in record.Fields)
+                {
+                    row[kvp.Key] = kvp.Value ?? JValue.CreateNull();
+                }
+            }
+
+            return row;
         }
 
         public DataTable AsDataTable()

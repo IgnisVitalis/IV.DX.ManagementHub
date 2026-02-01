@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using IV.DX.Application.Contracts.Abstractions;
+using IV.DX.Kernel.Models;
 using IV.ManagementHub.ApiService.Controllers.v1;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -77,12 +78,26 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async virtual Task<IActionResult> DeleteAsync([FromRoute] string typeName, [FromRoute] Guid id)
         {
-            var existingItem = await this._dataService.GetItemAsync(typeName, id);
-
-            if (existingItem != null)
+            var block = new DXDataBlock<DXUnitRecord>
             {
-                await _dataService.DeleteAsync(existingItem);
-            }
+                Meta = new DXMeta
+                {
+                    Kind = "DXUnit",
+                    Type = typeName,
+                    Op = "Delete",
+                    IsMulti = true,
+                    IsRequired = false
+                },
+                Data = new DXData<DXUnitRecord>
+                {
+                    Delete = new List<DXDeleteRef>
+                    {
+                        new DXDeleteRef { ID = id }
+                    }
+                }
+            };
+
+            await _dataService.DeleteAsync(JObject.FromObject(block));
 
             return NoContent();
         }
