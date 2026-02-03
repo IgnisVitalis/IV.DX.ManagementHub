@@ -22,10 +22,10 @@ else
             </FluentToolbar>
             <FluentDataGrid id="@Definition.Name"
                             Style="width:100%;"
-                            Items="@(this.DXMultiElement.Announced.AsQueryable())"
+                            Items="@(GetVisibleItems().AsQueryable())"
                             TGridItem="IV.ManagementHub.Web.Models.DXRecordItem"
                             RowSize="@DataGridRowSize.Medium">
-                @foreach (var column in Definition.Columns)
+                @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
                 {
                     <TemplateColumn Title="@column.Name" Align="Align.Center" Style="overflow:visible">
                         <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context"></DXItemEditor>

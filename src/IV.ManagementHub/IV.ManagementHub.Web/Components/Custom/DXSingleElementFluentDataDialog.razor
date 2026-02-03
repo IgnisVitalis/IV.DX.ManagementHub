@@ -16,7 +16,7 @@ else
         <FluentDivider></FluentDivider> *@
         @* <FluentCard Class="unclip"> *@
             <FluentStack Orientation="Orientation.Vertical" Width="100%">
-                @foreach (var column in Definition.Columns)
+                @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
                 {
                     <FluentLabel>@column.Name</FluentLabel>
                     <DXItemEditor ColumnDefinition="column" DXItem="DXItem"></DXItemEditor>

@@ -63,6 +63,29 @@ namespace IV.ManagementHub.Web.Components.Custom
             this.DXMultiElement.Add(new DXRecordItem(Definition.Name, id, Parent.MainItem.ID, timeStamp, dict));
         }
 
+        private IEnumerable<DXRecordItem> GetVisibleItems()
+        {
+            if (!Definition.Name.Equals("DXColumnDefinitionElement", StringComparison.OrdinalIgnoreCase))
+                return this.DXMultiElement.Announced;
+
+            return this.DXMultiElement.Announced.Where(item => !IsSystemColumnDefinition(item));
+        }
+
+        private bool IsSystemColumnDefinition(DXRecordItem item)
+        {
+            if (item.Content == null)
+                return false;
+
+            if (!item.Content.TryGetValue("Name", out var raw) || raw == null)
+                return false;
+
+            var name = raw.ToString();
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            return systemColumns.Contains(name, StringComparer.OrdinalIgnoreCase);
+        }
+
         private DXColumnDefinition GetColumnDefinition(DXColumnDefinition columnDefinition, DXRecordItem dxItem)
         {
             if (dxItem.Type.Equals("DXObjectEnumElement"))

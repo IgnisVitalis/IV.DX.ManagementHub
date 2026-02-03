@@ -7,6 +7,13 @@ namespace IV.ManagementHub.Web.Services
 {
     internal static class DXRecordModelFactory
     {
+        private static readonly HashSet<string> SystemColumns = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "ID",
+            "DXUnitID",
+            "TimeStamp"
+        };
+
         public static DXUnitRecordModel GetDefault(DXModelDefinition definition)
         {
             var unitId = Guid.NewGuid();
@@ -32,12 +39,12 @@ namespace IV.ManagementHub.Web.Services
             foreach (var item in definition.RequiredMultiElements)
             {
                 var elementItem = BuildElementItem(item, unitId, timeStamp);
-                multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem });
+                multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem }, trackOriginal: false);
             }
 
             foreach (var item in definition.OptionalMultiElements)
             {
-                multiElements[item.Name] = new DXRecordMultiElement(item.Name);
+                multiElements[item.Name] = new DXRecordMultiElement(item.Name, trackOriginal: false);
             }
 
             return new DXUnitRecordModel(definition.Name, mainItem, singleElements, multiElements);
@@ -116,8 +123,11 @@ namespace IV.ManagementHub.Web.Services
 
             foreach (var multi in model.MultiElements.Values)
             {
-                var upserts = multi.Announced.Select(ToElementRecord).ToList();
-                var deletes = multi.Deleted.Select(ToDeleteRef).ToList();
+                var announced = FilterSystemColumnDefinitions(multi.Name, multi.GetUpserts());
+                var deleted = FilterSystemColumnDefinitions(multi.Name, multi.Deleted);
+
+                var upserts = announced.Select(ToElementRecord).ToList();
+                var deletes = deleted.Select(ToDeleteRef).ToList();
 
                 if (upserts.Count == 0 && deletes.Count == 0)
                     continue;
@@ -157,6 +167,29 @@ namespace IV.ManagementHub.Web.Services
                     Upsert = new List<DXUnitRecord> { record }
                 }
             };
+        }
+
+        private static IEnumerable<DXRecordItem> FilterSystemColumnDefinitions(string elementName, IEnumerable<DXRecordItem> items)
+        {
+            if (!elementName.Equals("DXColumnDefinitionElement", StringComparison.OrdinalIgnoreCase))
+                return items;
+
+            return items.Where(item => !IsSystemColumnDefinition(item));
+        }
+
+        private static bool IsSystemColumnDefinition(DXRecordItem item)
+        {
+            if (item.Content == null)
+                return false;
+
+            if (!item.Content.TryGetValue("Name", out var raw) || raw == null)
+                return false;
+
+            var name = raw.ToString();
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            return SystemColumns.Contains(name);
         }
 
         private static void AddElement(
@@ -204,7 +237,7 @@ namespace IV.ManagementHub.Web.Services
                 if (!multiElements.ContainsKey(item.Name))
                 {
                     var elementItem = BuildElementItem(item, unitId, timeStamp);
-                    multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem });
+                    multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem }, trackOriginal: false);
                 }
             }
 
@@ -220,7 +253,7 @@ namespace IV.ManagementHub.Web.Services
             {
                 if (!multiElements.ContainsKey(item.Name))
                 {
-                    multiElements[item.Name] = new DXRecordMultiElement(item.Name);
+                    multiElements[item.Name] = new DXRecordMultiElement(item.Name, trackOriginal: false);
                 }
             }
         }
@@ -301,6 +334,9 @@ namespace IV.ManagementHub.Web.Services
             var result = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in fields)
             {
+                if (SystemColumns.Contains(kvp.Key))
+                    continue;
+
                 result[kvp.Key] = kvp.Value == null ? JValue.CreateNull() : JToken.FromObject(kvp.Value);
             }
 
