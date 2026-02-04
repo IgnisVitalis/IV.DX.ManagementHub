@@ -1,4 +1,4 @@
-﻿using IV.DX.Kernel.Models;
+using IV.DX.Kernel.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Data;
@@ -114,10 +114,10 @@ namespace IV.ManagementHub.Web.Models
             if (token is JObject obj)
             {
                 var block = obj.ToObject<DXDataBlock<DXUnitRecord>>();
-                if (block?.Data?.Upsert == null)
+                if (block?.Data?.Items == null)
                     return Array.Empty<JObject>();
 
-                return block.Data.Upsert
+                return block.Data.Items
                     .Select(ToRowObject)
                     .ToList();
             }
@@ -180,3 +180,4 @@ namespace IV.ManagementHub.Web.Models
         public string? Expression { get; set; }
     }
 }
+

@@ -8,7 +8,7 @@
       "IsRequired": false
     },
     "Data": {
-      "Upsert": [
+      "Items": [
         {
           "ID": "6cf5a2ba-13b0-40c4-a615-04493c8c8f23",
           "TimeStamp": "2025-12-16T12:29:07.786293Z",
@@ -62,3 +62,4 @@
     }
   }
 ]
+

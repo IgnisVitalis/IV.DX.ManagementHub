@@ -8,7 +8,7 @@
       "IsRequired": false
     },
     "Data": {
-      "Upsert": [
+      "Items": [
         {
           "ID": "664a996a-bf83-46f9-aebb-c55f89deb6eb",
           "TimeStamp": "2025-12-10T14:28:37.724275Z",
@@ -25,7 +25,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "edcaf7ff-a215-4d89-a521-2947c655b70d",
                     "TimeStamp": "2025-12-10T11:42:57.792085Z",
@@ -55,7 +55,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "65ac062f-2a70-4fd1-a6bb-bf49996a4760",
                     "TimeStamp": "2025-12-10T14:29:51.388028Z",
@@ -85,7 +85,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "4c2d6e0f-22e5-4956-86dd-4600058bef01",
                     "TimeStamp": "2025-12-10T14:29:32.155309Z",
@@ -115,7 +115,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "4d41daa6-5ad8-4ec3-bd0a-ba0a25d657d3",
                     "TimeStamp": "2025-12-10T14:30:20.252881Z",
@@ -145,7 +145,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "acf97cb8-110f-4644-9de9-65d0922ad32d",
                     "TimeStamp": "2025-12-12T11:59:45.935158Z",
@@ -175,7 +175,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "5c1cdb19-8672-41b1-9cef-b3624b25bf08",
                     "TimeStamp": "2025-12-12T12:00:07.960688Z",
@@ -205,7 +205,7 @@
                 "IsRequired": false
               },
               "Data": {
-                "Upsert": [
+                "Items": [
                   {
                     "ID": "854cdbcd-9341-4a3a-898d-c1b62524cec8",
                     "TimeStamp": "2025-12-12T12:12:37.681134Z",
@@ -223,3 +223,4 @@
     }
   }
 ]
+

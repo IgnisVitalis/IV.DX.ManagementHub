@@ -20,8 +20,7 @@
             </div>
 
             <div class="dialog-body">
-
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="flex: 1 1 auto; min-height: 0;">
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height: 0;">
                     @if (isAccordion)
                     {
                         <FluentAccordion ActiveId="@this.dxModel.MainItem.ID.ToString()" Style="width:100%">
@@ -180,7 +179,6 @@
 
 
                 </FluentStack>
-
             </div>
 
             <div class="dialog-footer">

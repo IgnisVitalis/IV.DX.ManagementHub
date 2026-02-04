@@ -118,7 +118,7 @@ namespace IV.ManagementHub.Web.Models
             Announced.Remove(item);
         }
 
-        public IEnumerable<DXRecordItem> GetUpserts()
+        public IEnumerable<DXRecordItem> GetItems()
         {
             foreach (var item in Announced)
             {

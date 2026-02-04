@@ -52,7 +52,7 @@ namespace IV.ManagementHub.Web.Services
 
         public static DXUnitRecordModel FromBlock(DXDataBlock<DXUnitRecord> block, DXModelDefinition definition)
         {
-            var record = block?.Data?.Upsert?.FirstOrDefault();
+            var record = block?.Data?.Items?.FirstOrDefault();
             if (record == null)
             {
                 return GetDefault(definition);
@@ -74,7 +74,7 @@ namespace IV.ManagementHub.Web.Services
                     if (elementBlock == null) continue;
 
                     var elementName = elementBlock.Meta?.Type ?? kvp.Key;
-                    var announced = ParseRecordItems(elementBlock.Data?.Upsert, elementName, unitId, timeStamp);
+                    var announced = ParseRecordItems(elementBlock.Data?.Items, elementName, unitId, timeStamp);
                     var deleted = ParseDeleteItems(elementBlock.Data?.Delete, elementName, unitId, timeStamp);
 
                     AddElement(definition, singleElements, multiElements, elementName, announced, deleted);
@@ -116,14 +116,14 @@ namespace IV.ManagementHub.Web.Services
                     },
                     Data = new DXData<DXElementRecord>
                     {
-                        Upsert = new List<DXElementRecord> { elementRecord }
+                        Items = new List<DXElementRecord> { elementRecord }
                     }
                 };
             }
 
             foreach (var multi in model.MultiElements.Values)
             {
-                var announced = FilterSystemColumnDefinitions(multi.Name, multi.GetUpserts());
+                var announced = FilterSystemColumnDefinitions(multi.Name, multi.GetItems());
                 var deleted = FilterSystemColumnDefinitions(multi.Name, multi.Deleted);
 
                 var upserts = announced.Select(ToElementRecord).ToList();
@@ -144,7 +144,7 @@ namespace IV.ManagementHub.Web.Services
                     },
                     Data = new DXData<DXElementRecord>
                     {
-                        Upsert = upserts.Count == 0 ? null : upserts,
+                        Items = upserts.Count == 0 ? null : upserts,
                         Delete = deletes.Count == 0 ? null : deletes
                     }
                 };
@@ -164,7 +164,7 @@ namespace IV.ManagementHub.Web.Services
                 },
                 Data = new DXData<DXUnitRecord>
                 {
-                    Upsert = new List<DXUnitRecord> { record }
+                    Items = new List<DXUnitRecord> { record }
                 }
             };
         }
@@ -372,3 +372,4 @@ namespace IV.ManagementHub.Web.Services
         }
     }
 }
+

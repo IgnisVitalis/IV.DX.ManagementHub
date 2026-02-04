@@ -240,7 +240,7 @@ fluent-card.unclip {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    overflow: visible;
+    overflow: hidden;
     padding: 1rem;
 }
 
@@ -253,7 +253,7 @@ fluent-card.unclip {
     box-shadow: 0 4px 12px rgba(0,0,0,.3);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     min-width: 0;
 }
 
@@ -262,6 +262,32 @@ fluent-card.unclip {
     overflow: auto;
     min-height: 0;
 }
+
+.dialog-body-scroll {
+    min-height: 0;
+}
+
+fluent-accordion,
+fluent-accordion-item,
+fluent-card {
+    overflow: visible;
+}
+
+/* Fluent UI web components (FAST) use `contain: content` on cards which clips popups (select/listbox) */
+.dialog-window fluent-card {
+    contain: none !important;
+    content-visibility: visible !important;
+}
+
+/* Keep select dropdowns usable inside dialogs (avoid giant "page-sized" popups) */
+.dialog-window fluent-select::part(listbox),
+.dialog-window fluent-combobox::part(listbox) {
+    max-height: min(28vh, 260px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 2000;
+}
+
 
 .dialog-footer {
     flex: 0 0 auto;
