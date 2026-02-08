@@ -22,12 +22,19 @@ body {
     align-self: stretch;
     height: calc(100dvh - 86px) !important;
     display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
 }
 
 .content {
     padding: 0.5rem 1.5rem;
     align-self: stretch !important;
     width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
 }
 
 .manage {

@@ -14,10 +14,12 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
     public class DXObjectController : ControllerBase
     {
         private readonly IDXUnitDataService _dataService;
+        private readonly IDXUnitDataReader _dataReader;
 
-        public DXObjectController(IDXUnitDataService dataService, ILogger<DXObjectController> logger)
+        public DXObjectController(IDXUnitDataService dataService, IDXUnitDataReader dataReader)
         {
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
+            _dataReader = dataReader ?? throw new ArgumentNullException(nameof(dataReader));
         }
 
         /// <summary>Get all objects of the specified type.</summary>
@@ -26,9 +28,11 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async virtual Task<ActionResult<JArray>> GetAllAsync([FromRoute] string typeName, [FromQuery] string? filter = null)
         {
+            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+
             var items = string.IsNullOrEmpty(filter)
-                ? await _dataService.GetItemsAsync(typeName)
-                : await _dataService.GetItemsAsync(typeName, filter);
+                ? await _dataReader.GetItemsAsync(typeName, ct: ct)
+                : await _dataReader.GetItemsAsync(typeName, filter, ct: ct);
             
             var jarray = new JArray(items);
 
@@ -42,7 +46,9 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async virtual Task<ActionResult<JArray>> SearchAsync([FromRoute] string typeName, [FromBody] string body)
         {
-            var items = await _dataService.GetItemsAsync(typeName, body);
+            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+
+            var items = await _dataReader.GetItemsAsync(typeName, body, ct: ct);
 
             var jarray = new JArray(items);
 
@@ -56,7 +62,9 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async virtual Task<ActionResult<JObject>> GetByIdAsync([FromRoute] string typeName, [FromRoute] Guid id)
         {
-            var item = await _dataService.GetItemAsync(typeName, id);
+            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+
+            var item = await _dataReader.GetItemAsync(typeName, id, ct: ct);
 
             return item is null ? NotFound() : item;
         }

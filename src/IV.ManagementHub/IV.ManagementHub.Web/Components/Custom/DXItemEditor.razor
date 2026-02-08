@@ -17,6 +17,7 @@
         break;
 
     // ---- STRING / TEXT ----
+    case DXColumnTypeEnum.HashedString:
     case DXColumnTypeEnum.String:
     case DXColumnTypeEnum.Text:
         <FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
