@@ -54,6 +54,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private DataTable values;
 
         private Guid selectedItemID { get; set; }
+        private Guid? selectedPreviewItemID { get; set; }
 
 
         private bool isEditing = false;
@@ -104,6 +105,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task OpenPanelRightAsync(Guid selectedBlockID)
         {
+            selectedPreviewItemID = selectedBlockID;
             _collapse = false;
         }
 
@@ -115,6 +117,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private void OnClosed()
         {
+            selectedPreviewItemID = null;
             _collapse = true;
         }
 

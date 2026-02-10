@@ -5,6 +5,8 @@
 @using IV.DX.Kernel.Enums;
 @using System;
 
+@* Editor *@
+
 @if (Definition == null)
 {
     <FluentProgressRing />
@@ -15,13 +17,13 @@ else
 @*         <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
         <FluentDivider></FluentDivider> *@
         @* <FluentCard Class="unclip"> *@
-            <FluentStack Orientation="Orientation.Vertical" Width="100%">
+            @* <FluentStack Orientation="Orientation.Vertical" Width="100%"> *@
                 @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
                 {
                     <FluentLabel>@column.Name</FluentLabel>
-                    <DXItemEditor ColumnDefinition="column" DXItem="DXItem"></DXItemEditor>
+                    <DXItemEditor ColumnDefinition="column" DXItem="DXItem" />
                 }
-            </FluentStack>
+            @* </FluentStack> *@
         @* </FluentCard> *@
     </FluentStack>
 }

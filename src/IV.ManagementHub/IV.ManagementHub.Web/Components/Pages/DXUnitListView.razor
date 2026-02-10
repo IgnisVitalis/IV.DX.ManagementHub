@@ -44,6 +44,7 @@ else
                                 <FluentDataGrid TGridItem="Newtonsoft.Json.Linq.JObject"
                                                 Items="@dxQueryResult.AsQueryable()"
                                                 GenerateColumns="false"
+                                                OnRowClick="@(x => OpenPanelRightAsync(dxQueryResult.GetID(x.Item)))"
                                                 RowSize="@DataGridRowSize.Large">
 
                                     @foreach (string column in dxQueryResult.Columns)
@@ -62,10 +63,31 @@ else
 
                     </Panel1>
                     <Panel2>
-                        <FluentToolbar style="width:100%">
-                            <FluentIcon Value="@(new Icons.Filled.Size16.Dismiss())" Slot="end" Color="Color.Accent" OnClick="OnClosed" />
-                        </FluentToolbar>
-                        @* <BlockPanel Content="@selectedBlock" AppKey="@AppKey" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(selectedBlock))"></BlockPanel> *@
+                        <div class="dx-unit-details-panel">
+                            <FluentToolbar style="width:100%">
+                                <FluentIcon Value="@(new Icons.Filled.Size16.Dismiss())" Slot="end" Color="Color.Accent" OnClick="OnClosed" />
+                            </FluentToolbar>
+
+                            @if (selectedPreviewItemID is not null)
+                            {
+                                <EntityBaseActionsFluentToolbar AppKey="@AppKey"
+                                                               EntityID="@selectedPreviewItemID.Value"
+                                                               TypeName="@dxQueryResult.TypeName"
+                                                               OnDeleted="@(() => OnDeleted())"
+                                                               OnEdited="@(() => OpenEditDialog(selectedPreviewItemID.Value))" />
+                            }
+
+                            <div class="dx-unit-details-scroll">
+                                @if (selectedPreviewItemID is null)
+                                {
+                                    <FluentLabel>Select a row to preview its data.</FluentLabel>
+                                }
+                                else
+                                {
+                                    <DXUnitDetailsView AppKey="@AppKey" Type="@dxQueryResult.TypeName" ID="@selectedPreviewItemID.Value" />
+                                }
+                            </div>
+                        </div>
                     </Panel2>
                 </FluentSplitter>
             </div>

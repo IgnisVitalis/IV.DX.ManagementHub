@@ -391,3 +391,42 @@ fluent-button.btn-danger::part(control):hover {
     display: inline-block;
     width: 100%;
 }
+
+/* ===========================
+   DX Item Viewer (read-only)
+   =========================== */
+
+.dx-viewer-field {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 32%) 1fr;
+    column-gap: 1rem;
+    align-items: start;
+    padding: .6rem 0;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.dx-viewer-field:last-child {
+    border-bottom: none;
+}
+
+.dx-viewer-title {
+    display: block;
+    font-size: var(--type-ramp-minus-1-font-size);
+    line-height: var(--type-ramp-minus-1-line-height);
+    font-weight: 600;
+    color: var(--neutral-foreground-rest);
+    opacity: .7;
+}
+
+.dx-viewer-value {
+    display: block;
+    font-size: var(--type-ramp-base-font-size);
+    line-height: var(--type-ramp-base-line-height);
+    font-weight: 600;
+    color: var(--neutral-foreground-rest);
+    overflow-wrap: anywhere;
+}
+
+.dx-viewer-placeholder {
+    opacity: .65;
+}

@@ -1,0 +1,36 @@
+@using IV.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using IV.DX.Kernel.Enums
+
+@inherits DXItemEditorBaseComponent
+
+@switch (ColumnDefinition.ColumnType)
+{
+    case DXColumnTypeEnum.Blob:
+        <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="gap:8px;">
+            @if (base.HasBlob(DXItem.Content, ColumnDefinition) &&
+                 base.TryGetBlobMeta(DXItem.Content, ColumnDefinition, out var name, out var mime, out var size))
+            {
+                <FluentLabel Class="dx-viewer-value">@name (@FormatSize(size))</FluentLabel>
+
+                <a href="@GetBlobDownloadHref()"
+                   download="@GetSafeDownloadName(GetBlobFileName())"
+                   style="text-decoration:none;">
+                    <FluentButton Appearance="Appearance.Neutral" Title="Download">
+                        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="@Color.Info" />
+                    </FluentButton>
+                </a>
+            }
+            else
+            {
+                <FluentLabel Class="dx-viewer-value dx-viewer-placeholder">—</FluentLabel>
+            }
+        </FluentStack>
+        break;
+
+    default:
+        <FluentLabel Class="@(GetDisplayText() == "—" ? "dx-viewer-value dx-viewer-placeholder" : "dx-viewer-value")">
+            @GetDisplayText()
+        </FluentLabel>
+        break;
+}

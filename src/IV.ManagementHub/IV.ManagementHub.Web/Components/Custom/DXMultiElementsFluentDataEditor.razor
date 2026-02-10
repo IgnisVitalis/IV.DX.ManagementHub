@@ -7,6 +7,8 @@
 
 @inherits ManagementHubComponentBase
 
+@* Editor *@
+
 @if (Definition == null)
 {
     <FluentProgressRing />
@@ -28,8 +30,8 @@ else
                 @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
                 {
                     <TemplateColumn Title="@column.Name" Align="Align.Center" Style="overflow:visible">
-                        <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context"></DXItemEditor>
-                    </TemplateColumn>                 
+                        <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context" />
+                    </TemplateColumn>
                 }
                 <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">
                     <FluentButton OnClick="@(() => Remove(context))">

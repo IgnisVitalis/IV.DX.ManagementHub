@@ -28,9 +28,9 @@
                                 <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent"
                                     Slot="start" />
                                 <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataDialog @key="@this.dxModel.Type"
+                                    <DXMainElementFluentDataEditor @key="@this.dxModel.Type"
                                         Parent="@dxModel" MainItem="@GetDXMainElement()"
-                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
+                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataEditor>
                                 </FluentCard>
                             </FluentAccordionItem>
 
@@ -43,10 +43,10 @@
                                     <FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal1())" Color="@Color.Accent"
                                         Slot="start" />
                                     <FluentCard Class="unclip">
-                                        <DXSingleElementFluentDataDialog @key="singleItemMandatory.Name" Parent="@dxModel"
+                                        <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
                                             DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
                                             Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)">
-                                        </DXSingleElementFluentDataDialog>
+                                        </DXSingleElementFluentDataEditor>
                                     </FluentCard>
                                 </FluentAccordionItem>
                                 @* }
@@ -61,10 +61,10 @@
                                 <FluentAccordionItem Expanded="true" Heading="@multiItemMandatory.Name">
                                     <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Accent" Slot="start" />
                                     <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataDialog @key="multiItemMandatory.Name" AppKey="@AppKey"
+                                        <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey"
                                             Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
                                             Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)">
-                                        </DXMultiElementsFluentDataDialog>
+                                        </DXMultiElementsFluentDataEditor>
                                     </FluentCard>
                                 </FluentAccordionItem>
                             }
@@ -82,10 +82,10 @@
                                                 <FluentButton OnClick="@(() => DeleteSingleElement(singleItemOptional))">
                                                     <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                                                 </FluentButton>
-                                                <DXSingleElementFluentDataDialog @key="singleItemOptional.Name" Parent="@dxModel"
+                                                <DXSingleElementFluentDataEditor @key="singleItemOptional.Name" Parent="@dxModel"
                                                     DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
                                                     Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)">
-                                                </DXSingleElementFluentDataDialog>
+                                                </DXSingleElementFluentDataEditor>
                                             </FluentStack>
                                         }
                                         else
@@ -103,10 +103,10 @@
                                 <FluentAccordionItem Heading="@multiItemOptional.Name">
                                     <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Neutral" Slot="start" />
                                     <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataDialog @key="multiItemOptional.Name" AppKey="@AppKey"
+                                        <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey"
                                             Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
                                             Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)">
-                                        </DXMultiElementsFluentDataDialog>
+                                        </DXMultiElementsFluentDataEditor>
                                     </FluentCard>
                                 </FluentAccordionItem>
                             }
@@ -118,9 +118,9 @@
                             <FluentTab Label="@this.dxModel.Type"
                                 Id="@this.dxModel.Type">
                                 <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataDialog @key="@this.dxModel.Type"
+                                    <DXMainElementFluentDataEditor @key="@this.dxModel.Type"
                                         Parent="@dxModel" MainItem="@GetDXMainElement()"
-                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataDialog>
+                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataEditor>
                                 </FluentCard>
                             </FluentTab>
 
@@ -129,10 +129,10 @@
                             {
                                 <FluentTab Label="@singleItemMandatory.Name" Id="@singleItemMandatory.Name">
                                     <FluentCard Class="unclip">
-                                        <DXSingleElementFluentDataDialog @key="singleItemMandatory.Name" Parent="@dxModel"
+                                        <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
                                             DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
                                             Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)">
-                                        </DXSingleElementFluentDataDialog>
+                                        </DXSingleElementFluentDataEditor>
                                     </FluentCard>
                                 </FluentTab>
                             }
@@ -141,10 +141,10 @@
                             {
                                 <FluentTab Label="@multiItemMandatory.Name" Id="@multiItemMandatory.Name">
                                     <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataDialog @key="multiItemMandatory.Name" Parent="@dxModel"
+                                        <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey" Parent="@dxModel"
                                             DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
                                             Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)">
-                                        </DXMultiElementsFluentDataDialog>
+                                        </DXMultiElementsFluentDataEditor>
                                     </FluentCard>
                                 </FluentTab>
                             }
@@ -153,10 +153,10 @@
                             {
                                 <FluentTab Label="@singleItemOptional.Name" Id="@singleItemOptional.Name">
                                     <FluentCard Class="unclip">
-                                        <DXSingleElementFluentDataDialog @key="singleItemOptional.Name" Parent="@dxModel"
+                                        <DXSingleElementFluentDataEditor @key="singleItemOptional.Name" Parent="@dxModel"
                                             DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
                                             Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)">
-                                        </DXSingleElementFluentDataDialog>
+                                        </DXSingleElementFluentDataEditor>
                                     </FluentCard>
                                 </FluentTab>
                             }
@@ -165,10 +165,10 @@
                             {
                                 <FluentTab Label="@multiItemOptional.Name" Id="@multiItemOptional.Name">
                                     <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataDialog @key="multiItemOptional.Name" Parent="@dxModel"
+                                        <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey" Parent="@dxModel"
                                             DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
                                             Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)">
-                                        </DXMultiElementsFluentDataDialog>
+                                        </DXMultiElementsFluentDataEditor>
                                     </FluentCard>
                                 </FluentTab>
                             }
