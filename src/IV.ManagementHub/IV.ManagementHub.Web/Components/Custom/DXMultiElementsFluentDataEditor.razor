@@ -22,23 +22,89 @@ else
             <FluentToolbar id="@Definition.Name" style="width:100%">
                 <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
             </FluentToolbar>
-            <FluentDataGrid id="@Definition.Name"
-                            Style="width:100%;"
-                            Items="@(GetVisibleItems().AsQueryable())"
-                            TGridItem="IV.ManagementHub.Web.Models.DXRecordItem"
-                            RowSize="@DataGridRowSize.Medium">
-                @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
-                {
-                    <TemplateColumn Title="@column.Name" Align="Align.Center" Style="overflow:visible">
-                        <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context" />
+            @if (UseRowEditor)
+            {
+                <FluentDataGrid id="@Definition.Name"
+                                Style="width:100%;"
+                                Items="@(GetVisibleItems().AsQueryable())"
+                                TGridItem="IV.ManagementHub.Web.Models.DXRecordItem"
+                                RowSize="@DataGridRowSize.Medium">
+                    <TemplateColumn Title="Display" Align="Align.Start" Style="overflow:visible">
+                        <FluentButton Appearance="Appearance.Stealth"
+                                     Class="dx-multi-element-display"
+                                     OnClick="@(() => Edit(context))">
+                            @GetDisplayText(context)
+                        </FluentButton>
                     </TemplateColumn>
-                }
-                <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">
-                    <FluentButton OnClick="@(() => Remove(context))">
-                        <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                    </FluentButton>
-                </TemplateColumn>
-            </FluentDataGrid>
+
+                    <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Edit(context))">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+                            </FluentButton>
+                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Remove(context))">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                            </FluentButton>
+                        </FluentStack>
+                    </TemplateColumn>
+                </FluentDataGrid>
+            }
+            else
+            {
+                <div class="dx-grid-scroll-x">
+                    <FluentDataGrid id="@Definition.Name"
+                                    Style="min-width:100%; width:max-content;"
+                                    Items="@(GetVisibleItems().AsQueryable())"
+                                    TGridItem="IV.ManagementHub.Web.Models.DXRecordItem"
+                                    RowSize="@DataGridRowSize.Medium">
+                        @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+                        {
+                            <TemplateColumn Title="@column.Name" Align="Align.Start" Style="overflow:visible">
+                                <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context" />
+                            </TemplateColumn>
+                        }
+                        <TemplateColumn Title="Actions" Align="@Align.Center" Width="6rem">
+                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Remove(context))">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                            </FluentButton>
+                        </TemplateColumn>
+                    </FluentDataGrid>
+                </div>
+            }
         @* </FluentCard> *@
     </FluentStack>
+}
+
+@if (UseRowEditor && _isRowEditorOpen && _editingItem != null)
+{
+    <div class="dx-row-editor-backdrop" @onclick="CancelEdit">
+        <div class="dx-row-editor-window" @onclick:stopPropagation="true">
+            <div class="dx-row-editor-header">
+                <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
+                <FluentButton Appearance="Appearance.Stealth"
+                              aria-label="Close"
+                              IconStart="@(new Icons.Regular.Size20.Dismiss())"
+                              OnClick="CancelEdit" />
+            </div>
+
+            <div class="dx-row-editor-body">
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height:0;" VerticalGap="12">
+                    @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+                    {
+                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="4">
+                            <FluentLabel Typo="Typography.Body">@column.Name</FluentLabel>
+                            <DXItemEditor ColumnDefinition="GetColumnDefinition(column, _editingItem)" DXItem="_editingItem" />
+                        </FluentStack>
+                    }
+                </FluentStack>
+            </div>
+
+            <div class="dx-row-editor-footer">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                    <FluentButton Appearance="Appearance.Accent" OnClick="ApplyEdit">Apply</FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelEdit">Cancel</FluentButton>
+                </FluentStack>
+            </div>
+        </div>
+    </div>
 }

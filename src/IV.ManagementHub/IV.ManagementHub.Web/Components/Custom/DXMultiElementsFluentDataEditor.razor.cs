@@ -15,6 +15,8 @@ namespace IV.ManagementHub.Web.Components.Custom
         [Parameter, EditorRequired] public DXUnitRecordModel Parent { get; set; } = default!;
 
         private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
+        private const int RowEditorThresholdColumns = 6;
+        private bool UseRowEditor => CountVisibleColumns() > RowEditorThresholdColumns;
         DXEnumApiClient _dxEnumApiClient = default!;
         DXElementApiClient _dxElementApiClient = default!;
         DXUnitApiClient _dxUnitApiClient = default!;
@@ -23,6 +25,11 @@ namespace IV.ManagementHub.Web.Components.Custom
         IApiClientResolver Resolver { get; set; } = default!;
 
         IEnumerable<DXEnumDefinitionUnit> enumDefinitions = new List<DXEnumDefinitionUnit>();
+
+        private bool _isRowEditorOpen;
+        private bool _isNewItem;
+        private DXRecordItem? _editingOriginal;
+        private DXRecordItem? _editingItem;
 
 
         protected override async Task OnInitializedAsync()
@@ -43,6 +50,106 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         private void Add()
         {
+            if (!UseRowEditor)
+            {
+                this.DXMultiElement.Add(CreateNewItem());
+                return;
+            }
+
+            _editingOriginal = null;
+            _editingItem = CreateNewItem();
+            _isNewItem = true;
+            _isRowEditorOpen = true;
+        }
+
+        private void Edit(DXRecordItem item)
+        {
+            if (!UseRowEditor)
+                return;
+
+            _editingOriginal = item;
+            _editingItem = CloneItem(item);
+            _isNewItem = false;
+            _isRowEditorOpen = true;
+        }
+
+        private void ApplyEdit()
+        {
+            if (_editingItem == null)
+                return;
+
+            if (_isNewItem)
+            {
+                this.DXMultiElement.Add(_editingItem);
+            }
+            else if (_editingOriginal != null)
+            {
+                CopyItem(_editingItem, _editingOriginal);
+            }
+
+            CloseRowEditor();
+        }
+
+        private void CancelEdit()
+        {
+            CloseRowEditor();
+        }
+
+        private void CloseRowEditor()
+        {
+            _isRowEditorOpen = false;
+            _isNewItem = false;
+            _editingOriginal = null;
+            _editingItem = null;
+        }
+
+        private int CountVisibleColumns()
+        {
+            if (Definition?.Columns == null)
+                return 0;
+
+            return Definition.Columns.Count(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private string GetDisplayText(DXRecordItem item)
+        {
+            if (TryGetNonEmptyString(item, "DisplayString", out var displayString))
+                return displayString;
+
+            if (item.Content.TryGetValue("DisplayValue", out var displayValue) && displayValue != null)
+            {
+                var displayFieldName = displayValue.ToString();
+                if (!string.IsNullOrWhiteSpace(displayFieldName)
+                    && item.Content.TryGetValue(displayFieldName, out var displayFieldValue)
+                    && displayFieldValue != null)
+                {
+                    return displayFieldValue.ToString() ?? string.Empty;
+                }
+            }
+
+            if (TryGetNonEmptyString(item, "Name", out var name))
+                return name;
+
+            return string.Empty;
+        }
+
+        private static bool TryGetNonEmptyString(DXRecordItem item, string fieldName, out string value)
+        {
+            value = string.Empty;
+
+            if (!item.Content.TryGetValue(fieldName, out var raw) || raw == null)
+                return false;
+
+            var str = raw.ToString();
+            if (string.IsNullOrWhiteSpace(str))
+                return false;
+
+            value = str;
+            return true;
+        }
+
+        private DXRecordItem CreateNewItem()
+        {
             var id = Guid.NewGuid();
             var timeStamp = DateTime.UtcNow;
 
@@ -60,7 +167,7 @@ namespace IV.ManagementHub.Web.Components.Custom
                 }
             }
 
-            this.DXMultiElement.Add(new DXRecordItem(Definition.Name, id, Parent.MainItem.ID, timeStamp, dict));
+            return new DXRecordItem(Definition.Name, id, Parent.MainItem.ID, timeStamp, dict);
         }
 
         private IEnumerable<DXRecordItem> GetVisibleItems()
@@ -129,6 +236,45 @@ namespace IV.ManagementHub.Web.Components.Custom
         private void Remove(DXRecordItem dxItem)
         {
             this.DXMultiElement.Remove(dxItem);
+        }
+
+        private static DXRecordItem CloneItem(DXRecordItem item)
+        {
+            var content = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in item.Content)
+                content[kvp.Key] = CloneValue(kvp.Value);
+
+            return new DXRecordItem(item.Type, item.ID, item.DXUnitID, item.TimeStamp, content);
+        }
+
+        private static void CopyItem(DXRecordItem source, DXRecordItem target)
+        {
+            target.DXUnitID = source.DXUnitID;
+            target.TimeStamp = source.TimeStamp;
+
+            var keys = target.Content.Keys.ToList();
+            foreach (var key in keys)
+                target.Content.Remove(key);
+
+            foreach (var kvp in source.Content)
+                target.Content[kvp.Key] = CloneValue(kvp.Value);
+        }
+
+        private static object? CloneValue(object? value)
+        {
+            if (value == null)
+                return null;
+
+            if (value is byte[] bytes)
+                return bytes.ToArray();
+
+            if (value is ICloneable cloneable)
+                return cloneable.Clone();
+
+            if (value is Array array && value is not string)
+                return array.Clone();
+
+            return value;
         }
     }
 }

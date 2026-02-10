@@ -1,0 +1,46 @@
+.dx-row-editor-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.dx-row-editor-window {
+    width: min(900px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+    background: var(--neutral-layer-1);
+    color: var(--neutral-foreground-rest);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dx-row-editor-header,
+.dx-row-editor-footer {
+    padding: 12px 16px;
+    background: var(--neutral-layer-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dx-row-editor-body {
+    padding: 16px;
+    overflow: auto;
+}
+
+.dx-grid-scroll-x {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.dx-multi-element-display {
+    padding-left: 0;
+}
