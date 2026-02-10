@@ -13,7 +13,7 @@
           "ID": "5d16952d-fe43-4882-8947-1b281d80fdee",
           "TimeStamp": "2025-12-16T15:43:18.470703Z",
           "Name": "Data definitions",
-          "Order": 10,
+          "Order": 20,
           "Parent": null,
           "DataSetView": null
         },
@@ -21,7 +21,7 @@
           "ID": "0fba23c6-1cfc-4a7b-a960-68beaf485fe2",
           "TimeStamp": "2025-12-16T15:43:35.729728Z",
           "Name": "UI definitions",
-          "Order": 20,
+          "Order": 30,
           "Parent": null,
           "DataSetView": null
         },

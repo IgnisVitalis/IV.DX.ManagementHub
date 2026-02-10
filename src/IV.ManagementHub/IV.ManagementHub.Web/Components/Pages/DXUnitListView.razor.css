@@ -1,7 +1,8 @@
 .dx-unit-list-root {
     display: flex;
     flex-direction: column;
-    height: calc(100dvh - 86px - 1rem);
+    flex: 1 1 auto;
+    height: 100%;
     min-height: 0;
 }
 
@@ -24,4 +25,18 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
+    overscroll-behavior: contain;
+    position: relative;
+}
+
+.dx-unit-list-grid-scroll ::deep thead th,
+.dx-unit-list-grid-scroll ::deep [role='columnheader'] {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--neutral-layer-1);
+}
+
+.dx-unit-list-grid-scroll ::deep thead th {
+    box-shadow: 0 1px 0 rgba(0,0,0,.08);
 }
