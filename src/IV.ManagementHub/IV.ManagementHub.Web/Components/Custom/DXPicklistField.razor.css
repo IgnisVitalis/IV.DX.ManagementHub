@@ -31,45 +31,10 @@
     width: 100%;
 }
 
-.dx-picklist-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5000;
-}
-
-.dx-picklist-window {
-    width: min(900px, calc(100vw - 48px));
-    max-height: calc(100vh - 48px);
-    background: var(--neutral-layer-1);
-    color: var(--neutral-foreground-rest);
-    border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    /* Some containers (e.g., grids) set `white-space: nowrap` which would prevent wrapping */
-    white-space: normal;
-}
-
-.dx-picklist-header {
-    padding: 12px 16px;
-    background: var(--neutral-layer-2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
 .dx-picklist-body {
-    padding: 12px 16px 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    min-height: 0;
 }
 
 .dx-picklist-list-card {

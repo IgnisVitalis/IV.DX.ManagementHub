@@ -6,20 +6,24 @@
 
 @* <div class="dialog-backdrop" @onclick="CloseDialog"> *@
 
-<div class="dialog-backdrop">
-    <div class="dialog-window" @onclick:stopPropagation="true">
+<div class="dx-overlay-backdrop">
+    <div class="dx-overlay-window dx-overlay-window--dialog" @onclick:stopPropagation="true">
         @if (_isLoaded)
         {
-            <div class="dialog-header">
-                <div class="dialog-title">
-                    @this.dxModel?.Type
-                </div>
+            <FluentToolbar Class="dx-overlay-header" Style="width:100%;">
+                <FluentStack Orientation="Orientation.Horizontal"
+                            Width="100%"
+                            HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                            VerticalAlignment="VerticalAlignment.Center">
+                    <FluentLabel Typo="Typography.Subject" Class="dialog-title">@this.dxModel?.Type</FluentLabel>
 
-                <FluentButton Appearance="Appearance.Stealth" IconStart="@(new Icons.Regular.Size20.Dismiss())"
-                    OnClick="CancelAsync" />
-            </div>
+                    <FluentButton Appearance="Appearance.Stealth"
+                                 IconStart="@(new Icons.Regular.Size20.Dismiss())"
+                                 OnClick="CancelAsync" />
+                </FluentStack>
+            </FluentToolbar>
 
-            <div class="dialog-body">
+            <div class="dx-overlay-body">
                 <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height: 0;">
                     @if (isAccordion)
                     {
@@ -181,14 +185,16 @@
                 </FluentStack>
             </div>
 
-            <div class="dialog-footer">
-                <FluentStack Orientation="Orientation.Horizontal" Width="100%">
-                    <FluentButton Appearance="Appearance.Accent" OnClick="SaveAsync"
-                        IconStart="@(new Icons.Regular.Size24.Save())">Save</FluentButton>
-                    <FluentButton OnClick="CancelAsync" Appearance="Appearance.Neutral"
-                        IconStart="@(new Icons.Regular.Size24.DismissSquare())">Cancel</FluentButton>
+            <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Width="100%">
+                    <FluentButton Appearance="Appearance.Accent"
+                                 OnClick="SaveAsync"
+                                 IconStart="@(new Icons.Regular.Size24.Save())">Save</FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral"
+                                 OnClick="CancelAsync"
+                                 IconStart="@(new Icons.Regular.Size24.DismissSquare())">Cancel</FluentButton>
                 </FluentStack>
-            </div>
+            </FluentToolbar>
 
         }
         else

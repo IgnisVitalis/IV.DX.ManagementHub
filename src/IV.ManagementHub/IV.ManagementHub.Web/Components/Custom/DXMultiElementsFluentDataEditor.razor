@@ -77,17 +77,22 @@ else
 
 @if (UseRowEditor && _isRowEditorOpen && _editingItem != null)
 {
-    <div class="dx-row-editor-backdrop" @onclick="CancelEdit">
-        <div class="dx-row-editor-window" @onclick:stopPropagation="true">
-            <div class="dx-row-editor-header">
-                <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
-                <FluentButton Appearance="Appearance.Stealth"
-                              aria-label="Close"
-                              IconStart="@(new Icons.Regular.Size20.Dismiss())"
-                              OnClick="CancelEdit" />
-            </div>
+    <div class="dx-overlay-backdrop" style="--dx-overlay-z: 5000;" @onclick="CancelEdit">
+        <div class="dx-overlay-window dx-overlay-window--md" @onclick:stopPropagation="true">
+            <FluentToolbar Class="dx-overlay-header" Style="width:100%;">
+                <FluentStack Orientation="Orientation.Horizontal"
+                            Width="100%"
+                            HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                            VerticalAlignment="VerticalAlignment.Center">
+                    <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
+                    <FluentButton Appearance="Appearance.Stealth"
+                                  aria-label="Close"
+                                  IconStart="@(new Icons.Regular.Size20.Dismiss())"
+                                  OnClick="CancelEdit" />
+                </FluentStack>
+            </FluentToolbar>
 
-            <div class="dx-row-editor-body">
+            <div class="dx-overlay-body">
                 <FluentCard Class="unclip" Style="width:100%;">
                     <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height:0;" VerticalGap="12">
                         @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
@@ -110,12 +115,16 @@ else
                 </FluentCard>
             </div>
 
-            <div class="dx-row-editor-footer">
+            <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
-                    <FluentButton Appearance="Appearance.Accent" OnClick="ApplyEdit">Apply</FluentButton>
-                    <FluentButton Appearance="Appearance.Neutral" OnClick="CancelEdit">Cancel</FluentButton>
+                    <FluentButton Appearance="Appearance.Accent"
+                                 OnClick="ApplyEdit"
+                                 IconStart="@(new Icons.Regular.Size24.Save())">Apply</FluentButton>
+                    <FluentButton Appearance="Appearance.Neutral"
+                                 OnClick="CancelEdit"
+                                 IconStart="@(new Icons.Regular.Size24.DismissSquare())">Cancel</FluentButton>
                 </FluentStack>
-            </div>
+            </FluentToolbar>
         </div>
     </div>
 }
