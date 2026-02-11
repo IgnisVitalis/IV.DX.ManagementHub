@@ -88,15 +88,17 @@ else
             </div>
 
             <div class="dx-row-editor-body">
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height:0;" VerticalGap="12">
-                    @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
-                    {
-                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="4">
-                            <FluentLabel Typo="Typography.Body">@column.Name</FluentLabel>
-                            <DXItemEditor ColumnDefinition="GetColumnDefinition(column, _editingItem)" DXItem="_editingItem" />
-                        </FluentStack>
-                    }
-                </FluentStack>
+                <FluentCard Class="unclip" Style="width:100%;">
+                    <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height:0;" VerticalGap="12">
+                        @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+                        {
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="4">
+                                <FluentLabel Typo="Typography.Body">@column.Name</FluentLabel>
+                                <DXItemEditor ColumnDefinition="GetColumnDefinition(column, _editingItem)" DXItem="_editingItem" />
+                            </FluentStack>
+                        }
+                    </FluentStack>
+                </FluentCard>
             </div>
 
             <div class="dx-row-editor-footer">

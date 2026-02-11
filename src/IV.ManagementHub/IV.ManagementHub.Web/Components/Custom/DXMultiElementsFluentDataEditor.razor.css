@@ -17,7 +17,8 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
-    overflow: visible;
+    /* Clip header/footer backgrounds to the rounded corners (matches picklist + main dialog feel). */
+    overflow: hidden;
 }
 
 .dx-row-editor-header,
