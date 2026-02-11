@@ -7,11 +7,16 @@
 
 @inherits DXItemEditorBaseComponent
 
-    @switch (ColumnDefinition.ColumnType)
-    {
-        // ---- BOOL ----
+@code {
+    [Parameter] public string? BoolLabel { get; set; }
+}
+
+@switch (ColumnDefinition.ColumnType)
+{
+    // ---- BOOL ----
     case DXColumnTypeEnum.Bool:
         <FluentSwitch @key="@(ColumnDefinition.Name + DXItem.ID)"
+                      Label="@BoolLabel"
                       Value="@(base.GetBool(DXItem.Content, ColumnDefinition))"
                       ValueChanged="@(v => base.SetBool(DXItem.Content, ColumnDefinition, v))" />
         break;

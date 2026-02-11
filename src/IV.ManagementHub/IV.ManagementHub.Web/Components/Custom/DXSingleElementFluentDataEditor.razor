@@ -20,8 +20,15 @@ else
             <FluentStack Orientation="Orientation.Vertical" Width="100%">
                 @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
                 {
-                    <FluentLabel>@column.Name</FluentLabel>
-                    <DXItemEditor ColumnDefinition="column" DXItem="DXItem" />
+                    @if (column.ColumnType == DXColumnTypeEnum.Bool)
+                    {
+                        <DXItemEditor ColumnDefinition="column" DXItem="DXItem" BoolLabel="@column.Name" />
+                    }
+                    else
+                    {
+                        <FluentLabel>@column.Name</FluentLabel>
+                        <DXItemEditor ColumnDefinition="column" DXItem="DXItem" />
+                    }
                 }
             </FluentStack>
         @* </FluentCard> *@
