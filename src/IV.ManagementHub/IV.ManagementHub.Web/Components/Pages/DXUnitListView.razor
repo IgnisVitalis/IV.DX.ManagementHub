@@ -195,11 +195,13 @@ else
                 <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
                         <FluentButton Appearance="Appearance.Accent"
+                                      IconStart="@(new Icons.Regular.Size16.Checkmark())"
                                       Disabled="@_isBulkActionRunning"
                                       OnClick="ConfirmBulkActionAsync">
                             Confirm
                         </FluentButton>
                         <FluentButton Appearance="Appearance.Neutral"
+                                      IconStart="@(new Icons.Regular.Size16.Dismiss())"
                                       Disabled="@_isBulkActionRunning"
                                       OnClick="CloseBulkConfirm">
                             Cancel
