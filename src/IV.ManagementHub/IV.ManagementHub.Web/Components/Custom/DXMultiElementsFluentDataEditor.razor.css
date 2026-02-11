@@ -17,7 +17,7 @@
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .dx-row-editor-header,
@@ -33,6 +33,7 @@
 .dx-row-editor-body {
     padding: 16px;
     overflow: auto;
+    min-height: 0;
 }
 
 .dx-grid-scroll-x {
@@ -43,4 +44,19 @@
 
 .dx-multi-element-display {
     padding-left: 0;
+}
+
+/* Fluent UI web components (FAST) can clip popups due to `contain: content` on cards */
+.dx-row-editor-window fluent-card {
+    contain: none !important;
+    content-visibility: visible !important;
+}
+
+/* Keep select dropdowns usable inside the row editor window */
+.dx-row-editor-window fluent-select::part(listbox),
+.dx-row-editor-window fluent-combobox::part(listbox) {
+    max-height: min(28vh, 260px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 2000;
 }

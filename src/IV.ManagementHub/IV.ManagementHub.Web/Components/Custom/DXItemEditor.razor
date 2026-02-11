@@ -47,27 +47,11 @@
     case DXColumnTypeEnum.Int:
         if (ColumnDefinition.EnumValues is { Count: > 0 })
         {
-            <FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
-                          TOption="string"
-                          Multiple="false"
-                          Style="overflow:visible;width:100%;"
-                          Width="100%"
-                          Value="@(base.GetIntAsString(DXItem.Content, ColumnDefinition))"
-                          ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(DXItem.Content, ColumnDefinition, v)))"
-                          Required="!ColumnDefinition.AllowNull">
-
-                @*  @if (ColumnDefinition.AllowNull)
-                                    { *@
-                <FluentOption TOption="string" Value="">—</FluentOption>
-                @* } *@
-
-                @foreach (var kv in ColumnDefinition.EnumValues)
-                {
-                    <FluentOption TOption="string" Value="@kv.Key.ToString()">
-                        @kv.Value
-                    </FluentOption>
-                }
-            </FluentSelect>
+            <DXPicklistField Title="@ColumnDefinition.Name"
+                             AllowNull="@ColumnDefinition.AllowNull"
+                             Value="@(base.GetIntAsString(DXItem.Content, ColumnDefinition))"
+                             ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetIntFromString(DXItem.Content, ColumnDefinition, v)))"
+                             Options="@(ColumnDefinition.EnumValues.Select(kv => new KeyValuePair<string,string>(kv.Key.ToString(), kv.Value)))" />
         }
         else
         {
@@ -116,27 +100,11 @@
     case DXColumnTypeEnum.GUID:
         if (ColumnDefinition.RelationValues is { Count: > 0 })
         {
-            <FluentSelect @key="@(ColumnDefinition.Name + DXItem.ID)"
-                          TOption="string"
-                          Multiple="false"
-                          Style="overflow:visible;width:100%;"
-                          Width="100%"
-                          Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
-                          ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, ColumnDefinition, v)))"
-                          Required="!ColumnDefinition.AllowNull">
-
-                @*   @if (ColumnDefinition.AllowNull)
-                                    { *@
-                <FluentOption TOption="string" Value="">—</FluentOption>
-                @* } *@
-
-                @foreach (var kv in ColumnDefinition.RelationValues)
-                {
-                    <FluentOption TOption="string" Value="@kv.Key.ToString()">
-                        @kv.Value
-                    </FluentOption>
-                }
-            </FluentSelect>
+            <DXPicklistField Title="@ColumnDefinition.Name"
+                             AllowNull="@ColumnDefinition.AllowNull"
+                             Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
+                             ValueChanged="@(EventCallback.Factory.Create<string>(this, v => base.SetGuidFromString(DXItem.Content, ColumnDefinition, v)))"
+                             Options="@(ColumnDefinition.RelationValues.Select(kv => new KeyValuePair<string,string>(kv.Key.ToString(), kv.Value)))" />
         }
         else
         {

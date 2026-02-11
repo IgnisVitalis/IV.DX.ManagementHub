@@ -1,0 +1,88 @@
+.dx-picklist-trigger-wrap {
+    width: 100%;
+}
+
+.dx-picklist-trigger-wrap > * {
+    width: 100%;
+}
+
+.dx-picklist-trigger {
+    width: 100%;
+    justify-content: space-between;
+    text-align: left;
+}
+
+.dx-picklist-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+}
+
+.dx-picklist-window {
+    width: min(900px, calc(100vw - 48px));
+    max-height: calc(100vh - 48px);
+    background: var(--neutral-layer-1);
+    color: var(--neutral-foreground-rest);
+    border-radius: 8px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Some containers (e.g., grids) set `white-space: nowrap` which would prevent wrapping */
+    white-space: normal;
+}
+
+.dx-picklist-header {
+    padding: 12px 16px;
+    background: var(--neutral-layer-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dx-picklist-body {
+    padding: 12px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+}
+
+.dx-picklist-list {
+    overflow: auto;
+    min-height: 0;
+    max-height: min(60vh, 520px);
+    border: 1px solid var(--neutral-stroke-rest);
+    border-radius: 6px;
+    padding: 4px;
+    background: var(--neutral-layer-1);
+    overflow-x: hidden;
+    white-space: normal;
+
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px;
+    align-content: start;
+}
+
+.dx-picklist-item {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    white-space: normal;
+}
+
+.dx-picklist-item.dx-selected {
+    background: var(--neutral-layer-3);
+}
+
+.dx-picklist-empty {
+    padding: 8px 10px;
+    color: var(--neutral-foreground-hint);
+    grid-column: 1 / -1;
+}
