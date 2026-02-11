@@ -79,6 +79,60 @@ namespace IV.ManagementHub.Web.Components.Pages
         private Guid selectedItemID { get; set; }
         private Guid? selectedPreviewItemID { get; set; }
 
+        private IReadOnlyList<Guid> AllRowIds
+        {
+            get
+            {
+                if (dxQueryResult?.Content is null || dxQueryResult.Content.Count == 0)
+                    return Array.Empty<Guid>();
+
+                return dxQueryResult.Content
+                    .Select(dxQueryResult.GetID)
+                    .Where(id => id != default)
+                    .Distinct()
+                    .ToArray();
+            }
+        }
+
+        private bool IsAllRowsSelected
+        {
+            get
+            {
+                var allIds = AllRowIds;
+                if (allIds.Count == 0)
+                    return false;
+
+                foreach (var id in allIds)
+                {
+                    if (!_selectedIdSet.Contains(id))
+                        return false;
+                }
+
+                return true;
+            }
+        }
+
+        private Task SetSelectAllRows(bool selected)
+        {
+            var allIds = AllRowIds;
+            if (allIds.Count == 0)
+                return Task.CompletedTask;
+
+            if (!selected)
+            {
+                ClearSelection();
+            }
+            else
+            {
+                foreach (var id in allIds)
+                {
+                    AddSelected(id);
+                }
+            }
+
+            SyncPreviewWithSelection();
+            return Task.CompletedTask;
+        }
 
         private bool isEditing = false;
         private bool showDetails = false;

@@ -47,7 +47,8 @@ else
                                                 OnRowClick="@(x => OnRowClicked(dxQueryResult.GetID(x.Item)))"
                                                 RowSize="@DataGridRowSize.Medium">
 
-                                    <TemplateColumn Title="" Align="Align.Center" Width="3rem">
+                                    <TemplateColumn Title="" Align="Align.Center" Width="3rem"
+                                                    HeaderCellItemTemplate="@SelectAllHeaderCellTemplate">
                                         <ChildContent Context="item">
                                             <div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
                                                 <FluentCheckbox Value="@IsSelected(dxQueryResult.GetID(item))"
@@ -208,4 +209,13 @@ else
             </div>
         </div>
     }
+}
+
+@code
+{
+    private RenderFragment<ColumnBase<JObject>> SelectAllHeaderCellTemplate => _ => @<div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
+        <FluentCheckbox aria-label="Select all rows"
+                        Value="@IsAllRowsSelected"
+                        ValueChanged="@SetSelectAllRows" />
+    </div>;
 }
