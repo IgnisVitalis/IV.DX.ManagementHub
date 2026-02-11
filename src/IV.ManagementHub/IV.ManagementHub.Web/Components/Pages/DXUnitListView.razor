@@ -93,13 +93,13 @@ else
                                             <FluentButton aria-label="Export"
                                                           Appearance="Appearance.Neutral"
                                                           Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => ExportSingleAsync(selectedPreviewItemID.Value))">
+                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
                                                 <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
                                             </FluentButton>
                                             <FluentButton aria-label="Delete"
                                                           Appearance="Appearance.Neutral"
                                                           Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => DeleteSingleAsync(selectedPreviewItemID.Value))">
+                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
                                                 <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                                             </FluentButton>
                                         }
