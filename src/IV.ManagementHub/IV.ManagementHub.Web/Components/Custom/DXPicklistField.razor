@@ -29,32 +29,34 @@
                                  Placeholder="Search..."
                                  Style="width:100%;" />
 
-                <div class="dx-picklist-list">
-                    @if (AllowNull)
-                    {
-                        <FluentButton Appearance="Appearance.Stealth"
-                                     Class="@GetItemClass(string.Empty)"
-                                     OnClick="@(() => Select(string.Empty))">
-                            —
-                        </FluentButton>
-                    }
-
-                    @if (FilteredOptions.Count == 0)
-                    {
-                        <FluentLabel Class="dx-picklist-empty">No results</FluentLabel>
-                    }
-                    else
-                    {
-                        @foreach (var opt in FilteredOptions)
+                <FluentCard Class="dx-picklist-list-card unclip" Style="width:100%;">
+                    <div class="dx-picklist-list">
+                        @if (AllowNull)
                         {
                             <FluentButton Appearance="Appearance.Stealth"
-                                         Class="@GetItemClass(opt.Key)"
-                                         OnClick="@(() => Select(opt.Key))">
-                                @opt.Value
+                                         Class="@GetItemClass(string.Empty)"
+                                         OnClick="@(() => Select(string.Empty))">
+                                —
                             </FluentButton>
                         }
-                    }
-                </div>
+
+                        @if (FilteredOptions.Count == 0)
+                        {
+                            <FluentLabel Class="dx-picklist-empty">No results</FluentLabel>
+                        }
+                        else
+                        {
+                            @foreach (var opt in FilteredOptions)
+                            {
+                                <FluentButton Appearance="Appearance.Stealth"
+                                             Class="@GetItemClass(opt.Key)"
+                                             OnClick="@(() => Select(opt.Key))">
+                                    @opt.Value
+                                </FluentButton>
+                            }
+                        }
+                    </div>
+                </FluentCard>
             </div>
         </div>
     </div>
