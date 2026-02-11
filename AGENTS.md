@@ -1,12 +1,17 @@
 # Agent Instructions (IV.ManagementHub)
 
-## Tool usage rules
+## The agent is allowed to:
 
-- Do NOT run commands in parallel
-- Run at most ONE shell command at a time
-- Never scan the entire repository
-- Never auto-run formatting or analysis tools
-<!-- - Ask before running any command -->
+- Run build and test commands automatically
+- Analyze the entire repository
+- Execute validation scripts
+
+## Restrictions:
+
+- Only one shell command at a time
+- Never execute commands in parallel
+- Never retry the same command more than once
+- Stop if execution exceeds 90 seconds
 
 ## UI (Fluent UI Blazor) rule
 
