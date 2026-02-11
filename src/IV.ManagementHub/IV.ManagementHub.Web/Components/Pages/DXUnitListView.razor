@@ -36,7 +36,7 @@ else
                 <Panel1>
                     <FluentCard Class="dx-unit-panel-card">
                         <div class="dx-unit-list-panel">
-                            <FluentToolbar>
+                            <FluentToolbar Class="dx-unit-panel-toolbar" Style="width:100%;">
                                 <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="@(() => OpenEditDialog(default(Guid)))" />
                             </FluentToolbar>
 
@@ -45,7 +45,7 @@ else
                                                 Items="@dxQueryResult.AsQueryable()"
                                                 GenerateColumns="false"
                                                 OnRowClick="@(x => OnRowClicked(dxQueryResult.GetID(x.Item)))"
-                                                RowSize="@DataGridRowSize.Large">
+                                                RowSize="@DataGridRowSize.Medium">
 
                                     <TemplateColumn Title="" Align="Align.Center" Width="3rem">
                                         <ChildContent Context="item">
