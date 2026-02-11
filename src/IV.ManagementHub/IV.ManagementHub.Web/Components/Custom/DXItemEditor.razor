@@ -7,13 +7,13 @@
 
 @inherits DXItemEditorBaseComponent
 
-@switch (ColumnDefinition.ColumnType)
-{
-    // ---- BOOL ----
+    @switch (ColumnDefinition.ColumnType)
+    {
+        // ---- BOOL ----
     case DXColumnTypeEnum.Bool:
-        <FluentCheckbox @key="@(ColumnDefinition.Name + DXItem.ID)"
-                        Value="@(base.GetBool(DXItem.Content, ColumnDefinition))"
-                        ValueChanged="@(v =>  base.SetBool(DXItem.Content, ColumnDefinition, v))" />
+        <FluentSwitch @key="@(ColumnDefinition.Name + DXItem.ID)"
+                      Value="@(base.GetBool(DXItem.Content, ColumnDefinition))"
+                      ValueChanged="@(v => base.SetBool(DXItem.Content, ColumnDefinition, v))" />
         break;
 
     // ---- SENSITIVE STRING (MASKED) ----
