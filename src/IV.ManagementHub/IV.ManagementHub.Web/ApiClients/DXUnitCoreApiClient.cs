@@ -151,6 +151,40 @@ namespace IV.ManagementHub.Web.ApiClients
 
             await JSRuntime.InvokeVoidAsync("downloadJsonFile", $"01_01_0001_UIUX_{typeName}_{id}.dat", formatted);
         }
+
+        public async Task ExportAsync(string typeName, IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var idArray = ids?.Where(x => x != default).Distinct().ToArray() ?? Array.Empty<Guid>();
+            if (idArray.Length == 0)
+                return;
+
+            var items = await GetByIdsAsync(typeName, idArray, cancellationToken);
+            var jArray = new JArray(items);
+
+            var formatted = jArray.ToString(Formatting.Indented);
+            var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd_HHmmss");
+
+            await JSRuntime.InvokeVoidAsync(
+                "downloadJsonFile",
+                $"01_01_0001_UIUX_{typeName}_{idArray.Length}_items_{stamp}.dat",
+                formatted);
+        }
+
+        public async Task<IReadOnlyList<JObject>> GetByIdsAsync(string typeName, IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+        {
+            var idArray = ids?.Where(x => x != default).Distinct().ToArray() ?? Array.Empty<Guid>();
+            if (idArray.Length == 0)
+                return Array.Empty<JObject>();
+
+            var content = new StringContent(JsonConvert.SerializeObject(idArray), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"api/v1.0/{typeName}/by-ids", content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var jArray = JsonConvert.DeserializeObject<JArray>(str) ?? new JArray();
+            return jArray.OfType<JObject>().ToList();
+        }
     }
 }
-

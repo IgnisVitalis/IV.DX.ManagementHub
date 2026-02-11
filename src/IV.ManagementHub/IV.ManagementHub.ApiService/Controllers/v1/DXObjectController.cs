@@ -69,6 +69,23 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return item is null ? NotFound() : item;
         }
 
+        /// <summary>Get multiple objects of the specified type by IDs.</summary>
+        [HttpPost("by-ids")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async virtual Task<ActionResult<JArray>> GetByIdsAsync([FromRoute] string typeName, [FromBody] Guid[] ids)
+        {
+            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+
+            if (ids is null || ids.Length == 0)
+                return new JArray();
+
+            var items = await _dataReader.GetItemsAsync(typeName, ids, ct: ct);
+
+            return new JArray(items);
+        }
+
         /// <summary>Create or update an object of the specified type.</summary>
         [HttpPost]
         [Consumes("application/json")]

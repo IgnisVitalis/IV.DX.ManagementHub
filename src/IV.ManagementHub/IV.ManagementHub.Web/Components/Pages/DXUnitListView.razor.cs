@@ -360,10 +360,7 @@ namespace IV.ManagementHub.Web.Components.Pages
                         break;
 
                     case BulkActionKind.Export:
-                        foreach (var id in ids)
-                        {
-                            await coreApi.ExportAsync(dxQueryResult.TypeName, id);
-                        }
+                        await coreApi.ExportAsync(dxQueryResult.TypeName, ids);
                         break;
                 }
             }
