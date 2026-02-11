@@ -149,7 +149,7 @@ namespace IV.ManagementHub.Web.ApiClients
 
             var formatted = jObject.ToString(Formatting.Indented);
 
-            await JSRuntime.InvokeVoidAsync("downloadJsonFile", $"01_01_0001_UIUX_{typeName}_{id}.dat", formatted);
+            await JSRuntime.InvokeVoidAsync("downloadJsonFile", $"01_01_0001_UIUX_{typeName}.dx", formatted);
         }
 
         public async Task ExportAsync(string typeName, IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
@@ -162,11 +162,10 @@ namespace IV.ManagementHub.Web.ApiClients
             var jArray = new JArray(items);
 
             var formatted = jArray.ToString(Formatting.Indented);
-            var stamp = DateTimeOffset.UtcNow.ToString("yyyyMMdd_HHmmss");
 
             await JSRuntime.InvokeVoidAsync(
                 "downloadJsonFile",
-                $"01_01_0001_UIUX_{typeName}_{idArray.Length}_items_{stamp}.dat",
+                $"01_01_0001_UIUX_{typeName}.dx",
                 formatted);
         }
 

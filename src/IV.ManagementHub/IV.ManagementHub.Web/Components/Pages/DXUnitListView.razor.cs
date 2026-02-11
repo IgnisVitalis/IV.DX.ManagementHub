@@ -51,6 +51,14 @@ namespace IV.ManagementHub.Web.Components.Pages
         private bool _showBulkConfirm;
         private bool _isBulkActionRunning;
 
+        private string BulkConfirmTitle =>
+            _pendingBulkAction switch
+            {
+                BulkActionKind.Delete => "Delete items",
+                BulkActionKind.Export => "Export items",
+                _ => "Confirm",
+            };
+
         protected override async Task OnParametersSetAsync()
         {
             coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
@@ -289,21 +297,21 @@ namespace IV.ManagementHub.Web.Components.Pages
             }
         }
 
-        private string BulkConfirmTitle =>
-            _pendingBulkAction switch
+        private string BulkConfirmMessage
+        {
+            get
             {
-                BulkActionKind.Delete => "Delete items",
-                BulkActionKind.Export => "Export items",
-                _ => "Confirm",
-            };
+                var count = SelectedCount;
+                var itemWord = count == 1 ? "item" : "items";
 
-        private string BulkConfirmMessage =>
-            _pendingBulkAction switch
-            {
-                BulkActionKind.Delete => $"Delete {SelectedCount} selected item(s)?",
-                BulkActionKind.Export => $"Export {SelectedCount} selected item(s)?",
-                _ => $"Confirm action for {SelectedCount} selected item(s)?",
-            };
+                return _pendingBulkAction switch
+                {
+                    BulkActionKind.Delete => $"Delete {count} selected {itemWord}?",
+                    BulkActionKind.Export => $"Export {count} selected {itemWord}?",
+                    _ => $"Confirm action for {count} selected {itemWord}?",
+                };
+            }
+        }
 
         private void RequestBulkAction(BulkActionKind kind)
         {
