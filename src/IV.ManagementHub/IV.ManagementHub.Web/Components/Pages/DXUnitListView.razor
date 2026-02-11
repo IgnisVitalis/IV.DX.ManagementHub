@@ -34,7 +34,7 @@ else
                            Panel2MinSize="25%"
                            style="height: 100%; min-height: 0;">
                 <Panel1>
-                    <FluentCard Class="dx-unit-panel-card">
+                    <div class="dx-unit-panel-surface">
                         <div class="dx-unit-list-panel">
                             <FluentToolbar Class="dx-unit-panel-toolbar" Style="width:100%;">
                                 <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="@(() => OpenEditDialog(default(Guid)))" />
@@ -71,10 +71,10 @@ else
                                 </FluentDataGrid>
                             </div>
                         </div>
-                    </FluentCard>
+                    </div>
                 </Panel1>
                 <Panel2>
-                    <FluentCard Class="dx-unit-panel-card">
+                    <div class="dx-unit-panel-surface">
                         <div class="dx-unit-details-panel">
                             <FluentToolbar Class="dx-unit-details-toolbar" Style="width:100%;">
                                 <FluentStack Orientation="Orientation.Horizontal"
@@ -156,7 +156,7 @@ else
                                 </div>
                             </div>
                         </div>
-                    </FluentCard>
+                    </div>
                 </Panel2>
             </FluentSplitter>
         </div>

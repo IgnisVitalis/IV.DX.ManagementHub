@@ -20,16 +20,13 @@
     min-height: 0;
 }
 
-.dx-unit-panel-card {
+.dx-unit-panel-surface {
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
     padding: 0;
-    box-shadow: none;
-    border: 1px solid var(--neutral-stroke-divider-rest);
-    border-radius: 0.25rem;
-    overflow: hidden;
+    min-width: 0;
 }
 
 .dx-unit-panel-toolbar {
