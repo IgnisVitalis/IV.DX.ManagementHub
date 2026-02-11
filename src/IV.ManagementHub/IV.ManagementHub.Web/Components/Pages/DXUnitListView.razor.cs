@@ -5,6 +5,7 @@ using IV.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Data;
 
 namespace IV.ManagementHub.Web.Components.Pages
@@ -35,6 +36,20 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private DXQueryResult dxQueryResult;
         private IDictionary<string, object> rows;
+
+        private readonly List<Guid> _selectedIds = new();
+        private readonly HashSet<Guid> _selectedIdSet = new();
+        private readonly Dictionary<Guid, string> _displayStringById = new();
+
+        private enum BulkActionKind
+        {
+            Export,
+            Delete,
+        }
+
+        private BulkActionKind? _pendingBulkAction;
+        private bool _showBulkConfirm;
+        private bool _isBulkActionRunning;
 
         protected override async Task OnParametersSetAsync()
         {
@@ -73,6 +88,10 @@ namespace IV.ManagementHub.Web.Components.Pages
                 dxUnits = await coreApi.GetItems(dxQueryResult.TypeName);
 
                 values = dxQueryResult.AsDataTable();
+
+                BuildDisplayStringIndex();
+                ClearSelection();
+                SyncPreviewWithSelection();
             }
             finally
             {
@@ -103,10 +122,50 @@ namespace IV.ManagementHub.Web.Components.Pages
             _showDialog = true;
         }
 
-        private async Task OpenPanelRightAsync(Guid selectedBlockID)
+        private Task OnRowClicked(Guid id)
         {
-            selectedPreviewItemID = selectedBlockID;
-            _collapse = false;
+            ToggleSelected(id);
+            SyncPreviewWithSelection();
+            return Task.CompletedTask;
+        }
+
+        private bool IsSelected(Guid id) => id != default && _selectedIdSet.Contains(id);
+
+        private Task SetSelected(Guid id, bool? selected)
+        {
+            if (selected == true)
+            {
+                AddSelected(id);
+            }
+            else
+            {
+                RemoveSelected(id);
+            }
+
+            SyncPreviewWithSelection();
+            return Task.CompletedTask;
+        }
+
+        private int SelectedCount => _selectedIds.Count;
+
+        private IEnumerable<string> SelectedDisplayStrings =>
+            _selectedIds.Select(id => GetDisplayString(id));
+
+        private async Task ExportSingleAsync(Guid id)
+        {
+            if (id == default)
+                return;
+
+            await coreApi.ExportAsync(dxQueryResult.TypeName, id);
+        }
+
+        private async Task DeleteSingleAsync(Guid id)
+        {
+            if (id == default)
+                return;
+
+            await coreApi.DeleteAsync(dxQueryResult.TypeName, id);
+            await OnDeleted();
         }
 
         //private async Task<JObject> LoadDetailsAsync(Guid id)
@@ -117,6 +176,8 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private void OnClosed()
         {
+            CloseBulkConfirmInternal();
+            ClearSelection();
             selectedPreviewItemID = null;
             _collapse = true;
         }
@@ -170,6 +231,233 @@ namespace IV.ManagementHub.Web.Components.Pages
         public IQueryable<DataRow> AsQueryableRows(DataTable table)
         {
             return table?.AsEnumerable()?.AsQueryable() ?? Enumerable.Empty<DataRow>().AsQueryable();
+        }
+
+        private void AddSelected(Guid id)
+        {
+            if (id == default || _selectedIdSet.Contains(id))
+                return;
+
+            _selectedIdSet.Add(id);
+            _selectedIds.Add(id);
+        }
+
+        private void RemoveSelected(Guid id)
+        {
+            if (id == default || !_selectedIdSet.Remove(id))
+                return;
+
+            _selectedIds.Remove(id);
+        }
+
+        private void ToggleSelected(Guid id)
+        {
+            if (IsSelected(id))
+            {
+                RemoveSelected(id);
+            }
+            else
+            {
+                AddSelected(id);
+            }
+        }
+
+        private void ClearSelection()
+        {
+            _selectedIds.Clear();
+            _selectedIdSet.Clear();
+        }
+
+        private void SyncPreviewWithSelection()
+        {
+            if (SelectedCount <= 0)
+            {
+                selectedPreviewItemID = null;
+                _collapse = true;
+                return;
+            }
+
+            _collapse = false;
+
+            if (SelectedCount == 1)
+            {
+                selectedPreviewItemID = _selectedIds[0];
+            }
+            else
+            {
+                selectedPreviewItemID = null;
+            }
+        }
+
+        private string BulkConfirmTitle =>
+            _pendingBulkAction switch
+            {
+                BulkActionKind.Delete => "Delete items",
+                BulkActionKind.Export => "Export items",
+                _ => "Confirm",
+            };
+
+        private string BulkConfirmMessage =>
+            _pendingBulkAction switch
+            {
+                BulkActionKind.Delete => $"Delete {SelectedCount} selected item(s)?",
+                BulkActionKind.Export => $"Export {SelectedCount} selected item(s)?",
+                _ => $"Confirm action for {SelectedCount} selected item(s)?",
+            };
+
+        private void RequestBulkAction(BulkActionKind kind)
+        {
+            if (SelectedCount <= 0)
+                return;
+
+            _pendingBulkAction = kind;
+            _showBulkConfirm = true;
+        }
+
+        private void CloseBulkConfirm()
+        {
+            if (_isBulkActionRunning)
+                return;
+
+            CloseBulkConfirmInternal();
+        }
+
+        private void CloseBulkConfirmInternal()
+        {
+            _showBulkConfirm = false;
+            _pendingBulkAction = null;
+        }
+
+        private async Task ConfirmBulkActionAsync()
+        {
+            if (_pendingBulkAction is null)
+            {
+                CloseBulkConfirm();
+                return;
+            }
+
+            var ids = _selectedIds.ToArray();
+            if (ids.Length == 0)
+            {
+                CloseBulkConfirm();
+                return;
+            }
+
+            var action = _pendingBulkAction.Value;
+            _isBulkActionRunning = true;
+
+            try
+            {
+                switch (action)
+                {
+                    case BulkActionKind.Delete:
+                        foreach (var id in ids)
+                        {
+                            await coreApi.DeleteAsync(dxQueryResult.TypeName, id);
+                        }
+
+                        await LoadDataAsync(false);
+                        break;
+
+                    case BulkActionKind.Export:
+                        foreach (var id in ids)
+                        {
+                            await coreApi.ExportAsync(dxQueryResult.TypeName, id);
+                        }
+                        break;
+                }
+            }
+            finally
+            {
+                _isBulkActionRunning = false;
+                CloseBulkConfirmInternal();
+
+                if (action == BulkActionKind.Delete)
+                {
+                    ClearSelection();
+                    SyncPreviewWithSelection();
+                }
+            }
+        }
+
+        private string GetDisplayString(Guid id)
+        {
+            if (id == default)
+                return string.Empty;
+
+            if (_displayStringById.TryGetValue(id, out var display) && !string.IsNullOrWhiteSpace(display))
+                return display;
+
+            return id.ToString();
+        }
+
+        private void BuildDisplayStringIndex()
+        {
+            _displayStringById.Clear();
+
+            if (dxQueryResult?.Content != null)
+            {
+                foreach (var row in dxQueryResult.Content)
+                {
+                    if (!TryGetId(row, out var id))
+                        continue;
+
+                    var display = GetDisplayStringFromObject(row);
+                    if (!string.IsNullOrWhiteSpace(display))
+                        _displayStringById[id] = display;
+                }
+            }
+
+            foreach (var unit in dxUnits)
+            {
+                if (!TryGetId(unit, out var id))
+                    continue;
+
+                var display = GetDisplayStringFromObject(unit);
+                if (!string.IsNullOrWhiteSpace(display))
+                    _displayStringById[id] = display;
+            }
+        }
+
+        private static bool TryGetId(JObject obj, out Guid id)
+        {
+            id = default;
+
+            if (obj is null)
+                return false;
+
+            var token = obj.GetValue("ID", StringComparison.OrdinalIgnoreCase);
+            if (token is null || token.Type == JTokenType.Null)
+                return false;
+
+            if (token.Type == JTokenType.Guid)
+            {
+                id = token.Value<Guid>();
+                return id != default;
+            }
+
+            if (Guid.TryParse(token.ToString(), out id))
+                return id != default;
+
+            return false;
+        }
+
+        private static string GetDisplayStringFromObject(JObject obj)
+        {
+            var candidates = new[] { "DisplayString", "DisplayValue", "Name" };
+
+            foreach (var name in candidates)
+            {
+                var token = obj.GetValue(name, StringComparison.OrdinalIgnoreCase);
+                if (token is null || token.Type == JTokenType.Null)
+                    continue;
+
+                var value = token.Type == JTokenType.String ? token.Value<string>() : token.ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                    return value.Trim();
+            }
+
+            return string.Empty;
         }
     }
 }

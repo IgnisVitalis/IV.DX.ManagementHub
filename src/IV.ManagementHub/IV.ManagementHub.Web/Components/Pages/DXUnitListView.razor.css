@@ -21,6 +21,14 @@
     min-height: 0;
 }
 
+.dx-unit-panel-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 0.25rem;
+}
+
 .dx-unit-list-grid-scroll {
     flex: 1 1 auto;
     min-height: 0;
@@ -48,10 +56,15 @@
     min-height: 0;
 }
 
+.dx-unit-details-toolbar {
+    border-bottom: 1px solid var(--neutral-stroke-divider-rest);
+    padding-bottom: 0.25rem;
+}
+
 .dx-unit-details-scroll {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
     overscroll-behavior: contain;
-    padding-right: 0.25rem;
+    padding: 0.5rem;
 }
