@@ -12,6 +12,25 @@
     text-align: left;
 }
 
+/* The internal layout of `FluentButton` lives in the underlying `fluent-button` web component.
+   Use `::deep` + `::part(...)` to left-align the value while keeping the chevron at the far right. */
+.dx-picklist-trigger-wrap ::deep fluent-button {
+    width: 100%;
+}
+
+.dx-picklist-trigger-wrap ::deep fluent-button::part(control) {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dx-picklist-trigger-wrap ::deep fluent-button::part(content) {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+}
+
 .dx-picklist-backdrop {
     position: fixed;
     inset: 0;
