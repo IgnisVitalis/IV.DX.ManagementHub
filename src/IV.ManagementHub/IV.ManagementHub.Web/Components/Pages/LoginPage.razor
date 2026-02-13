@@ -77,7 +77,7 @@
             }
 
             AuthState.SetAccessToken(result.AccessToken, _username);
-            NavigationManager.NavigateTo("/app/base/blocks", replace: true);
+            NavigationManager.NavigateTo("/", replace: true);
         }
         catch (Exception ex)
         {

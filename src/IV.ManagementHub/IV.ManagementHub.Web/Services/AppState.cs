@@ -25,7 +25,6 @@
                 Items: new[]
                 {
                     new NavItem("Entities", "bi-list-nested", $"/app/{appKey}/entities"),
-                    new NavItem("Blocks",   "bi-grid",        $"/app/{appKey}/blocks"),
                 }
             ),
         },
@@ -38,7 +37,6 @@
                 Items: new[]
                 {
                     new NavItem("Entities",     "bi-list-nested", $"/app/{appKey}/entities"),
-                    new NavItem("Blocks",       "bi-grid",        $"/app/{appKey}/blocks"),
                     new NavItem("Dictionaries", "bi-journal",     $"/app/{appKey}/dictionaries"),
                 }
             ),

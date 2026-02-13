@@ -19,9 +19,9 @@
             <FluentLabel Typo="Typography.Subject">User Settings</FluentLabel>
 
             <FluentButton Appearance="Appearance.Stealth"
-                          Title="Back to blocks"
-                          aria-label="Back to blocks"
-                          OnClick="GoToBlocks">
+                          Title="Back to home"
+                          aria-label="Back to home"
+                          OnClick="GoToHome">
                 <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
             </FluentButton>
         </FluentStack>
@@ -75,9 +75,9 @@
         }
     }
 
-    private void GoToBlocks()
+    private void GoToHome()
     {
-        NavigationManager.NavigateTo($"/app/{AppKey}/blocks");
+        NavigationManager.NavigateTo("/");
     }
 
     private void SignOut()
