@@ -7,7 +7,7 @@
 @switch (ColumnDefinition.ColumnType)
 {
     case DXColumnTypeEnum.Blob:
-        <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="gap:8px;">
+        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="8">
             @if (base.HasBlob(DXItem.Content, ColumnDefinition) &&
                  base.TryGetBlobMeta(DXItem.Content, ColumnDefinition, out var name, out var mime, out var size))
             {

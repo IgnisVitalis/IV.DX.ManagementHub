@@ -13,21 +13,3 @@
     width: min(340px, calc(100vw - 2rem));
     padding: 0.9rem 0.9rem 1.1rem;
 }
-
-.login-title {
-    font-weight: 700;
-    letter-spacing: .01em;
-}
-
-.login-subtitle {
-    color: var(--neutral-foreground-hint);
-}
-
-.login-error {
-    color: var(--status-danger-foreground-rest);
-}
-
-.login-hint {
-    color: var(--neutral-foreground-hint);
-    font-size: var(--type-ramp-minus-1-font-size);
-}

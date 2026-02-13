@@ -122,7 +122,7 @@
 
     // ---- BLOB ----
     case DXColumnTypeEnum.Blob:
-        <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="gap:8px;">
+        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="8">
 
             <FluentInputFile Id="@_blobInputId"
                              Mode="InputFileMode.Stream"
@@ -190,7 +190,8 @@
             {
                 <FluentStack Orientation="Orientation.Horizontal"
                              VerticalAlignment="VerticalAlignment.Center"
-                             Style="gap:8px; margin-top:8px;">
+                             HorizontalGap="8"
+                             Style="margin-top:8px;">
 
                     <a href="@GetBlobDownloadHref()"
                        download="@GetSafeDownloadName(GetBlobFileName())"
