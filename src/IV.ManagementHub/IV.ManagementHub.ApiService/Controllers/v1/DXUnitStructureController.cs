@@ -1,4 +1,5 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
+using IV.ManagementHub.ApiService.Controllers;
 using IV.ManagementHub.ApiService.Contracts.Services;
 using IV.ManagementHub.Common.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/DXUnitStructure")]
-    public class DXUnitStructureController(IDXUnitStructureService dxUnitStructureService) : ControllerBase
+    public class DXUnitStructureController(IDXUnitStructureService dxUnitStructureService) : DXApiControllerBase
     {
         /// <summary>Get DXUnitStructure object by Name.</summary>
         [HttpGet("{name}")]

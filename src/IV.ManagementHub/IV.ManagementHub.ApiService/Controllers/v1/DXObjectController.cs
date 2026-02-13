@@ -1,6 +1,7 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using IV.DX.Application.Contracts.Abstractions;
 using IV.DX.Kernel.Models;
+using IV.ManagementHub.ApiService.Controllers;
 using IV.ManagementHub.ApiService.Controllers.v1;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -11,7 +12,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/{typeName}")]
     //[ExcludeTypeName("DXUnitDefinitionUnit")]
-    public class DXObjectController : ControllerBase
+    public class DXObjectController : DXApiControllerBase
     {
         private readonly IDXUnitDataService _dataService;
         private readonly IDXUnitDataReader _dataReader;
@@ -33,7 +34,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             var items = string.IsNullOrEmpty(filter)
                 ? await _dataReader.GetItemsAsync(typeName, ct: ct)
                 : await _dataReader.GetItemsAsync(typeName, filter, ct: ct);
-            
+
             var jarray = new JArray(items);
 
             return jarray;

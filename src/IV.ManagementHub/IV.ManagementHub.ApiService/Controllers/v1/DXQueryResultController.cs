@@ -1,5 +1,6 @@
-﻿using Asp.Versioning;
+using Asp.Versioning;
 using IV.DX.Application.Contracts.Abstractions;
+using IV.ManagementHub.ApiService.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
@@ -8,7 +9,7 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/DXQueryResult")]
-    public class DXQueryResultController(IDXQueryResultProvider dxQueryResultProvider) : ControllerBase
+    public class DXQueryResultController(IDXQueryResultProvider dxQueryResultProvider) : DXApiControllerBase
     {
         /// <summary>Get DXUnitStructure object by Name.</summary>
         [HttpGet("{dxQueryID:guid}/{dxFilterID:guid?}")]

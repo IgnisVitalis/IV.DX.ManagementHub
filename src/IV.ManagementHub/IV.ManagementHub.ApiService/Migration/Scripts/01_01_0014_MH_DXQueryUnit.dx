@@ -1,0 +1,215 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXQueryUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": null,
+      "DXFilter": null,
+      "DXUnitContext": null
+    },
+    "Data": {
+      "Items": [
+        {
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Sync",
+                "IsMulti": true,
+                "IsRequired": true,
+                "DXFilter": null,
+                "DXUnitContext": null
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "699457a2-2992-430b-9c8c-940e516d7714",
+                    "ID": "7212efd4-0841-4600-92e6-c0314676712a",
+                    "TimeStamp": "2026-02-09T17:09:01.765447Z",
+                    "DXQueryUnitID": "699457a2-2992-430b-9c8c-940e516d7714",
+                    "Name": "Name",
+                    "Expression": "Name",
+                    "Order": 10
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          },
+          "ID": "699457a2-2992-430b-9c8c-940e516d7714",
+          "TimeStamp": "2026-02-09T17:09:01.762252Z",
+          "Name": "DXRole query",
+          "Description": null,
+          "DXUnitDefinition": "0bc15498-fda6-4164-b612-39e04131f32c"
+        },
+        {
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Sync",
+                "IsMulti": true,
+                "IsRequired": true,
+                "DXFilter": null,
+                "DXUnitContext": null
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "5d7a7b34-4b0d-40d7-9b01-f242ab57e6ec",
+                    "ID": "3ddf3670-ef32-4b19-93bb-a059d4b7186e",
+                    "TimeStamp": "2026-02-09T17:14:21.959192Z",
+                    "DXQueryUnitID": "5d7a7b34-4b0d-40d7-9b01-f242ab57e6ec",
+                    "Name": "Name",
+                    "Expression": "Name",
+                    "Order": 10
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          },
+          "ID": "5d7a7b34-4b0d-40d7-9b01-f242ab57e6ec",
+          "TimeStamp": "2026-02-09T17:14:21.954505Z",
+          "Name": "DXTenant query",
+          "Description": null,
+          "DXUnitDefinition": "6bae3c45-a19b-4a2b-ae92-6512c926efa9"
+        },
+        {
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Sync",
+                "IsMulti": true,
+                "IsRequired": true,
+                "DXFilter": null,
+                "DXUnitContext": null
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+                    "ID": "3799e658-55fe-43c1-9b62-81ccc685d692",
+                    "TimeStamp": "2026-02-09T17:20:00.857883Z",
+                    "DXQueryUnitID": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+                    "Name": "Subject",
+                    "Expression": "Subject",
+                    "Order": 10
+                  },
+                  {
+                    "DXUnitID": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+                    "ID": "7b843aae-9b29-4fa2-a6e0-6bae189340f3",
+                    "TimeStamp": "2026-02-09T17:27:29.189993Z",
+                    "DXQueryUnitID": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+                    "Name": "Provider",
+                    "Expression": "Provider",
+                    "Order": 20
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          },
+          "ID": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+          "TimeStamp": "2026-02-09T17:27:29.185561Z",
+          "Name": "DXIdentityLogin query",
+          "Description": null,
+          "DXUnitDefinition": "dfe404f5-f877-44c2-8b2d-e79ac87752bb"
+        },
+        {
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Sync",
+                "IsMulti": true,
+                "IsRequired": true,
+                "DXFilter": null,
+                "DXUnitContext": null
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "38653b23-05ac-43be-a0e9-0e1b925608d2",
+                    "ID": "7e1ca927-ee7c-42ae-a814-7c756e646268",
+                    "TimeStamp": "2026-02-09T17:20:28.531928Z",
+                    "DXQueryUnitID": "38653b23-05ac-43be-a0e9-0e1b925608d2",
+                    "Name": "Name",
+                    "Expression": "Name",
+                    "Order": 10
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          },
+          "ID": "38653b23-05ac-43be-a0e9-0e1b925608d2",
+          "TimeStamp": "2026-02-09T17:20:28.527967Z",
+          "Name": "DXIdentity query",
+          "Description": null,
+          "DXUnitDefinition": "87081445-19e8-46d1-b210-a93924ba3819"
+        },
+        {
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Sync",
+                "IsMulti": true,
+                "IsRequired": true,
+                "DXFilter": null,
+                "DXUnitContext": null
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "ID": "bf09db7f-ee03-4aaf-9da9-0303936c4cad",
+                    "TimeStamp": "2026-02-09T17:21:33.204504Z",
+                    "DXQueryUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "Name": "Name",
+                    "Expression": "Name",
+                    "Order": 10
+                  },
+                  {
+                    "DXUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "ID": "de24eb5b-c436-41f7-80ce-a9253938a512",
+                    "TimeStamp": "2026-02-09T17:21:33.204595Z",
+                    "DXQueryUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "Name": "Tenant",
+                    "Expression": "U2U(Tenant).Name",
+                    "Order": 20
+                  },
+                  {
+                    "DXUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "ID": "b1695746-9382-4ceb-997d-feb62f661033",
+                    "TimeStamp": "2026-02-09T17:21:33.204935Z",
+                    "DXQueryUnitID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+                    "Name": "Identity",
+                    "Expression": "U2U(Identity).Name",
+                    "Order": 30
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          },
+          "ID": "312a1f59-63cf-4bcf-8698-0dd978378891",
+          "TimeStamp": "2026-02-09T17:21:33.200585Z",
+          "Name": "DXMembership query",
+          "Description": null,
+          "DXUnitDefinition": "cf85a667-b58d-4d40-b279-c7db025fd290"
+        }
+      ],
+      "Delete": null
+    }
+  }
+]

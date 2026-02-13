@@ -8,7 +8,7 @@
     <ItemGroup>
         <ProjectReference Include="..\IV.ManagementHub.Common\IV.ManagementHub.Common.csproj" />
         <ProjectReference Include="..\IV.ManagementHub.ServiceDefaults\IV.ManagementHub.ServiceDefaults.csproj" />
-        <PackageReference Include="IV.DX" Version="0.228.0" />
+        <PackageReference Include="IV.DX" Version="0.231.0" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.12.1" />
         <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.12.1" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

@@ -1,8 +1,12 @@
 using Asp.Versioning;
 using IV.DX.Hosting;
 using IV.ManagementHub.ApiService.Contracts.Services;
+using IV.ManagementHub.ApiService.Security;
 using IV.ManagementHub.ApiService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,36 @@ builder.Services
         o.SubstituteApiVersionInUrl = true;
     });
 
+var rootAuthOptions = builder.Configuration.GetSection(RootAuthOptions.SectionName).Get<RootAuthOptions>() ?? new RootAuthOptions();
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(rootAuthOptions.SigningKey));
+
+builder.Services.AddSingleton(rootAuthOptions);
+builder.Services.AddSingleton<RootTokenService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = rootAuthOptions.Issuer,
+            ValidAudience = rootAuthOptions.Audience,
+            IssuerSigningKey = signingKey,
+            NameClaimType = "sub",
+            RoleClaimType = "role",
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.RootOnly, policy => policy.RequireRole(AuthRoles.Root));
+});
 
 builder.Configuration["Database:Type"] = "PostgreSQL";
 builder.Configuration["Database:ConnectionString"] = "Server=localhost;Database=IV.ManagementHub;User ID=postgres;password=root;";
@@ -53,6 +87,8 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

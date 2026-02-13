@@ -1,0 +1,58 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXDataSetViewUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": null,
+      "DXFilter": null,
+      "DXUnitContext": null
+    },
+    "Data": {
+      "Items": [
+        {
+          "DXElements": {},
+          "ID": "6066c4f7-b4e7-402e-bd0c-344f032c5443",
+          "TimeStamp": "2026-02-09T17:10:38.990455Z",
+          "Name": "DXRole DataSetView",
+          "DXQuery": "699457a2-2992-430b-9c8c-940e516d7714",
+          "DXFilter": null
+        },
+        {
+          "DXElements": {},
+          "ID": "5f7100d8-4fe7-48a6-b18c-c609cde3ee12",
+          "TimeStamp": "2026-02-09T17:15:00.940768Z",
+          "Name": "DXTenant DataSetView",
+          "DXQuery": "5d7a7b34-4b0d-40d7-9b01-f242ab57e6ec",
+          "DXFilter": null
+        },
+        {
+          "DXElements": {},
+          "ID": "6ae0f975-6340-4deb-8460-903941f7b7d0",
+          "TimeStamp": "2026-02-09T17:21:57.046028Z",
+          "Name": "DXIdentityLogin DataSetView",
+          "DXQuery": "f787fd92-13c2-4656-a22b-9760b1f0f77c",
+          "DXFilter": null
+        },
+        {
+          "DXElements": {},
+          "ID": "03861514-781b-48be-8231-dfbbd0a21f04",
+          "TimeStamp": "2026-02-09T17:22:07.601774Z",
+          "Name": "DXIdentity DataSetView",
+          "DXQuery": "38653b23-05ac-43be-a0e9-0e1b925608d2",
+          "DXFilter": null
+        },
+        {
+          "DXElements": {},
+          "ID": "5bc2fbae-21ab-4fd1-a112-96dde2be7f84",
+          "TimeStamp": "2026-02-09T17:22:25.350504Z",
+          "Name": "DXMembership DataSetView",
+          "DXQuery": "312a1f59-63cf-4bcf-8698-0dd978378891",
+          "DXFilter": null
+        }
+      ],
+      "Delete": null
+    }
+  }
+]

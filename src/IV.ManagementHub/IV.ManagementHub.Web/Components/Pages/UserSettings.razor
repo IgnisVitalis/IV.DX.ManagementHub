@@ -1,0 +1,88 @@
+@page "/app/{AppKey}/user"
+
+@using IV.ManagementHub.Web.Components.Custom.Base
+@using IV.ManagementHub.Web.Services
+
+@inherits ManagementHubComponentBase
+
+@inject AppAuthState AuthState
+@inject NavigationManager NavigationManager
+
+<PageTitle>User Settings</PageTitle>
+
+<FluentCard Class="user-settings-card">
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+        <FluentStack Orientation="Orientation.Horizontal"
+                     Width="100%"
+                     HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                     VerticalAlignment="VerticalAlignment.Center">
+            <FluentLabel Typo="Typography.Subject">User Settings</FluentLabel>
+
+            <FluentButton Appearance="Appearance.Stealth"
+                          Title="Back to blocks"
+                          aria-label="Back to blocks"
+                          OnClick="GoToBlocks">
+                <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" />
+            </FluentButton>
+        </FluentStack>
+
+        <FluentDivider />
+
+        <div class="user-settings-grid">
+            <FluentLabel Class="user-settings-key">Username</FluentLabel>
+            <FluentLabel>@DisplayUserName</FluentLabel>
+
+            <FluentLabel Class="user-settings-key">Role</FluentLabel>
+            <FluentLabel>Root</FluentLabel>
+
+            <FluentLabel Class="user-settings-key">App</FluentLabel>
+            <FluentLabel>@AppKey</FluentLabel>
+
+            <FluentLabel Class="user-settings-key">Session</FluentLabel>
+            <FluentLabel>@SessionStatus</FluentLabel>
+
+            <FluentLabel Class="user-settings-key">Token Preview</FluentLabel>
+            <FluentLabel>@TokenPreview</FluentLabel>
+        </div>
+
+        <FluentDivider />
+
+        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+            <FluentButton Appearance="Appearance.Outline" OnClick="SignOut">Sign out</FluentButton>
+        </FluentStack>
+    </FluentStack>
+</FluentCard>
+
+@code
+{
+    private string DisplayUserName =>
+        string.IsNullOrWhiteSpace(AuthState.UserName) ? "root" : AuthState.UserName;
+
+    private string SessionStatus => AuthState.IsAuthenticated ? "Authenticated" : "Not authenticated";
+
+    private string TokenPreview
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(AuthState.AccessToken))
+            {
+                return "Not available";
+            }
+
+            var token = AuthState.AccessToken;
+            var length = Math.Min(20, token.Length);
+            return $"{token[..length]}...";
+        }
+    }
+
+    private void GoToBlocks()
+    {
+        NavigationManager.NavigateTo($"/app/{AppKey}/blocks");
+    }
+
+    private void SignOut()
+    {
+        AuthState.Clear();
+        NavigationManager.NavigateTo("/", replace: true);
+    }
+}

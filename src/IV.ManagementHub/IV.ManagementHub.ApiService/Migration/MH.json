@@ -2,7 +2,10 @@
 
     "Scripts/01_01_0001_MH_DXUnitDefinitionUnit.dx",
     "Scripts/01_01_0002_MH_DXUnitDefinitionUnit.dx",
-    "Scripts/01_01_0010_MH_DXQueryUnits.dx",
-    "Scripts/01_01_0012_MH_DXDataSetViewUnits.dx",
-    "Scripts/01_01_0013_MH_DXNavigationItemUnits.dx"
+    "Scripts/01_01_0010_MH_DXQueryUnit.dx",
+    "Scripts/01_01_0012_MH_DXDataSetViewUnit.dx",
+    "Scripts/01_01_0013_MH_DXNavigationItemUnit.dx",
+    "Scripts/01_01_0014_MH_DXQueryUnit.dx",
+    "Scripts/01_01_0015_MH_DXDataSetViewUnit.dx",
+    "Scripts/01_01_0016_MH_DXNavigationItemUnit.dx"   
 ]

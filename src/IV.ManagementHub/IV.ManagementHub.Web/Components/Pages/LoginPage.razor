@@ -1,0 +1,91 @@
+@using IV.ManagementHub.Web.Services
+@inject RootAuthApiClient RootAuthApiClient
+@inject AppAuthState AuthState
+@inject NavigationManager NavigationManager
+
+<FluentDesignSystemProvider Id="login-root">
+    <div class="login-shell" style="min-height:100dvh;display:grid;place-items:center;padding:1.5rem;">
+        <FluentCard class="login-card"
+                    Style="width:min(320px, calc(100vw - 2rem));max-width:320px;padding:0.85rem 0.85rem 1rem;height:auto !important;min-height:0 !important;display:block;align-self:center;justify-self:center;"
+                    @onkeydown="OnKeyDownAsync">
+            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+                <FluentLabel Typo="Typography.Subject" Class="login-title">IV.ManagementHub</FluentLabel>
+
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                    <FluentLabel Typo="Typography.Body">Username</FluentLabel>
+                    <FluentTextField Value="@_username"
+                                     ValueChanged="@(value => _username = value ?? string.Empty)"
+                                     Style="width:100%;" />
+                </FluentStack>
+
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                    <FluentLabel Typo="Typography.Body">Password</FluentLabel>
+                    <FluentTextField Value="@_password"
+                                     ValueChanged="@(value => _password = value ?? string.Empty)"
+                                     type="password"
+                                     Style="width:100%;" />
+                </FluentStack>
+
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <FluentLabel Color="Color.Error">@_error</FluentLabel>
+                }
+
+                <FluentButton Appearance="Appearance.Accent"
+                              OnClick="SignInAsync"
+                              Disabled="@_isSubmitting"
+                              Style="width:100%;">
+                    @(_isSubmitting ? "Signing in..." : "Sign in")
+                </FluentButton>
+            </FluentStack>
+        </FluentCard>
+    </div>
+</FluentDesignSystemProvider>
+
+@code
+{
+    private string _username = string.Empty;
+    private string _password = string.Empty;
+    private bool _isSubmitting;
+    private string? _error;
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (string.Equals(args.Key, "Enter", StringComparison.Ordinal))
+        {
+            await SignInAsync();
+        }
+    }
+
+    private async Task SignInAsync()
+    {
+        if (_isSubmitting)
+        {
+            return;
+        }
+
+        _error = null;
+        _isSubmitting = true;
+
+        try
+        {
+            var result = await RootAuthApiClient.LoginAsync(_username, _password);
+            if (!result.IsSuccess || string.IsNullOrWhiteSpace(result.AccessToken))
+            {
+                _error = result.Error ?? "Authentication failed.";
+                return;
+            }
+
+            AuthState.SetAccessToken(result.AccessToken, _username);
+            NavigationManager.NavigateTo("/app/base/blocks", replace: true);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

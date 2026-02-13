@@ -1,6 +1,7 @@
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DataProvider.WebApp.Services.Web.Services;
 using IV.ManagementHub.Web;
+using IV.ManagementHub.Web.Services;
 using IV.ManagementHub.Web.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 
@@ -22,6 +23,8 @@ builder.Services.AddHttpClient("Lit", http => http.BaseAddress = new Uri("http:/
 
 builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();
 builder.Services.AddScoped<AppState>();
+builder.Services.AddScoped<AppAuthState>();
+builder.Services.AddScoped<RootAuthApiClient>();
 
 var app = builder.Build();
 

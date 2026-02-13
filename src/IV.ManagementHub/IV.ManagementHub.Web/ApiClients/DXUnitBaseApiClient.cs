@@ -22,6 +22,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
             }
 
             var result = await httpClient.GetAsync(requestUri, cancellationToken);
+            result.EnsureSuccessStatusCode();
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 

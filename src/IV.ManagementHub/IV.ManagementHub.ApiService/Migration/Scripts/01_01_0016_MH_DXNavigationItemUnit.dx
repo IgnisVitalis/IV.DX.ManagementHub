@@ -1,0 +1,72 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXNavigationItemUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": null,
+      "DXFilter": null,
+      "DXUnitContext": null
+    },
+    "Data": {
+      "Items": [
+         {
+          "DXElements": {},
+          "ID": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "TimeStamp": "2026-02-09T17:10:45.531292Z",
+          "Name": "Security",
+          "Order": 10,
+          "Parent": null,
+          "DataSetView": null
+        },
+        {
+          "DXElements": {},
+          "ID": "788cae88-d0b8-4d22-88f7-d067f5d4c395",
+          "TimeStamp": "2026-02-09T17:10:45.531292Z",
+          "Name": "Roles",
+          "Order": 10,
+          "Parent": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "DataSetView": "6066c4f7-b4e7-402e-bd0c-344f032c5443"
+        },
+        {
+          "DXElements": {},
+          "ID": "c2f655c3-ed85-4e27-a15f-06164ae8e7aa",
+          "TimeStamp": "2026-02-09T17:15:16.261164Z",
+          "Name": "Tenants",
+          "Order": 20,
+          "Parent": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "DataSetView": "5f7100d8-4fe7-48a6-b18c-c609cde3ee12"
+        },
+        {
+          "DXElements": {},
+          "ID": "6bebdf62-f2f9-4ff0-a0a9-62e4d0148223",
+          "TimeStamp": "2026-02-09T17:24:37.587623Z",
+          "Name": "Identity logins",
+          "Order": 40,
+          "Parent": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "DataSetView": "6ae0f975-6340-4deb-8460-903941f7b7d0"
+        },
+        {
+          "DXElements": {},
+          "ID": "549f59f4-e556-4c19-a471-893c9101ce3f",
+          "TimeStamp": "2026-02-09T17:24:45.580842Z",
+          "Name": "Identities",
+          "Order": 30,
+          "Parent": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "DataSetView": "03861514-781b-48be-8231-dfbbd0a21f04"
+        },
+        {
+          "DXElements": {},
+          "ID": "0a631504-d6c6-40a2-862a-4dcdfde95e9c",
+          "TimeStamp": "2026-02-09T17:23:31.410463Z",
+          "Name": "Memberships",
+          "Order": 50,
+          "Parent": "9f7fe292-5564-4325-83c5-e3b955a57f48",
+          "DataSetView": "5bc2fbae-21ab-4fd1-a112-96dde2be7f84"
+        }
+      ],
+      "Delete": null
+    }
+  }
+]

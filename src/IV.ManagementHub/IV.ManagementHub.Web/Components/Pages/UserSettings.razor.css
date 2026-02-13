@@ -1,0 +1,15 @@
+.user-settings-card {
+    max-width: 760px;
+}
+
+.user-settings-grid {
+    display: grid;
+    grid-template-columns: minmax(8rem, 14rem) 1fr;
+    gap: 0.5rem 1rem;
+    align-items: start;
+}
+
+.user-settings-key {
+    color: var(--neutral-foreground-hint);
+    font-weight: 600;
+}

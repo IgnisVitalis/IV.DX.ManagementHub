@@ -9,13 +9,14 @@ namespace IV.ManagementHub.ApiService.Services
 {
     internal class DXUnitStructureService(
        IDXUnitDataService dxUnitDataService,
+       IDXUnitDataReader dXUnitDataReader,
        IDXEnumDataService dxEnumDataService,
        IDXStructureService dxStructureService,
        IDXQueryResultProvider dxQueryResultProvider) : IDXUnitStructureService
     {
         public async Task<DXModelDefinition> GetAsync(string name, CancellationToken ct = default)
         {
-            var result = await dxUnitDataService.GetItemsAsync<DXUnitDefinitionUnit>($"Name = '{name}'", ct: ct);
+            var result = await dXUnitDataReader.GetItemsAsync<DXUnitDefinitionUnit>($"Name = '{name}'", ct: ct);
 
             if (result.Count() == 0)
                 return null;
@@ -88,7 +89,7 @@ namespace IV.ManagementHub.ApiService.Services
                 if (!baseDXUnitID.HasValue)
                     break;
 
-                mainDXUnitDefinition = await dxUnitDataService.GetItemAsync<DXUnitDefinitionUnit>(baseDXUnitID.Value, ct: ct);
+                mainDXUnitDefinition = await dXUnitDataReader.GetItemAsync<DXUnitDefinitionUnit>(baseDXUnitID.Value, ct: ct);
 
             } while (true);
 
@@ -105,7 +106,7 @@ namespace IV.ManagementHub.ApiService.Services
 
         private async Task<DXElementDefinition> GetEnumDefinitionAsync(Guid elementID, CancellationToken ct)
         {
-            var block = await dxUnitDataService.GetItemAsync<DXElementDefinitionUnit>(elementID, ct: ct);
+            var block = await dXUnitDataReader.GetItemAsync<DXElementDefinitionUnit>(elementID, ct: ct);
 
             if (block.DXColumnDefinitionElement == null)
                 return new DXElementDefinition() { Name = block.Name, Columns = Enumerable.Empty<DXColumnDefinition>() };
@@ -297,9 +298,9 @@ namespace IV.ManagementHub.ApiService.Services
             return values;
         }
 
-        private async Task<DXEnumDefinitionUnit> GetEnumAsync(string name, CancellationToken ct = default)
+        private async Task<DXEnumDefinitionUnit?> GetEnumAsync(string name, CancellationToken ct = default)
         {
-            var items = await dxUnitDataService.GetItemsAsync<DXEnumDefinitionUnit>($"Name = '{name}'", ct: ct);
+            var items = await dXUnitDataReader.GetItemsAsync<DXEnumDefinitionUnit>($"Name = '{name}'", ct: ct);
 
             if (items.Count() > 1)
                 throw new Exception($"There more than 1 entry for DXEnumDefinitionUnit by name '{name}'");
