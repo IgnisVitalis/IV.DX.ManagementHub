@@ -9,15 +9,20 @@
             <FluentStack Class="mh-header"
                          Orientation="Orientation.Horizontal"
                          Width="100%"
+                         HorizontalGap="12"
                          HorizontalAlignment="HorizontalAlignment.SpaceBetween"
                          VerticalAlignment="VerticalAlignment.Center">
-                <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
+                <FluentLabel Typo="Typography.H5"
+                             Weight="FontWeight.Bold"
+                             Color="Color.FillInverse">
+                    IV.ManagementHub
+                </FluentLabel>
 
                 <FluentButton Appearance="Appearance.Stealth"
-                              Title="User settings"
-                              aria-label="User settings"
+                              Title="Open user settings"
+                              aria-label="Open user settings"
                               OnClick="OpenUserSettings">
-                    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" />
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Color="Color.FillInverse" />
                 </FluentButton>
             </FluentStack>
         </FluentHeader>
