@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using IV.DX.Hosting;
+using IV.ManagementHub.ApiService.Bootstrap;
 using IV.ManagementHub.ApiService.Contracts.Services;
 using IV.ManagementHub.ApiService.Security;
 using IV.ManagementHub.ApiService.Services;
@@ -41,11 +42,26 @@ builder.Services
         o.SubstituteApiVersionInUrl = true;
     });
 
+var bootstrapSettingsPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "bootstrap.settings.json");
+var bootstrapSettingsStore = new JsonBootstrapSettingsStore(bootstrapSettingsPath);
+var bootstrapSettings = await bootstrapSettingsStore.LoadAsync();
+var isBootstrapConfigured = bootstrapSettings?.IsConfigured == true;
+
+if (isBootstrapConfigured)
+{
+    builder.Configuration["Database:Type"] = bootstrapSettings!.DatabaseType;
+    builder.Configuration["Database:ConnectionString"] = bootstrapSettings.ConnectionString;
+}
+
 var rootAuthOptions = builder.Configuration.GetSection(RootAuthOptions.SectionName).Get<RootAuthOptions>() ?? new RootAuthOptions();
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(rootAuthOptions.SigningKey));
 
 builder.Services.AddSingleton(rootAuthOptions);
 builder.Services.AddSingleton<RootTokenService>();
+builder.Services.AddSingleton<IBootstrapSettingsStore>(bootstrapSettingsStore);
+builder.Services.AddSingleton(new BootstrapRuntimeState());
+builder.Services.AddSingleton<IBootstrapRuntimeActivator, BootstrapRuntimeActivator>();
+builder.Services.AddSingleton<IBootstrapSetupService, BootstrapSetupService>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -72,13 +88,9 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.RootOnly, policy => policy.RequireRole(AuthRoles.Root));
 });
 
-builder.Configuration["Database:Type"] = "PostgreSQL";
-builder.Configuration["Database:ConnectionString"] = "Server=localhost;Database=IV.ManagementHub;User ID=postgres;password=root;";
-
 builder.Services.AddDXCore(builder.Configuration);
 builder.Services.AddDXPipeline();
 builder.Services.AddDXInitializer();
-
 builder.Services.AddScoped<IDXUnitStructureService, DXUnitStructureService>();
 
 
@@ -90,21 +102,53 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
+var runtimeState = app.Services.GetRequiredService<BootstrapRuntimeState>();
+
+app.Use(async (context, next) =>
+{
+    if (runtimeState.IsDxRuntimeEnabled)
+    {
+        await next();
+        return;
+    }
+
+    var path = context.Request.Path;
+    if (path.StartsWithSegments("/api/v1.0/setup") ||
+        path.StartsWithSegments("/api/v1.0/auth") ||
+        path.StartsWithSegments("/health") ||
+        path.StartsWithSegments("/alive") ||
+        path.StartsWithSegments("/openapi"))
+    {
+        await next();
+        return;
+    }
+
+    if (!path.StartsWithSegments("/api"))
+    {
+        await next();
+        return;
+    }
+
+    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+    await context.Response.WriteAsJsonAsync(new
+    {
+        error = "Service setup is not completed. Complete setup in UI."
+    });
+});
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.Services.InitializeDXHandlers();
-
-
-using (var scope = app.Services.CreateScope())
+if (isBootstrapConfigured)
 {
-    var init = scope.ServiceProvider.GetRequiredService<IDXInitializer>();
-    await init.InitDXCoreDataAsync();
-    await init.InitDXQueryDataAsync();
-    await init.InitDXSecurityDataAsync();
-    await init.InitCustomDataAsync("Migration/MH.json");
+    var runtimeActivator = app.Services.GetRequiredService<IBootstrapRuntimeActivator>();
+    var activationResult = await runtimeActivator.ActivateAsync();
+    if (!activationResult.IsSuccess)
+    {
+        throw new InvalidOperationException($"DX runtime activation failed on startup. {activationResult.Message}");
+    }
 }
 
 app.MapControllers();

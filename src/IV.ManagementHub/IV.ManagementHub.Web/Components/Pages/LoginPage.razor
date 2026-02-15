@@ -4,40 +4,193 @@
 @inject NavigationManager NavigationManager
 
 <FluentDesignSystemProvider Id="login-root">
-    <div class="login-shell" style="min-height:100dvh;display:grid;place-items:center;padding:1.5rem;">
-        <FluentCard class="login-card"
-                    Style="width:min(320px, calc(100vw - 2rem));max-width:320px;padding:0.85rem 0.85rem 1rem;height:auto !important;min-height:0 !important;display:block;align-self:center;justify-self:center;"
+    <div class="login-shell">
+        <FluentCard Class="login-card"
+                    Style="width:min(340px, calc(100vw - 2rem));max-width:340px;padding:0.9rem 0.9rem 1.1rem;height:auto !important;min-height:0 !important;display:block;align-self:center;justify-self:center;"
                     @onkeydown="OnKeyDownAsync">
-            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
-                <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
-
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                    <FluentLabel Typo="Typography.Body">Username</FluentLabel>
-                    <FluentTextField Value="@_username"
-                                     ValueChanged="@(value => _username = value ?? string.Empty)"
-                                     Style="width:100%;" />
+            @if (_isLoadingSetupStatus)
+            {
+                <FluentStack Orientation="Orientation.Vertical"
+                             Width="100%"
+                             VerticalGap="12"
+                             HorizontalAlignment="HorizontalAlignment.Center">
+                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
+                    <FluentProgressRing />
+                    <FluentLabel>Loading setup status...</FluentLabel>
                 </FluentStack>
+            }
+            else if (_setupStatus?.RequiresSetup == true)
+            {
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">Initial Setup</FluentLabel>
 
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                    <FluentLabel Typo="Typography.Body">Password</FluentLabel>
-                    <FluentTextField Value="@_password"
-                                     ValueChanged="@(value => _password = value ?? string.Empty)"
-                                     type="password"
-                                     Style="width:100%;" />
+                    @if (!string.IsNullOrWhiteSpace(_setupError))
+                    {
+                        <FluentLabel Color="Color.Error">@_setupError</FluentLabel>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_setupInfo))
+                    {
+                        <FluentLabel Color="Color.Success">@_setupInfo</FluentLabel>
+                    }
+
+                    @if (!_setupCompleted)
+                    {
+                        @if (_setupStep == 1)
+                        {
+                            <FluentLabel Typo="Typography.Body">Step 1 of 2: Database connection</FluentLabel>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel Typo="Typography.Body">Database Type</FluentLabel>
+                                <FluentTextField Value="@_databaseType"
+                                                 ValueChanged="@(value => _databaseType = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentSwitch Label="Use raw connection string (advanced)"
+                                          Value="@_useRawConnectionString"
+                                          ValueChanged="OnUseRawConnectionStringChanged" />
+
+                            @if (_useRawConnectionString)
+                            {
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">Connection String</FluentLabel>
+                                    <FluentTextField Value="@_connectionString"
+                                                     ValueChanged="@(value => _connectionString = value ?? string.Empty)"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+                            }
+                            else
+                            {
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">Host</FluentLabel>
+                                    <FluentTextField Value="@_dbHost"
+                                                     ValueChanged="@(value => _dbHost = value ?? string.Empty)"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">Port</FluentLabel>
+                                    <FluentTextField Value="@_dbPort"
+                                                     ValueChanged="@(value => _dbPort = value ?? string.Empty)"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">Database</FluentLabel>
+                                    <FluentTextField Value="@_dbName"
+                                                     ValueChanged="@(value => _dbName = value ?? string.Empty)"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">DB Username</FluentLabel>
+                                    <FluentTextField Value="@_dbUser"
+                                                     ValueChanged="@(value => _dbUser = value ?? string.Empty)"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+
+                                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                    <FluentLabel Typo="Typography.Body">DB Password</FluentLabel>
+                                    <FluentTextField Value="@_dbPassword"
+                                                     ValueChanged="@(value => _dbPassword = value ?? string.Empty)"
+                                                     TextFieldType="TextFieldType.Password"
+                                                     Style="width:100%;" />
+                                </FluentStack>
+                            }
+
+                            <FluentButton Appearance="Appearance.Accent"
+                                          OnClick="MoveToCredentialsStepAsync"
+                                          Disabled="@_isSubmitting"
+                                          Style="width:100%;">
+                                Next
+                            </FluentButton>
+                        }
+                        else
+                        {
+                            <FluentLabel Typo="Typography.Body">Step 2 of 2: Super admin account</FluentLabel>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel Typo="Typography.Body">Username</FluentLabel>
+                                <FluentTextField Value="@_setupUserName"
+                                                 ValueChanged="@(value => _setupUserName = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel Typo="Typography.Body">Password</FluentLabel>
+                                <FluentTextField Value="@_setupPassword"
+                                                 ValueChanged="@(value => _setupPassword = value ?? string.Empty)"
+                                                 TextFieldType="TextFieldType.Password"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel Typo="Typography.Body">Confirm Password</FluentLabel>
+                                <FluentTextField Value="@_setupPasswordConfirm"
+                                                 ValueChanged="@(value => _setupPasswordConfirm = value ?? string.Empty)"
+                                                 TextFieldType="TextFieldType.Password"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Horizontal" Width="100%" HorizontalGap="8">
+                                <FluentButton Appearance="Appearance.Outline"
+                                              OnClick="BackToDatabaseStep"
+                                              Disabled="@_isSubmitting"
+                                              Style="width:100%;">
+                                    Back
+                                </FluentButton>
+                                <FluentButton Appearance="Appearance.Accent"
+                                              OnClick="CompleteSetupAsync"
+                                              Disabled="@_isSubmitting"
+                                              Style="width:100%;">
+                                    @(_isSubmitting ? "Saving..." : "Complete Setup")
+                                </FluentButton>
+                            </FluentStack>
+                        }
+                    }
                 </FluentStack>
+            }
+            else if (_setupStatus?.RequiresRestart == true)
+            {
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">Restart Required</FluentLabel>
+                    <FluentLabel>Setup is completed. Restart API service to activate DX runtime.</FluentLabel>
+                </FluentStack>
+            }
+            else
+            {
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
 
-                @if (!string.IsNullOrWhiteSpace(_error))
-                {
-                    <FluentLabel Color="Color.Error">@_error</FluentLabel>
-                }
+                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                        <FluentLabel Typo="Typography.Body">Username</FluentLabel>
+                        <FluentTextField Value="@_username"
+                                         ValueChanged="@(value => _username = value ?? string.Empty)"
+                                         Style="width:100%;" />
+                    </FluentStack>
 
-                <FluentButton Appearance="Appearance.Accent"
-                              OnClick="SignInAsync"
-                              Disabled="@_isSubmitting"
-                              Style="width:100%;">
-                    @(_isSubmitting ? "Signing in..." : "Sign in")
-                </FluentButton>
-            </FluentStack>
+                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                        <FluentLabel Typo="Typography.Body">Password</FluentLabel>
+                        <FluentTextField Value="@_password"
+                                         ValueChanged="@(value => _password = value ?? string.Empty)"
+                                         TextFieldType="TextFieldType.Password"
+                                         Style="width:100%;" />
+                    </FluentStack>
+
+                    @if (!string.IsNullOrWhiteSpace(_error))
+                    {
+                        <FluentLabel Color="Color.Error">@_error</FluentLabel>
+                    }
+
+                    <FluentButton Appearance="Appearance.Accent"
+                                  OnClick="SignInAsync"
+                                  Disabled="@_isSubmitting"
+                                  Style="width:100%;">
+                        @(_isSubmitting ? "Signing in..." : "Sign in")
+                    </FluentButton>
+                </FluentStack>
+            }
         </FluentCard>
     </div>
 </FluentDesignSystemProvider>
@@ -49,11 +202,172 @@
     private bool _isSubmitting;
     private string? _error;
 
+    private bool _isLoadingSetupStatus = true;
+    private SetupStatusResult? _setupStatus;
+    private int _setupStep = 1;
+    private bool _setupCompleted;
+    private string _databaseType = "PostgreSQL";
+    private bool _useRawConnectionString;
+    private string _connectionString = string.Empty;
+    private string _dbHost = "localhost";
+    private string _dbPort = "5432";
+    private string _dbName = "IV.ManagementHub";
+    private string _dbUser = "postgres";
+    private string _dbPassword = string.Empty;
+    private string _setupUserName = string.Empty;
+    private string _setupPassword = string.Empty;
+    private string _setupPasswordConfirm = string.Empty;
+    private string? _setupError;
+    private string? _setupInfo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSetupStatusAsync();
+    }
+
+    private async Task LoadSetupStatusAsync()
+    {
+        _isLoadingSetupStatus = true;
+        _setupError = null;
+
+        try
+        {
+            _setupStatus = await RootAuthApiClient.GetSetupStatusAsync();
+            if (!string.IsNullOrWhiteSpace(_setupStatus.Error))
+            {
+                _setupError = _setupStatus.Error;
+            }
+        }
+        catch (Exception ex)
+        {
+            _setupError = ex.Message;
+        }
+        finally
+        {
+            _isLoadingSetupStatus = false;
+        }
+    }
+
     private async Task OnKeyDownAsync(KeyboardEventArgs args)
     {
-        if (string.Equals(args.Key, "Enter", StringComparison.Ordinal))
+        if (!string.Equals(args.Key, "Enter", StringComparison.Ordinal))
         {
-            await SignInAsync();
+            return;
+        }
+
+        if (_setupStatus?.RequiresSetup == true || _setupStatus?.RequiresRestart == true)
+        {
+            return;
+        }
+
+        await SignInAsync();
+    }
+
+    private Task MoveToCredentialsStepAsync()
+    {
+        _setupError = null;
+
+        if (string.IsNullOrWhiteSpace(_databaseType))
+        {
+            _setupError = "Database type is required.";
+            return Task.CompletedTask;
+        }
+
+        if (_useRawConnectionString)
+        {
+            if (string.IsNullOrWhiteSpace(_connectionString))
+            {
+                _setupError = "Connection string is required.";
+                return Task.CompletedTask;
+            }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(_dbHost) ||
+                string.IsNullOrWhiteSpace(_dbPort) ||
+                string.IsNullOrWhiteSpace(_dbName) ||
+                string.IsNullOrWhiteSpace(_dbUser))
+            {
+                _setupError = "Host, port, database and DB username are required.";
+                return Task.CompletedTask;
+            }
+
+            _connectionString = BuildPostgreSqlConnectionString(
+                _dbHost,
+                _dbPort,
+                _dbName,
+                _dbUser,
+                _dbPassword);
+        }
+
+        _setupStep = 2;
+        return Task.CompletedTask;
+    }
+
+    private void OnUseRawConnectionStringChanged(bool value)
+    {
+        _useRawConnectionString = value;
+        _setupError = null;
+    }
+
+    private void BackToDatabaseStep()
+    {
+        _setupError = null;
+        _setupStep = 1;
+    }
+
+    private async Task CompleteSetupAsync()
+    {
+        if (_isSubmitting)
+        {
+            return;
+        }
+
+        _setupError = null;
+        _setupInfo = null;
+        _isSubmitting = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_setupUserName) || string.IsNullOrWhiteSpace(_setupPassword))
+            {
+                _setupError = "Username and password are required.";
+                return;
+            }
+
+            if (!string.Equals(_setupPassword, _setupPasswordConfirm, StringComparison.Ordinal))
+            {
+                _setupError = "Password and confirmation do not match.";
+                return;
+            }
+
+            var result = await RootAuthApiClient.CompleteSetupAsync(
+                new SetupCompleteRequest(
+                    _databaseType,
+                    _connectionString,
+                    _setupUserName,
+                    _setupPassword));
+
+            if (!result.IsSuccess)
+            {
+                _setupError = result.Error ?? "Setup failed.";
+                return;
+            }
+
+            _setupCompleted = true;
+            _setupInfo = result.Message ?? "Setup completed.";
+            _setupStatus = new SetupStatusResult(
+                RequiresSetup: false,
+                RequiresRestart: result.RequiresRestart,
+                RuntimeReady: !result.RequiresRestart);
+        }
+        catch (Exception ex)
+        {
+            _setupError = ex.Message;
+        }
+        finally
+        {
+            _isSubmitting = false;
         }
     }
 
@@ -87,5 +401,16 @@
         {
             _isSubmitting = false;
         }
+    }
+
+    private static string BuildPostgreSqlConnectionString(
+        string host,
+        string port,
+        string database,
+        string userName,
+        string password)
+    {
+        var escapedPassword = (password ?? string.Empty).Replace(";", ";;", StringComparison.Ordinal);
+        return $"Server={host.Trim()};Port={port.Trim()};Database={database.Trim()};User ID={userName.Trim()};Password={escapedPassword};";
     }
 }

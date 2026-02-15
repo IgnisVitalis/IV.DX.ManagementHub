@@ -1,0 +1,9 @@
+{
+  "databaseType": "PostgreSQL",
+  "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub;User ID=postgres;Password=root;",
+  "rootUserName": "root",
+  "rootPasswordHash": "ifL4c0Mon6nR8\u002BV1NmfIr8Ao90XJQ4n9Rbj9uG15QcA=",
+  "rootPasswordSalt": "QY5ei83XDjUwzUhEW7vwdA==",
+  "createdAtUtc": "2026-02-15T17:29:17.4221008+00:00",
+  "isConfigured": true
+}

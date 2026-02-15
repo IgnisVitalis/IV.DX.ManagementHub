@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using IV.ManagementHub.ApiService.Bootstrap;
 using IV.ManagementHub.ApiService.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,9 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/auth")]
-    public sealed class AuthController(RootAuthOptions options, RootTokenService tokenService) : ControllerBase
+    public sealed class AuthController(
+        IBootstrapSetupService bootstrapSetupService,
+        RootTokenService tokenService) : ControllerBase
     {
         [AllowAnonymous]
         [HttpPost("token")]
@@ -17,15 +20,24 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult<TokenResponse> IssueToken([FromBody] TokenRequest request)
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<ActionResult<TokenResponse>> IssueToken([FromBody] TokenRequest request, CancellationToken ct)
         {
-            if (!string.Equals(request.Username, options.Username, StringComparison.Ordinal) ||
-                !string.Equals(request.Password, options.Password, StringComparison.Ordinal))
+            var validation = await bootstrapSetupService.ValidateCredentialsAsync(request.Username, request.Password, ct);
+            if (validation.Status is BootstrapAuthValidationStatus.SetupNotCompleted or BootstrapAuthValidationStatus.RuntimeNotReady)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+                {
+                    error = validation.Message ?? "Service setup is not completed."
+                });
+            }
+
+            if (validation.Status != BootstrapAuthValidationStatus.Valid || string.IsNullOrWhiteSpace(validation.UserName))
             {
                 return Unauthorized();
             }
 
-            var token = tokenService.CreateAccessToken();
+            var token = tokenService.CreateAccessToken(validation.UserName);
 
             return Ok(new TokenResponse
             {

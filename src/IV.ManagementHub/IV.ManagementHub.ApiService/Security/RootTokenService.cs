@@ -7,15 +7,20 @@ namespace IV.ManagementHub.ApiService.Security
 {
     public sealed class RootTokenService(RootAuthOptions options)
     {
-        public RootAccessToken CreateAccessToken()
+        public RootAccessToken CreateAccessToken(string userName)
         {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                throw new ArgumentException("User name is required.", nameof(userName));
+            }
+
             var now = DateTimeOffset.UtcNow;
             var expiresAt = now.AddMinutes(options.AccessTokenMinutes);
 
             var claims = new List<Claim>
             {
-                new(JwtRegisteredClaimNames.Sub, options.UserId),
-                new(JwtRegisteredClaimNames.UniqueName, options.Username),
+                new(JwtRegisteredClaimNames.Sub, userName),
+                new(JwtRegisteredClaimNames.UniqueName, userName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new("role", AuthRoles.Root)
             };
