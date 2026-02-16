@@ -6,8 +6,19 @@
     <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
-            <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
-               
+            <FluentNavLink Href="@($"/app/{AppKey}/instances")"
+                           Match="NavLinkMatch.Prefix"
+                           Icon="@(new Icons.Regular.Size20.Home())"
+                           IconColor="Color.Accent">
+                Instances
+            </FluentNavLink>
+
+            <FluentNavLink Href="@($"/app/{AppKey}/instance")"
+                           Match="NavLinkMatch.Prefix"
+                           Icon="@(new Icons.Regular.Size20.Settings())">
+                Instance Settings
+            </FluentNavLink>
+
             @if (roots is not null)
             {
                 @foreach (var root in roots)

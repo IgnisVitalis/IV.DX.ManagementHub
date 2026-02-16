@@ -34,8 +34,9 @@ namespace IV.ManagementHub.Web.Components.Pages
             }
         }
 
-        private DXQueryResult dxQueryResult;
+        private DXQueryResult dxQueryResult = DXQueryResult.Empty();
         private IDictionary<string, object> rows;
+        private string? _loadErrorMessage;
 
         private readonly List<Guid> _selectedIds = new();
         private readonly HashSet<Guid> _selectedIdSet = new();
@@ -72,6 +73,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private bool _isRefreshing;
         private bool _isSaving;
         private bool _collapse = true;
+        private bool HasCurrentType => !string.IsNullOrWhiteSpace(dxQueryResult?.TypeName);
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
         private DataTable values;
@@ -145,15 +147,35 @@ namespace IV.ManagementHub.Web.Components.Pages
             try
             {
                 var dxDataSetView = await dxDataSetViewApiClient.Get(_dxDataSetViewID);
+                if (dxDataSetView is null)
+                {
+                    SetEmptyState("Data set view not found for the selected instance.");
+                    return;
+                }
 
                 dxQueryResult = await dxQueryApi.GetAsync(dxDataSetView.DXQuery, dxDataSetView.DXFilter);
+                if (dxQueryResult is null || string.IsNullOrWhiteSpace(dxQueryResult.TypeName))
+                {
+                    SetEmptyState("Query result is empty or invalid for the selected data set.");
+                    return;
+                }
+
                 dxUnits = await coreApi.GetItems(dxQueryResult.TypeName);
+                if (dxUnits is null)
+                {
+                    dxUnits = Enumerable.Empty<JObject>();
+                }
 
                 values = dxQueryResult.AsDataTable();
+                _loadErrorMessage = null;
 
                 BuildDisplayStringIndex();
                 ClearSelection();
                 SyncPreviewWithSelection();
+            }
+            catch (Exception ex)
+            {
+                SetEmptyState($"Unable to load data set view: {ex.Message}");
             }
             finally
             {
@@ -172,6 +194,11 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task OpenEditDialog(Guid id)
         {
+            if (!HasCurrentType)
+            {
+                return;
+            }
+
             if (id != default(Guid))
             {
                 selectedItemID = id;
@@ -215,7 +242,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task ExportSingleAsync(Guid id)
         {
-            if (id == default)
+            if (id == default || !HasCurrentType)
                 return;
 
             await coreApi.ExportAsync(dxQueryResult.TypeName, id);
@@ -223,7 +250,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task DeleteSingleAsync(Guid id)
         {
-            if (id == default)
+            if (id == default || !HasCurrentType)
                 return;
 
             await coreApi.DeleteAsync(dxQueryResult.TypeName, id);
@@ -392,7 +419,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private async Task ConfirmBulkActionAsync()
         {
-            if (_pendingBulkAction is null)
+            if (_pendingBulkAction is null || !HasCurrentType)
             {
                 CloseBulkConfirm();
                 return;
@@ -437,6 +464,18 @@ namespace IV.ManagementHub.Web.Components.Pages
                     SyncPreviewWithSelection();
                 }
             }
+        }
+
+        private void SetEmptyState(string message)
+        {
+            _loadErrorMessage = message;
+            dxQueryResult = DXQueryResult.Empty();
+            dxUnits = Enumerable.Empty<JObject>();
+            values = new DataTable();
+            _showDialog = false;
+            CloseBulkConfirmInternal();
+            ClearSelection();
+            SyncPreviewWithSelection();
         }
 
         private string GetDisplayString(Guid id)

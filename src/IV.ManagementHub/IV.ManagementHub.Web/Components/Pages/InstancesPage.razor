@@ -1,0 +1,342 @@
+@page "/app/{AppKey}/instances"
+
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.ManagementHub.Web.ApiClients
+@using IV.ManagementHub.Web.Components.Custom.Base
+
+@inherits ManagementHubComponentBase
+
+@inject IApiClientResolver Resolver
+@inject NavigationManager NavigationManager
+
+<PageTitle>Instances</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="16">
+    <FluentStack Orientation="Orientation.Horizontal"
+                 Width="100%"
+                 HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                 VerticalAlignment="VerticalAlignment.Center">
+        <FluentLabel Typo="Typography.H5" Weight="FontWeight.Bold">Instances</FluentLabel>
+
+        <FluentButton Appearance="Appearance.Accent"
+                      Disabled="@_isBusy"
+                      aria-label="Add instance"
+                      Title="Add instance"
+                      IconStart="@(new Icons.Regular.Size16.AddCircle())"
+                      OnClick="StartAddInstance">
+        </FluentButton>
+    </FluentStack>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <FluentMessageBar Intent="MessageIntent.Error">
+            @_error
+        </FluentMessageBar>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_info))
+    {
+        <FluentMessageBar Intent="MessageIntent.Success">
+            @_info
+        </FluentMessageBar>
+    }
+
+    <FluentCard>
+        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="8">
+            @if (_isLoading)
+            {
+                <FluentProgressRing />
+            }
+            else if (_instances.Count == 0)
+            {
+                <FluentLabel>No instances configured.</FluentLabel>
+            }
+            else
+            {
+                @foreach (var instance in _instances)
+                {
+                    <FluentStack Orientation="Orientation.Horizontal"
+                                 Width="100%"
+                                 VerticalAlignment="VerticalAlignment.Center"
+                                 HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
+                            <FluentLabel Typo="Typography.Body" Weight="FontWeight.Bold">@instance.Title</FluentLabel>
+                            <FluentLabel Typo="Typography.Body">Key: @instance.Key</FluentLabel>
+                        </FluentStack>
+                        <FluentButton Appearance="Appearance.Outline"
+                                      OnClick="@(() => OpenInstance(instance.Key))">
+                            Open
+                        </FluentButton>
+                    </FluentStack>
+                    <FluentDivider />
+                }
+            }
+        </FluentStack>
+    </FluentCard>
+
+    @if (_showAddWizard)
+    {
+        <div class="dx-overlay-backdrop" @onclick="CancelAddInstance">
+            <div class="dx-overlay-window dx-overlay-window--md" @onclick:stopPropagation="true">
+                <FluentToolbar Class="dx-overlay-header" Style="width:100%;">
+                    <FluentStack Orientation="Orientation.Horizontal"
+                                 Width="100%"
+                                 HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                 VerticalAlignment="VerticalAlignment.Center">
+                        <FluentLabel Typo="Typography.Subject">Add instance</FluentLabel>
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      aria-label="Close"
+                                      IconStart="@(new Icons.Regular.Size20.Dismiss())"
+                                      Disabled="@_isBusy"
+                                      OnClick="CancelAddInstance" />
+                    </FluentStack>
+                </FluentToolbar>
+
+                <div class="dx-overlay-body">
+                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="10">
+                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                            <FluentLabel>Title</FluentLabel>
+                            <FluentTextField Value="@_newInstanceTitle"
+                                             ValueChanged="@(value => _newInstanceTitle = value ?? string.Empty)"
+                                             Style="width:100%;" />
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                            <FluentLabel>Key (optional)</FluentLabel>
+                            <FluentTextField Value="@_newInstanceKey"
+                                             ValueChanged="@(value => _newInstanceKey = value ?? string.Empty)"
+                                             Style="width:100%;" />
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                            <FluentLabel>Database type</FluentLabel>
+                            <FluentTextField Value="@_databaseType"
+                                             ValueChanged="@(value => _databaseType = value ?? string.Empty)"
+                                             Style="width:100%;" />
+                        </FluentStack>
+
+                        <FluentSwitch Label="Use raw connection string (advanced)"
+                                      Value="@_useRawConnectionString"
+                                      ValueChanged="OnUseRawConnectionStringChanged" />
+
+                        @if (_useRawConnectionString)
+                        {
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>Connection string</FluentLabel>
+                                <FluentTextField Value="@_connectionString"
+                                                 ValueChanged="@(value => _connectionString = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+                        }
+                        else
+                        {
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>Host</FluentLabel>
+                                <FluentTextField Value="@_dbHost"
+                                                 ValueChanged="@(value => _dbHost = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>Port</FluentLabel>
+                                <FluentTextField Value="@_dbPort"
+                                                 ValueChanged="@(value => _dbPort = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>Database</FluentLabel>
+                                <FluentTextField Value="@_dbName"
+                                                 ValueChanged="@(value => _dbName = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>DB Username</FluentLabel>
+                                <FluentTextField Value="@_dbUser"
+                                                 ValueChanged="@(value => _dbUser = value ?? string.Empty)"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+
+                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                                <FluentLabel>DB Password</FluentLabel>
+                                <FluentTextField Value="@_dbPassword"
+                                                 ValueChanged="@(value => _dbPassword = value ?? string.Empty)"
+                                                 TextFieldType="TextFieldType.Password"
+                                                 Style="width:100%;" />
+                            </FluentStack>
+                        }
+                    </FluentStack>
+                </div>
+
+                <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                        <FluentButton Appearance="Appearance.Neutral"
+                                      Disabled="@_isBusy"
+                                      OnClick="CancelAddInstance">
+                            Cancel
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Accent"
+                                      Disabled="@_isBusy"
+                                      OnClick="CreateInstanceAsync">
+                            @(_isBusy ? "Saving..." : "Create")
+                        </FluentButton>
+                    </FluentStack>
+                </FluentToolbar>
+            </div>
+        </div>
+    }
+</FluentStack>
+
+@code
+{
+    private DXInstancesApiClient? _instancesApiClient;
+    private readonly List<DXInstanceDto> _instances = [];
+    private bool _isLoading;
+    private bool _isBusy;
+    private bool _showAddWizard;
+    private bool _useRawConnectionString;
+    private string _databaseType = "PostgreSQL";
+    private string _connectionString = string.Empty;
+    private string _dbHost = "localhost";
+    private string _dbPort = "5432";
+    private string _dbName = "IV.ManagementHub";
+    private string _dbUser = "postgres";
+    private string _dbPassword = string.Empty;
+    private string _newInstanceTitle = string.Empty;
+    private string _newInstanceKey = string.Empty;
+    private string? _error;
+    private string? _info;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _instancesApiClient = Resolver.Get<DXInstancesApiClient>(base.AppKey);
+        await LoadInstancesAsync();
+    }
+
+    private async Task LoadInstancesAsync()
+    {
+        if (_instancesApiClient is null)
+        {
+            return;
+        }
+
+        _error = null;
+        _isLoading = true;
+
+        try
+        {
+            var instances = await _instancesApiClient.GetItemsAsync();
+            _instances.Clear();
+            _instances.AddRange(instances.OrderBy(instance => instance.Title, StringComparer.OrdinalIgnoreCase));
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void StartAddInstance()
+    {
+        _error = null;
+        _info = null;
+        _showAddWizard = true;
+    }
+
+    private void CancelAddInstance()
+    {
+        _showAddWizard = false;
+        _error = null;
+    }
+
+    private void OnUseRawConnectionStringChanged(bool value)
+    {
+        _useRawConnectionString = value;
+        _error = null;
+    }
+
+    private async Task CreateInstanceAsync()
+    {
+        if (_instancesApiClient is null || _isBusy)
+        {
+            return;
+        }
+
+        _error = null;
+        _info = null;
+
+        if (string.IsNullOrWhiteSpace(_newInstanceTitle))
+        {
+            _error = "Instance title is required.";
+            return;
+        }
+
+        var connection = _useRawConnectionString
+            ? _connectionString
+            : BuildPostgreSqlConnectionString(_dbHost, _dbPort, _dbName, _dbUser, _dbPassword);
+
+        if (string.IsNullOrWhiteSpace(connection))
+        {
+            _error = "Connection string is required.";
+            return;
+        }
+
+        _isBusy = true;
+        try
+        {
+            var result = await _instancesApiClient.CreateAsync(new CreateInstanceRequest(
+                _newInstanceKey,
+                _newInstanceTitle,
+                _databaseType,
+                connection));
+
+            if (!result.IsSuccess || result.Instance is null)
+            {
+                _error = result.Error ?? "Failed to create instance.";
+                await LoadInstancesAsync();
+                return;
+            }
+
+            _showAddWizard = false;
+            _info = result.Message;
+            await LoadInstancesAsync();
+            OpenInstance(result.Instance.Key);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void OpenInstance(string instanceKey)
+    {
+        NavigationManager.NavigateTo($"/app/{instanceKey}/instance");
+    }
+
+    private static string BuildPostgreSqlConnectionString(
+        string host,
+        string port,
+        string database,
+        string userName,
+        string password)
+    {
+        if (string.IsNullOrWhiteSpace(host) ||
+            string.IsNullOrWhiteSpace(port) ||
+            string.IsNullOrWhiteSpace(database) ||
+            string.IsNullOrWhiteSpace(userName))
+        {
+            return string.Empty;
+        }
+
+        var escapedPassword = (password ?? string.Empty).Replace(";", ";;", StringComparison.Ordinal);
+        return $"Server={host.Trim()};Port={port.Trim()};Database={database.Trim()};User ID={userName.Trim()};Password={escapedPassword};";
+    }
+}

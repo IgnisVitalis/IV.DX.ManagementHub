@@ -24,6 +24,13 @@
 else
 {
     <div class="dx-unit-list-root">
+        @if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
+        {
+            <FluentMessageBar Intent="MessageIntent.Warning">
+                @_loadErrorMessage
+            </FluentMessageBar>
+        }
+
         <div class="dx-unit-list-splitter">
             <FluentSplitter BarHandle="false"
                            Collapsed="_collapse"
@@ -37,7 +44,7 @@ else
                     <div class="dx-unit-panel-surface">
                         <div class="dx-unit-list-panel">
                             <FluentToolbar Class="dx-unit-panel-toolbar" Style="width:100%;">
-                                <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="@(() => OpenEditDialog(default(Guid)))" />
+                                <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(!HasCurrentType)" OnClick="@(() => OpenEditDialog(default(Guid)))" />
                             </FluentToolbar>
 
                             <div class="dx-unit-list-grid-scroll">

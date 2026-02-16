@@ -8,7 +8,7 @@
 @inject AppAuthState AuthState
 @inject NavigationManager NavigationManager
 
-<PageTitle>User Settings</PageTitle>
+<PageTitle>Super Admin Settings</PageTitle>
 
 <FluentCard Class="user-settings-card">
     <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
@@ -16,7 +16,7 @@
                      Width="100%"
                      HorizontalAlignment="HorizontalAlignment.SpaceBetween"
                      VerticalAlignment="VerticalAlignment.Center">
-            <FluentLabel Typo="Typography.Subject">User Settings</FluentLabel>
+            <FluentLabel Typo="Typography.Subject">Super Admin Settings</FluentLabel>
 
             <FluentButton Appearance="Appearance.Stealth"
                           Title="Back to home"
@@ -35,8 +35,8 @@
             <FluentLabel Color="Color.Disabled" Weight="FontWeight.Bold">Role</FluentLabel>
             <FluentLabel>Root</FluentLabel>
 
-            <FluentLabel Color="Color.Disabled" Weight="FontWeight.Bold">App</FluentLabel>
-            <FluentLabel>@AppKey</FluentLabel>
+            <FluentLabel Color="Color.Disabled" Weight="FontWeight.Bold">Scope</FluentLabel>
+            <FluentLabel>Global</FluentLabel>
 
             <FluentLabel Color="Color.Disabled" Weight="FontWeight.Bold">Session</FluentLabel>
             <FluentLabel>@SessionStatus</FluentLabel>
@@ -77,7 +77,7 @@
 
     private void GoToHome()
     {
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo($"/app/{AppKey}/instances");
     }
 
     private void SignOut()

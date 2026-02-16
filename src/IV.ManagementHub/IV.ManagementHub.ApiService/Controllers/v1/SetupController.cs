@@ -22,7 +22,8 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
             {
                 RequiresSetup = status.RequiresSetup,
                 RequiresRestart = status.RequiresRestart,
-                RuntimeReady = status.RuntimeReady
+                RuntimeReady = status.RuntimeReady,
+                HasInstances = status.HasInstances
             });
         }
 
@@ -37,8 +38,6 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         {
             var result = await bootstrapSetupService.CompleteSetupAsync(
                 new BootstrapCompleteRequest(
-                    request.DatabaseType,
-                    request.ConnectionString,
                     request.UserName,
                     request.Password),
                 ct);
@@ -79,16 +78,13 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
 
         [JsonProperty("runtimeReady")]
         public bool RuntimeReady { get; init; }
+
+        [JsonProperty("hasInstances")]
+        public bool HasInstances { get; init; }
     }
 
     public sealed class SetupCompleteApiRequest
     {
-        [JsonProperty("databaseType")]
-        public string DatabaseType { get; init; } = "PostgreSQL";
-
-        [JsonProperty("connectionString")]
-        public string ConnectionString { get; init; } = string.Empty;
-
         [JsonProperty("userName")]
         public string UserName { get; init; } = string.Empty;
 

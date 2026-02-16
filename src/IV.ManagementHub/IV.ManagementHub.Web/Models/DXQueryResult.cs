@@ -84,6 +84,11 @@ namespace IV.ManagementHub.Web.Models
             this.Content = content;
         }
 
+        public static DXQueryResult Empty(string? typeName = default)
+        {
+            return new DXQueryResult(typeName ?? string.Empty, Array.Empty<QueryDefinition>(), Array.Empty<JObject>());
+        }
+
         public static DXQueryResult Parse(string str)
         {
             if (string.IsNullOrWhiteSpace(str))
@@ -91,7 +96,7 @@ namespace IV.ManagementHub.Web.Models
 
             var jObject = JObject.Parse(str);
 
-            var typeName = jObject.Value<string>("S_Type");
+            var typeName = jObject.Value<string>("S_Type") ?? string.Empty;
 
             var dataDefToken = jObject["QueryDefinition"] as JArray
                                ?? throw new JsonException("Property 'QueryDefinition' is missing or not an array.");

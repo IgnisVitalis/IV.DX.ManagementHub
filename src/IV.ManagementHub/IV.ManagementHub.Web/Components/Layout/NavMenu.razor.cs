@@ -12,37 +12,57 @@ namespace IV.ManagementHub.Web.Components.Layout
         [Inject]
         IApiClientResolver Resolver { get; set; } = default!;
 
-        DXNavigationItemUnitApiClient _dxNavigationItemUnitApiClient;
+        DXNavigationItemUnitApiClient? _dxNavigationItemUnitApiClient;
+        string? _lastAppKey;
 
-        IReadOnlyList<BiTreeNode<DXNavigationItemUnit>> roots;
+        IReadOnlyList<BiTreeNode<DXNavigationItemUnit>> roots = [];
 
         protected override async Task OnInitializedAsync()
         {
+            _dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            _lastAppKey = base.AppKey;
 
-            this._dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            await LoadNavigationAsync();
+        }
 
-            var navigationItems = await this._dxNavigationItemUnitApiClient.GetItemsAsync();
+        protected override async Task OnParametersSetAsync()
+        {
+            if (_dxNavigationItemUnitApiClient is null)
+            {
+                return;
+            }
 
+            if (string.Equals(_lastAppKey, base.AppKey, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
 
-            roots = BiTreeBuilder.BuildForest(
-                navigationItems,
-                x => x.ID,
-                x => x.Parent,
-                x => x.Order);
-                      
-            //var index = roots.BuildIndexById();
-                       
-            //var node = index.GetById(navigationItems.Skip(2).First().ID);
-                      
-            //var breadcrumbNames = node.PathFromRoot().Select(n => n.Item.Name);
-                      
-            //var breadcrumbItems = node.ItemPathFromRoot();
+            _dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            _lastAppKey = base.AppKey;
+            await LoadNavigationAsync();
+        }
 
-            //var leafNodes = roots.Leaves();
+        private async Task LoadNavigationAsync()
+        {
+            if (_dxNavigationItemUnitApiClient is null)
+            {
+                roots = [];
+                return;
+            }
 
-
-
-            //
+            try
+            {
+                var navigationItems = await _dxNavigationItemUnitApiClient.GetItemsAsync();
+                roots = BiTreeBuilder.BuildForest(
+                    navigationItems,
+                    item => item.ID,
+                    item => item.Parent,
+                    item => item.Order);
+            }
+            catch
+            {
+                roots = [];
+            }
         }
     }
 }

@@ -1,0 +1,79 @@
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.ManagementHub.Web.ApiClients
+@using IV.ManagementHub.Web.Components.Custom
+@using IV.ManagementHub.Web.Services
+
+@inject IApiClientResolver Resolver
+@inject AppAuthState AuthState
+@inject NavigationManager NavigationManager
+
+<div style="width:220px;">
+    <DXPicklistField Title="Instance"
+                     Placeholder="Select instance"
+                     Value="@_selectedInstanceKey"
+                     ValueChanged="OnInstanceChangedAsync"
+                     Options="@_options" />
+</div>
+
+@code
+{
+    [Parameter, EditorRequired] public string CurrentAppKey { get; set; } = default!;
+
+    private string _selectedInstanceKey = string.Empty;
+    private IReadOnlyList<KeyValuePair<string, string>> _options = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _selectedInstanceKey = CurrentAppKey;
+        await LoadOptionsAsync();
+    }
+
+    private async Task LoadOptionsAsync()
+    {
+        try
+        {
+            var instancesApiClient = Resolver.Get<DXInstancesApiClient>(CurrentAppKey);
+            var instances = await instancesApiClient.GetItemsAsync();
+            _options = instances
+                .OrderBy(instance => instance.Title, StringComparer.OrdinalIgnoreCase)
+                .Select(instance => new KeyValuePair<string, string>(instance.Key, instance.Title))
+                .ToList();
+        }
+        catch
+        {
+            _options = [];
+        }
+    }
+
+    private Task OnInstanceChangedAsync(string instanceKey)
+    {
+        if (string.IsNullOrWhiteSpace(instanceKey) ||
+            string.Equals(instanceKey, CurrentAppKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.CompletedTask;
+        }
+
+        AuthState.SetAppKey(instanceKey);
+        var targetUri = BuildTargetUri(instanceKey.Trim());
+        NavigationManager.NavigateTo(targetUri);
+        return Task.CompletedTask;
+    }
+
+    private string BuildTargetUri(string instanceKey)
+    {
+        var currentUri = new Uri(NavigationManager.Uri);
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var pathOnly = relativePath.Split(['?', '#'], 2)[0].Trim('/');
+        var segments = pathOnly.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length >= 2 &&
+            string.Equals(segments[0], "app", StringComparison.OrdinalIgnoreCase))
+        {
+            segments[1] = instanceKey;
+            var path = string.Join('/', segments);
+            return $"{path}{currentUri.Query}{currentUri.Fragment}";
+        }
+
+        return $"app/{instanceKey}/instances";
+    }
+}

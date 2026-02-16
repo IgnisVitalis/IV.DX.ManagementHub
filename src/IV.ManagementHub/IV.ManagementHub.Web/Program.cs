@@ -18,8 +18,14 @@ builder.Services.AddFluentUIComponents();
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddHttpClient("Base", http => http.BaseAddress = new Uri("http://localhost:5455"));
-builder.Services.AddHttpClient("Lit", http => http.BaseAddress = new Uri("http://localhost:5478"));
+var configuredSources = builder.Configuration.GetSection("ApiSources").Get<List<ApiSourceDefinition>>() ?? new List<ApiSourceDefinition>();
+var apiSourceCatalog = new ApiSourceCatalog(configuredSources);
+builder.Services.AddSingleton(apiSourceCatalog);
+
+foreach (var source in apiSourceCatalog.Sources)
+{
+    builder.Services.AddHttpClient(source.HttpClientName, http => http.BaseAddress = new Uri(source.ApiBaseUrl));
+}
 
 builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();
 builder.Services.AddScoped<AppState>();

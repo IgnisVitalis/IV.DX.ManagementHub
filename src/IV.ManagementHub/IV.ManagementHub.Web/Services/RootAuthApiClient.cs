@@ -4,11 +4,13 @@ using System.Text;
 
 namespace IV.ManagementHub.Web.Services
 {
-    public sealed class RootAuthApiClient(IHttpClientFactory factory)
+    public sealed class RootAuthApiClient(
+        IHttpClientFactory factory,
+        ApiSourceCatalog apiSourceCatalog)
     {
-        public async Task<SetupStatusResult> GetSetupStatusAsync(CancellationToken cancellationToken = default)
+        public async Task<SetupStatusResult> GetSetupStatusAsync(string? sourceKey = null, CancellationToken cancellationToken = default)
         {
-            var client = factory.CreateClient("Base");
+            var client = GetClient(sourceKey);
             using var response = await client.GetAsync("api/v1.0/setup/status", cancellationToken);
 
             if (!response.IsSuccessStatusCode)
@@ -17,6 +19,7 @@ namespace IV.ManagementHub.Web.Services
                     RequiresSetup: true,
                     RequiresRestart: false,
                     RuntimeReady: false,
+                    HasInstances: false,
                     Error: $"Unable to read setup status ({(int)response.StatusCode}).");
             }
 
@@ -29,26 +32,27 @@ namespace IV.ManagementHub.Web.Services
                     RequiresSetup: true,
                     RequiresRestart: false,
                     RuntimeReady: false,
+                    HasInstances: false,
                     Error: "Setup status payload is empty.");
             }
 
             return new SetupStatusResult(
                 RequiresSetup: payload.RequiresSetup,
                 RequiresRestart: payload.RequiresRestart,
-                RuntimeReady: payload.RuntimeReady);
+                RuntimeReady: payload.RuntimeReady,
+                HasInstances: payload.HasInstances);
         }
 
         public async Task<SetupCompleteResult> CompleteSetupAsync(
             SetupCompleteRequest request,
+            string? sourceKey = null,
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(request);
 
-            var client = factory.CreateClient("Base");
+            var client = GetClient(sourceKey);
             var payload = JsonConvert.SerializeObject(new
             {
-                request.DatabaseType,
-                request.ConnectionString,
                 request.UserName,
                 request.Password
             });
@@ -69,14 +73,14 @@ namespace IV.ManagementHub.Web.Services
             return SetupCompleteResult.Fail(error, completeResponse?.RequiresRestart ?? false);
         }
 
-        public async Task<LoginResult> LoginAsync(string username, string password, CancellationToken cancellationToken = default)
+        public async Task<LoginResult> LoginAsync(string username, string password, string? sourceKey = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 return LoginResult.Fail("Username and password are required.");
             }
 
-            var client = factory.CreateClient("Base");
+            var client = GetClient(sourceKey);
             var payload = JsonConvert.SerializeObject(new
             {
                 username,
@@ -94,7 +98,7 @@ namespace IV.ManagementHub.Web.Services
             if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
             {
                 var message = await ReadErrorMessageAsync(response, cancellationToken);
-                return LoginResult.Fail(message ?? "Service is not ready. Complete setup and restart API service.");
+                return LoginResult.Fail(message ?? "Service is not ready. Complete setup and configure at least one instance.");
             }
 
             if (!response.IsSuccessStatusCode)
@@ -111,6 +115,12 @@ namespace IV.ManagementHub.Web.Services
             }
 
             return LoginResult.Success(tokenResponse.AccessToken);
+        }
+
+        private HttpClient GetClient(string? sourceKey)
+        {
+            var source = apiSourceCatalog.Resolve(sourceKey);
+            return factory.CreateClient(source.HttpClientName);
         }
 
         private static async Task<string?> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken ct)
@@ -141,6 +151,9 @@ namespace IV.ManagementHub.Web.Services
 
             [JsonProperty("runtimeReady")]
             public bool RuntimeReady { get; init; }
+
+            [JsonProperty("hasInstances")]
+            public bool HasInstances { get; init; }
         }
 
         private sealed class SetupCompleteResponse
@@ -170,11 +183,10 @@ namespace IV.ManagementHub.Web.Services
         bool RequiresSetup,
         bool RequiresRestart,
         bool RuntimeReady,
+        bool HasInstances,
         string? Error = null);
 
     public sealed record SetupCompleteRequest(
-        string DatabaseType,
-        string ConnectionString,
         string UserName,
         string Password);
 

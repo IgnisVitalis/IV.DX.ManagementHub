@@ -1,7 +1,9 @@
 @inherits LayoutComponentBase
 @using IV.ManagementHub.Web.Components.Layout;
+@using IV.ManagementHub.Web.Services
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject NavigationManager NavigationManager
+@inject AppState AppState
 
 <FluentDesignSystemProvider Id="app-root">
     <FluentLayout>
@@ -18,17 +20,23 @@
                     IV.ManagementHub
                 </FluentLabel>
 
-                <FluentButton Appearance="Appearance.Stealth"
-                              Title="Open user settings"
-                              aria-label="Open user settings"
-                              OnClick="OpenUserSettings">
-                    <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Color="Color.FillInverse" />
-                </FluentButton>
+                <FluentStack Orientation="Orientation.Horizontal"
+                             HorizontalGap="8"
+                             VerticalAlignment="VerticalAlignment.Center">
+                    <InstanceSwitcher CurrentAppKey="@CurrentAppKey" />
+
+                    <FluentButton Appearance="Appearance.Stealth"
+                                  Title="Open super admin settings"
+                                  aria-label="Open super admin settings"
+                                  OnClick="OpenUserSettings">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Color="Color.FillInverse" />
+                    </FluentButton>
+                </FluentStack>
             </FluentStack>
         </FluentHeader>
 
         <FluentStack Class="main" Orientation="Orientation.Horizontal" Width="100%">
-            <NavMenu AppKey="base" />
+            <NavMenu AppKey="@CurrentAppKey" />
             <div class="body-content">
                 <div class="content">
                     @Body
@@ -44,10 +52,11 @@
 
 @code
 {
+    private string CurrentAppKey => ResolveAppKeyFromCurrentUri();
+
     private void OpenUserSettings()
     {
-        var appKey = ResolveAppKeyFromCurrentUri();
-        NavigationManager.NavigateTo($"/app/{appKey}/user");
+        NavigationManager.NavigateTo($"/app/{AppState.DefaultAppKey}/user");
     }
 
     private string ResolveAppKeyFromCurrentUri()
@@ -62,6 +71,6 @@
             return segments[1];
         }
 
-        return "base";
+        return AppState.DefaultAppKey;
     }
 }

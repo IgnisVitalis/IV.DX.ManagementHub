@@ -32,7 +32,8 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                 }
 
                 await using var stream = File.OpenRead(_filePath);
-                return await JsonSerializer.DeserializeAsync<BootstrapSettings>(stream, _serializerOptions, ct);
+                var settings = await JsonSerializer.DeserializeAsync<BootstrapSettings>(stream, _serializerOptions, ct);
+                return settings?.Normalize();
             }
             finally
             {
@@ -54,7 +55,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                 }
 
                 await using var stream = File.Create(_filePath);
-                await JsonSerializer.SerializeAsync(stream, settings, _serializerOptions, ct);
+                await JsonSerializer.SerializeAsync(stream, settings.Normalize(), _serializerOptions, ct);
             }
             finally
             {

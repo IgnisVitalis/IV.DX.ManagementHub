@@ -9,11 +9,9 @@ namespace IV.ManagementHub.ApiService.Bootstrap
         Task<BootstrapAuthValidationResult> ValidateCredentialsAsync(string userName, string password, CancellationToken ct = default);
     }
 
-    public sealed record BootstrapSetupStatus(bool RequiresSetup, bool RequiresRestart, bool RuntimeReady);
+    public sealed record BootstrapSetupStatus(bool RequiresSetup, bool RequiresRestart, bool RuntimeReady, bool HasInstances);
 
     public sealed record BootstrapCompleteRequest(
-        string DatabaseType,
-        string ConnectionString,
         string UserName,
         string Password);
 

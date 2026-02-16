@@ -2,21 +2,21 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 {
     public sealed class BootstrapSetupService(
         IBootstrapSettingsStore store,
-        BootstrapRuntimeState runtimeState,
-        IConfiguration configuration,
-        IBootstrapRuntimeActivator runtimeActivator) : IBootstrapSetupService
+        BootstrapSettingsSnapshot settingsSnapshot) : IBootstrapSetupService
     {
         private readonly SemaphoreSlim _sync = new(1, 1);
 
         public async Task<BootstrapSetupStatus> GetStatusAsync(CancellationToken ct = default)
         {
-            var settings = await store.LoadAsync(ct);
+            var settings = await LoadSettingsAsync(ct);
             var isConfigured = settings?.IsConfigured == true;
+            var hasInstances = settings?.HasInstances == true;
 
             return new BootstrapSetupStatus(
                 RequiresSetup: !isConfigured,
-                RequiresRestart: isConfigured && !runtimeState.IsDxRuntimeEnabled,
-                RuntimeReady: runtimeState.IsDxRuntimeEnabled);
+                RequiresRestart: false,
+                RuntimeReady: isConfigured,
+                HasInstances: hasInstances);
         }
 
         public async Task<BootstrapCompleteResult> CompleteSetupAsync(BootstrapCompleteRequest request, CancellationToken ct = default)
@@ -29,21 +29,19 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                     Message: "Request payload is required.");
             }
 
-            if (string.IsNullOrWhiteSpace(request.DatabaseType) ||
-                string.IsNullOrWhiteSpace(request.ConnectionString) ||
-                string.IsNullOrWhiteSpace(request.UserName) ||
+            if (string.IsNullOrWhiteSpace(request.UserName) ||
                 string.IsNullOrWhiteSpace(request.Password))
             {
                 return new BootstrapCompleteResult(
                     BootstrapCompleteStatus.ValidationError,
                     RequiresRestart: false,
-                    Message: "Database type, connection string, username and password are required.");
+                    Message: "Username and password are required.");
             }
 
             await _sync.WaitAsync(ct);
             try
             {
-                var current = await store.LoadAsync(ct);
+                var current = await LoadSettingsAsync(ct);
                 var isAlreadyConfigured = current?.IsConfigured == true;
                 BootstrapSettings settings;
 
@@ -58,29 +56,15 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
                     settings = new BootstrapSettings
                     {
-                        DatabaseType = request.DatabaseType.Trim(),
-                        ConnectionString = request.ConnectionString.Trim(),
                         RootUserName = request.UserName.Trim(),
                         RootPasswordSalt = salt,
                         RootPasswordHash = hash,
-                        CreatedAtUtc = DateTimeOffset.UtcNow
+                        CreatedAtUtc = DateTimeOffset.UtcNow,
+                        Instances = current?.Instances?.Select(instance => instance.Normalize()).ToList() ?? []
                     };
 
                     await store.SaveAsync(settings, ct);
-                }
-
-                configuration["Database:Type"] = settings.DatabaseType;
-                configuration["Database:ConnectionString"] = settings.ConnectionString;
-
-                var activation = await runtimeActivator.ActivateAsync(ct);
-                if (!activation.IsSuccess)
-                {
-                    return new BootstrapCompleteResult(
-                        BootstrapCompleteStatus.ActivationFailed,
-                        RequiresRestart: true,
-                        Message: isAlreadyConfigured
-                            ? $"DX runtime activation failed. {activation.Message}"
-                            : $"Setup saved but DX runtime activation failed. {activation.Message}");
+                    settingsSnapshot.Set(settings);
                 }
 
                 return new BootstrapCompleteResult(
@@ -89,8 +73,8 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                         : BootstrapCompleteStatus.Completed,
                     RequiresRestart: false,
                     Message: isAlreadyConfigured
-                        ? "Setup is already completed. DX runtime is active."
-                        : "Setup completed. DX runtime is active.");
+                        ? "Setup is already completed."
+                        : "Setup completed.");
             }
             finally
             {
@@ -103,19 +87,12 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             string password,
             CancellationToken ct = default)
         {
-            var settings = await store.LoadAsync(ct);
+            var settings = await LoadSettingsAsync(ct);
             if (settings?.IsConfigured != true)
             {
                 return new BootstrapAuthValidationResult(
                     BootstrapAuthValidationStatus.SetupNotCompleted,
                     Message: "Setup is not completed.");
-            }
-
-            if (!runtimeState.IsDxRuntimeEnabled)
-            {
-                return new BootstrapAuthValidationResult(
-                    BootstrapAuthValidationStatus.RuntimeNotReady,
-                    Message: "DX runtime is not active.");
             }
 
             var namesMatch = string.Equals(settings.RootUserName, userName, StringComparison.Ordinal);
@@ -124,6 +101,23 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             return namesMatch && passwordMatch
                 ? new BootstrapAuthValidationResult(BootstrapAuthValidationStatus.Valid, settings.RootUserName)
                 : new BootstrapAuthValidationResult(BootstrapAuthValidationStatus.InvalidCredentials);
+        }
+
+        private async Task<BootstrapSettings?> LoadSettingsAsync(CancellationToken ct)
+        {
+            var settings = await store.LoadAsync(ct) ?? settingsSnapshot.Current;
+            if (settings is null)
+            {
+                return null;
+            }
+
+            var normalized = settings.Normalize();
+            if (!ReferenceEquals(normalized, settings))
+            {
+                settingsSnapshot.Set(normalized);
+            }
+
+            return normalized;
         }
     }
 }
