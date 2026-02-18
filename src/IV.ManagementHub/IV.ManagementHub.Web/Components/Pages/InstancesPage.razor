@@ -23,6 +23,7 @@
                    Orientation="@_orientation"
                    OnResized="OnResizedHandler"
                    OnRowClick="OnInstanceRowClicked"
+                   RowStyle="GetInstanceRowStyle"
                    RowActionsTitle="Actions"
                    RowActionsWidth="7rem">
     <ToolbarContent>
@@ -57,7 +58,7 @@
     <RowActions Context="instance">
         <FluentButton aria-label="Select instance"
                       Title="Select instance"
-                      IconEnd="@(new Icons.Regular.Size16.ArrowExportUp())"
+                      IconEnd="@(new Icons.Regular.Size16.Checkmark())"
                       OnClick="@(() => SelectInstance(instance.Key))" />
     </RowActions>
     <DetailToolbarContent>
@@ -67,7 +68,7 @@
                      VerticalAlignment="VerticalAlignment.Center">
             <FluentButton aria-label="Select instance"
                           Title="Select instance"
-                          IconEnd="@(new Icons.Regular.Size16.ArrowExportUp())"
+                          IconEnd="@(new Icons.Regular.Size16.Checkmark())"
                           Disabled="@(_selectedPreviewInstance is null)"
                           OnClick="SelectSelectedInstance" />
 
@@ -388,6 +389,18 @@
     {
         SelectPreviewInstance(instance);
         return Task.CompletedTask;
+    }
+
+    private string? GetInstanceRowStyle(DXInstanceDto instance)
+    {
+        if (_selectedPreviewInstance is null)
+        {
+            return null;
+        }
+
+        return string.Equals(instance.Key, _selectedPreviewInstance.Key, StringComparison.OrdinalIgnoreCase)
+            ? "background-color: var(--neutral-fill-secondary-rest);"
+            : null;
     }
 
     private void SelectPreviewInstance(DXInstanceDto instance)

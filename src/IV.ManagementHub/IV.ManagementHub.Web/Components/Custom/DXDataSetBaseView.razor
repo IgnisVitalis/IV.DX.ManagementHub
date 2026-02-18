@@ -32,9 +32,13 @@
         else
         {
             <FluentDataGrid TGridItem="TItem"
+                            Class="dx-dataset-grid"
                             Items="@Items"
                             GenerateColumns="false"
+                            DisplayMode="DataGridDisplayMode.Table"
                             OnRowClick="HandleRowClick"
+                            RowClass="ResolveRowClass"
+                            RowStyle="ResolveRowStyle"
                             RowSize="@RowSize"
                             Style="width:100%;">
                 @if (EnableSelectionColumn)
@@ -111,6 +115,8 @@
     [Parameter] public RenderFragment? DetailToolbarContent { get; set; }
     [Parameter] public RenderFragment? DetailContent { get; set; }
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+    [Parameter] public Func<TItem, string?>? RowClass { get; set; }
+    [Parameter] public Func<TItem, string?>? RowStyle { get; set; }
 
     private Task HandleRowClick(FluentDataGridRow<TItem> row)
     {
@@ -120,5 +126,17 @@
         }
 
         return OnRowClick.InvokeAsync(row.Item);
+    }
+
+    private string? ResolveRowClass(TItem item)
+    {
+        var rowClass = RowClass?.Invoke(item);
+        return string.IsNullOrWhiteSpace(rowClass) ? null : rowClass;
+    }
+
+    private string? ResolveRowStyle(TItem item)
+    {
+        var rowStyle = RowStyle?.Invoke(item);
+        return string.IsNullOrWhiteSpace(rowStyle) ? null : rowStyle;
     }
 }

@@ -1,18 +1,17 @@
 ﻿@using IV.ManagementHub.Web.Components.Custom.Base
 @inherits ManagementHubComponentBase
 
-<FluentToolbar id="toolbar-fluent-components" style="width:100%">
-    <div class="row-actions"
-         @onclick:stopPropagation="true"
-         @onpointerdown:stopPropagation="true">
-        <FluentButton OnClick="EditAsync">
-            <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
-        </FluentButton>
-        <FluentButton OnClick="ExportAsync">
-            <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-        </FluentButton>
-        <FluentButton OnClick="DeleteAsync">
-            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-        </FluentButton>
-    </div>
-</FluentToolbar>
+<FluentStack Orientation="Orientation.Horizontal"
+             HorizontalGap="4"
+             @onclick:stopPropagation="true"
+             @onpointerdown:stopPropagation="true">
+    <FluentButton OnClick="EditAsync">
+        <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+    </FluentButton>
+    <FluentButton OnClick="ExportAsync">
+        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+    </FluentButton>
+    <FluentButton OnClick="DeleteAsync">
+        <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+    </FluentButton>
+</FluentStack>

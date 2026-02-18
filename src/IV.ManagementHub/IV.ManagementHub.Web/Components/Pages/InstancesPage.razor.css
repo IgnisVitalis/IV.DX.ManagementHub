@@ -1,6 +1,0 @@
-.instance-preview-grid {
-    display: grid;
-    grid-template-columns: minmax(8rem, 14rem) 1fr;
-    gap: 0.5rem 1rem;
-    align-items: start;
-}

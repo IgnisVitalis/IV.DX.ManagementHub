@@ -224,6 +224,14 @@ namespace IV.ManagementHub.Web.Components.Pages
             return OnRowClicked(id);
         }
 
+        private string? GetDataRowStyle(JObject row)
+        {
+            var id = dxQueryResult.GetID(row);
+            return IsSelected(id)
+                ? "background-color: var(--neutral-fill-secondary-rest);"
+                : null;
+        }
+
         private bool IsSelected(Guid id) => id != default && _selectedIdSet.Contains(id);
 
         private Task SetSelected(Guid id, bool? selected)

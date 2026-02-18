@@ -11,28 +11,18 @@
 <FluentDesignSystemProvider Id="app-root">
     <FluentLayout>
         <FluentHeader>
-            <FluentStack Class="mh-header"
+            <FluentStack
                          Orientation="Orientation.Horizontal"
                          Width="100%"
-                         HorizontalGap="12"
-                         HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                         HorizontalGap="8"
+                         HorizontalAlignment="HorizontalAlignment.Start"
                          VerticalAlignment="VerticalAlignment.Center">
-                <FluentLabel Typo="Typography.H5"
-                             Weight="FontWeight.Bold"
-                             Color="Color.FillInverse">
+                <FluentLabel Typo="Typography.H5" Weight="FontWeight.Bold">
                     @_headerTitle
                 </FluentLabel>
 
-                <FluentStack Orientation="Orientation.Horizontal"
-                             HorizontalGap="8"
-                             VerticalAlignment="VerticalAlignment.Center">
-                    <FluentButton Appearance="Appearance.Stealth"
-                                  Title="Open super admin settings"
-                                  aria-label="Open super admin settings"
-                                  OnClick="OpenUserSettings">
-                        <FluentIcon Value="@(new Icons.Regular.Size20.Settings())" Color="Color.FillInverse" />
-                    </FluentButton>
-                </FluentStack>
+                <FluentSpacer />
+                <FluentIcon Value="@(new Icons.Regular.Size20.Settings().WithColor(Color.FillInverse))" OnClick="OpenUserSettings"/>
             </FluentStack>
         </FluentHeader>
 
@@ -74,7 +64,8 @@
 
     private void OpenUserSettings()
     {
-        NavigationManager.NavigateTo($"/app/{AppState.DefaultAppKey}/user");
+        var appKey = string.IsNullOrWhiteSpace(CurrentAppKey) ? AppState.DefaultAppKey : CurrentAppKey;
+        NavigationManager.NavigateTo($"/app/{appKey}/user");
     }
 
     private async Task ResolveHeaderTitleAsync(string appKey)
