@@ -1,0 +1,60 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<div class="dx-split-root">
+    <div class="dx-split-body">
+        <FluentSplitter BarHandle="false"
+                        Collapsed="@Collapsed"
+                        Orientation="@Orientation"
+                        OnResized="@OnResized"
+                        BarSize="6"
+                        Panel1MinSize="@Panel1MinSize"
+                        Panel2MinSize="@Panel2MinSize"
+                        style="height: 100%; min-height: 0;">
+            <Panel1>
+                <div class="dx-split-panel-surface">
+                    <div class="dx-split-left-panel">
+                        @if (LeftToolbar is not null)
+                        {
+                            <FluentToolbar Class="dx-split-left-toolbar" Style="width:100%;">
+                                @LeftToolbar
+                            </FluentToolbar>
+                        }
+
+                        <div class="dx-split-left-scroll">
+                            @LeftContent
+                        </div>
+                    </div>
+                </div>
+            </Panel1>
+            <Panel2>
+                <div class="dx-split-panel-surface">
+                    <div class="dx-split-right-panel">
+                        @if (RightToolbar is not null)
+                        {
+                            <FluentToolbar Class="dx-split-right-toolbar" Style="width:100%;">
+                                @RightToolbar
+                            </FluentToolbar>
+                        }
+
+                        <div class="dx-split-right-scroll">
+                            @RightContent
+                        </div>
+                    </div>
+                </div>
+            </Panel2>
+        </FluentSplitter>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Collapsed { get; set; }
+    [Parameter] public Orientation Orientation { get; set; } = Orientation.Horizontal;
+    [Parameter] public EventCallback<SplitterResizedEventArgs> OnResized { get; set; }
+    [Parameter] public string Panel1MinSize { get; set; } = "25%";
+    [Parameter] public string Panel2MinSize { get; set; } = "25%";
+
+    [Parameter] public RenderFragment? LeftToolbar { get; set; }
+    [Parameter, EditorRequired] public RenderFragment LeftContent { get; set; } = default!;
+    [Parameter] public RenderFragment? RightToolbar { get; set; }
+    [Parameter, EditorRequired] public RenderFragment RightContent { get; set; } = default!;
+}

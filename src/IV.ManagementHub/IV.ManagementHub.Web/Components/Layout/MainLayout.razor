@@ -1,9 +1,12 @@
 @inherits LayoutComponentBase
+@using IV.DataProvider.WebApp.Services.Web.Contracts;
+@using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Components.Layout;
 @using IV.ManagementHub.Web.Services
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject NavigationManager NavigationManager
 @inject AppState AppState
+@inject IApiClientResolver Resolver
 
 <FluentDesignSystemProvider Id="app-root">
     <FluentLayout>
@@ -17,14 +20,12 @@
                 <FluentLabel Typo="Typography.H5"
                              Weight="FontWeight.Bold"
                              Color="Color.FillInverse">
-                    IV.ManagementHub
+                    @_headerTitle
                 </FluentLabel>
 
                 <FluentStack Orientation="Orientation.Horizontal"
                              HorizontalGap="8"
                              VerticalAlignment="VerticalAlignment.Center">
-                    <InstanceSwitcher CurrentAppKey="@CurrentAppKey" />
-
                     <FluentButton Appearance="Appearance.Stealth"
                                   Title="Open super admin settings"
                                   aria-label="Open super admin settings"
@@ -52,11 +53,70 @@
 
 @code
 {
+    private const string DefaultHeaderTitle = "IV.ManagementHub";
+    private readonly Dictionary<string, string> _instanceTitleCache = new(StringComparer.OrdinalIgnoreCase);
+    private string? _lastResolvedAppKey;
+    private string _headerTitle = DefaultHeaderTitle;
+
     private string CurrentAppKey => ResolveAppKeyFromCurrentUri();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var appKey = CurrentAppKey;
+        if (string.Equals(_lastResolvedAppKey, appKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _lastResolvedAppKey = appKey;
+        await ResolveHeaderTitleAsync(appKey);
+    }
 
     private void OpenUserSettings()
     {
         NavigationManager.NavigateTo($"/app/{AppState.DefaultAppKey}/user");
+    }
+
+    private async Task ResolveHeaderTitleAsync(string appKey)
+    {
+        if (string.IsNullOrWhiteSpace(appKey))
+        {
+            _headerTitle = DefaultHeaderTitle;
+            return;
+        }
+
+        if (_instanceTitleCache.TryGetValue(appKey, out var cachedTitle))
+        {
+            _headerTitle = cachedTitle;
+            return;
+        }
+
+        try
+        {
+            var instancesApiClient = Resolver.Get<DXInstancesApiClient>(appKey);
+            var instances = await instancesApiClient.GetItemsAsync();
+
+            if (instances.Count == 0)
+            {
+                _instanceTitleCache[appKey] = string.Empty;
+                _headerTitle = string.Empty;
+                return;
+            }
+
+            var selectedInstance = instances.FirstOrDefault(instance =>
+                string.Equals(instance.Key, appKey, StringComparison.OrdinalIgnoreCase));
+
+            var resolvedTitle = string.IsNullOrWhiteSpace(selectedInstance?.Title)
+                ? appKey
+                : selectedInstance.Title;
+
+            _instanceTitleCache[appKey] = resolvedTitle;
+            _headerTitle = resolvedTitle;
+        }
+        catch
+        {
+            _headerTitle = appKey;
+        }
     }
 
     private string ResolveAppKeyFromCurrentUri()

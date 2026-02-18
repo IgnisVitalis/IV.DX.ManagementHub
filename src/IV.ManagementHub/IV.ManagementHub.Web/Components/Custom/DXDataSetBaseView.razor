@@ -1,0 +1,124 @@
+@typeparam TItem
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
+
+<DXMasterDetailSplitView Collapsed="@Collapsed"
+                         Orientation="@Orientation"
+                         OnResized="@OnResized"
+                         Panel1MinSize="@Panel1MinSize"
+                         Panel2MinSize="@Panel2MinSize">
+    <LeftToolbar>
+        @if (ToolbarContent is not null)
+        {
+            @ToolbarContent
+        }
+    </LeftToolbar>
+    <LeftContent>
+        @if (IsLoading)
+        {
+            <FluentProgressRing />
+        }
+        else if (IsEmpty)
+        {
+            @if (EmptyContent is not null)
+            {
+                @EmptyContent
+            }
+            else
+            {
+                <FluentLabel>No items.</FluentLabel>
+            }
+        }
+        else
+        {
+            <FluentDataGrid TGridItem="TItem"
+                            Items="@Items"
+                            GenerateColumns="false"
+                            OnRowClick="HandleRowClick"
+                            RowSize="@RowSize"
+                            Style="width:100%;">
+                @if (EnableSelectionColumn)
+                {
+                    <TemplateColumn Title="@SelectionColumnTitle"
+                                    Align="@SelectionColumnAlign"
+                                    Width="@SelectionColumnWidth"
+                                    HeaderCellItemTemplate="@SelectionHeaderCellTemplate">
+                        <ChildContent Context="item">
+                            <div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
+                                @if (SelectionCellContent is not null)
+                                {
+                                    @SelectionCellContent(item)
+                                }
+                            </div>
+                        </ChildContent>
+                    </TemplateColumn>
+                }
+
+                @Columns
+
+                @if (RowActions is not null)
+                {
+                    <TemplateColumn Title="@RowActionsTitle" Align="@RowActionsAlign" Width="@RowActionsWidth">
+                        <ChildContent Context="item">
+                            <div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
+                                @RowActions(item)
+                            </div>
+                        </ChildContent>
+                    </TemplateColumn>
+                }
+            </FluentDataGrid>
+        }
+    </LeftContent>
+    <RightToolbar>
+        @if (DetailToolbarContent is not null)
+        {
+            @DetailToolbarContent
+        }
+    </RightToolbar>
+    <RightContent>
+        @if (DetailContent is not null)
+        {
+            @DetailContent
+        }
+    </RightContent>
+</DXMasterDetailSplitView>
+
+@code {
+    [Parameter] public IQueryable<TItem> Items { get; set; } = Enumerable.Empty<TItem>().AsQueryable();
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public bool IsEmpty { get; set; }
+    [Parameter] public bool Collapsed { get; set; }
+    [Parameter] public Orientation Orientation { get; set; } = Orientation.Horizontal;
+    [Parameter] public EventCallback<SplitterResizedEventArgs> OnResized { get; set; }
+    [Parameter] public string Panel1MinSize { get; set; } = "25%";
+    [Parameter] public string Panel2MinSize { get; set; } = "25%";
+    [Parameter] public DataGridRowSize RowSize { get; set; } = DataGridRowSize.Medium;
+    [Parameter] public bool EnableSelectionColumn { get; set; }
+    [Parameter] public RenderFragment<ColumnBase<TItem>>? SelectionHeaderCellTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? SelectionCellContent { get; set; }
+    [Parameter] public string SelectionColumnTitle { get; set; } = string.Empty;
+    [Parameter] public string SelectionColumnWidth { get; set; } = "3rem";
+    [Parameter] public Align SelectionColumnAlign { get; set; } = Align.Center;
+
+    [Parameter] public RenderFragment? ToolbarContent { get; set; }
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
+    [Parameter] public RenderFragment? Columns { get; set; }
+    [Parameter] public RenderFragment<TItem>? RowActions { get; set; }
+    [Parameter] public string RowActionsTitle { get; set; } = "Actions";
+    [Parameter] public string RowActionsWidth { get; set; } = "10rem";
+    [Parameter] public Align RowActionsAlign { get; set; } = Align.Center;
+
+    [Parameter] public RenderFragment? DetailToolbarContent { get; set; }
+    [Parameter] public RenderFragment? DetailContent { get; set; }
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    private Task HandleRowClick(FluentDataGridRow<TItem> row)
+    {
+        if (!OnRowClick.HasDelegate)
+        {
+            return Task.CompletedTask;
+        }
+
+        return OnRowClick.InvokeAsync(row.Item);
+    }
+}

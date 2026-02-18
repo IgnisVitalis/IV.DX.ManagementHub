@@ -23,152 +23,116 @@
 }
 else
 {
-    <div class="dx-unit-list-root">
-        @if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
-        {
-            <FluentMessageBar Intent="MessageIntent.Warning">
-                @_loadErrorMessage
-            </FluentMessageBar>
-        }
+    @if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
+    {
+        <FluentMessageBar Intent="MessageIntent.Warning">
+            @_loadErrorMessage
+        </FluentMessageBar>
+    }
 
-        <div class="dx-unit-list-splitter">
-            <FluentSplitter BarHandle="false"
-                           Collapsed="_collapse"
-                           Orientation="@orientation"
-                           OnResized=OnResizedHandler
-                           BarSize="6"
-                           Panel1MinSize="25%"
-                           Panel2MinSize="25%"
-                           style="height: 100%; min-height: 0;">
-                <Panel1>
-                    <div class="dx-unit-panel-surface">
-                        <div class="dx-unit-list-panel">
-                            <FluentToolbar Class="dx-unit-panel-toolbar" Style="width:100%;">
-                                <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(!HasCurrentType)" OnClick="@(() => OpenEditDialog(default(Guid)))" />
-                            </FluentToolbar>
+    <DXDataSetBaseView TItem="Newtonsoft.Json.Linq.JObject"
+                       Items="@dxQueryResult.AsQueryable()"
+                       Collapsed="@_collapse"
+                       Orientation="@orientation"
+                       OnResized="OnResizedHandler"
+                       OnRowClick="OnDataRowClicked"
+                       EnableSelectionColumn="true"
+                       SelectionHeaderCellTemplate="@SelectAllHeaderCellTemplate"
+                       SelectionCellContent="@SelectRowCellTemplate">
+        <ToolbarContent>
+            <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(!HasCurrentType)" OnClick="@(() => OpenEditDialog(default(Guid)))" />
+        </ToolbarContent>
+        <Columns>
+            @foreach (string column in dxQueryResult.Columns)
+            {
+                <PropertyColumn TGridItem="Newtonsoft.Json.Linq.JObject"
+                                TProp="object"
+                                Title="@column"
+                                Property="@(p => dxQueryResult.GetValue(p, column))" />
+            }
+        </Columns>
+        <RowActions Context="item">
+            <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@dxQueryResult.GetID(item)" TypeName="@dxQueryResult.TypeName" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(dxQueryResult.GetID(item)))" />
+        </RowActions>
+        <DetailToolbarContent>
+            <FluentStack Orientation="Orientation.Horizontal"
+                         Width="100%"
+                         HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                         VerticalAlignment="VerticalAlignment.Center">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
+                    @if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                    {
+                        <FluentButton aria-label="Edit"
+                                      Appearance="Appearance.Neutral"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="@(() => OpenEditDialog(selectedPreviewItemID.Value))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+                        </FluentButton>
+                        <FluentButton aria-label="Export"
+                                      Appearance="Appearance.Neutral"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                        </FluentButton>
+                        <FluentButton aria-label="Delete"
+                                      Appearance="Appearance.Neutral"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                        </FluentButton>
+                    }
+                    else if (SelectedCount > 1)
+                    {
+                        <FluentButton aria-label="Export selected"
+                                      Appearance="Appearance.Neutral"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                        </FluentButton>
+                        <FluentButton aria-label="Delete selected"
+                                      Appearance="Appearance.Neutral"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                        </FluentButton>
+                    }
+                </FluentStack>
 
-                            <div class="dx-unit-list-grid-scroll">
-                                <FluentDataGrid TGridItem="Newtonsoft.Json.Linq.JObject"
-                                                Items="@dxQueryResult.AsQueryable()"
-                                                GenerateColumns="false"
-                                                OnRowClick="@(x => OnRowClicked(dxQueryResult.GetID(x.Item)))"
-                                                RowSize="@DataGridRowSize.Medium">
+                <FluentButton aria-label="Close preview"
+                              Appearance="Appearance.Stealth"
+                              Disabled="@_isBulkActionRunning"
+                              OnClick="OnClosed">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" Color="Color.Accent" />
+                </FluentButton>
+            </FluentStack>
+        </DetailToolbarContent>
+        <DetailContent>
+            <div class="dx-unit-details-content">
+                @if (SelectedCount == 0)
+                {
+                    <FluentLabel>Select row(s) to preview data.</FluentLabel>
+                }
+                else if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                {
+                    <DXUnitDetailsView AppKey="@AppKey" Type="@dxQueryResult.TypeName" ID="@selectedPreviewItemID.Value" />
+                }
+                else
+                {
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body"><strong>Selected items</strong></FluentLabel>
+                        <FluentDivider />
 
-                                    <TemplateColumn Title="" Align="Align.Center" Width="3rem"
-                                                    HeaderCellItemTemplate="@SelectAllHeaderCellTemplate">
-                                        <ChildContent Context="item">
-                                            <div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
-                                                <FluentCheckbox Value="@IsSelected(dxQueryResult.GetID(item))"
-                                                                ValueChanged="@(v => SetSelected(dxQueryResult.GetID(item), v))" />
-                                            </div>
-                                        </ChildContent>
-                                    </TemplateColumn>
-
-                                    @foreach (string column in dxQueryResult.Columns)
-                                    {
-                                        <PropertyColumn Title="@column" Property="@(p => dxQueryResult.GetValue(p, column))" />
-                                    }
-
-                                    <TemplateColumn Title="Actions" Align="Align.Center" Width="10rem">
-                                        <ChildContent Context="item">
-                                            <div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
-                                                <EntityBaseActionsFluentToolbar AppKey="@AppKey" EntityID="@dxQueryResult.GetID(item)" TypeName="@dxQueryResult.TypeName" OnDeleted="@(() => OnDeleted())" OnEdited="@(() => OpenEditDialog(dxQueryResult.GetID(item)))" />
-                                            </div>
-                                        </ChildContent>
-                                    </TemplateColumn>
-                                </FluentDataGrid>
-                            </div>
-                        </div>
-                    </div>
-                </Panel1>
-                <Panel2>
-                    <div class="dx-unit-panel-surface">
-                        <div class="dx-unit-details-panel">
-                            <FluentToolbar Class="dx-unit-details-toolbar" Style="width:100%;">
-                                <FluentStack Orientation="Orientation.Horizontal"
-                                             Width="100%"
-                                             HorizontalAlignment="HorizontalAlignment.SpaceBetween"
-                                             VerticalAlignment="VerticalAlignment.Center">
-                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
-                                        @if (SelectedCount == 1 && selectedPreviewItemID is not null)
-                                        {
-                                            <FluentButton aria-label="Edit"
-                                                          Appearance="Appearance.Neutral"
-                                                          Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => OpenEditDialog(selectedPreviewItemID.Value))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
-                                            </FluentButton>
-                                            <FluentButton aria-label="Export"
-                                                          Appearance="Appearance.Neutral"
-                                                          Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-                                            </FluentButton>
-                                            <FluentButton aria-label="Delete"
-                                                          Appearance="Appearance.Neutral"
-                                                          Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                                            </FluentButton>
-                                        }
-                                        else if (SelectedCount > 1)
-                                        {
-                                            <FluentButton aria-label="Export selected"
-                                                          Appearance="Appearance.Neutral"
-                                                          Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-                                            </FluentButton>
-                                            <FluentButton aria-label="Delete selected"
-                                                          Appearance="Appearance.Neutral"
-                                                          Disabled="@_isBulkActionRunning"
-                                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                                            </FluentButton>
-                                        }
-                                    </FluentStack>
-
-                                    <FluentButton aria-label="Close preview"
-                                                  Appearance="Appearance.Stealth"
-                                                  Disabled="@_isBulkActionRunning"
-                                                  OnClick="OnClosed">
-                                        <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" Color="Color.Accent" />
-                                    </FluentButton>
-                                </FluentStack>
-                            </FluentToolbar>
-
-                            <div class="dx-unit-details-scroll">
-                                <div class="dx-unit-details-content">
-                                    @if (SelectedCount == 0)
-                                    {
-                                        <FluentLabel>Select row(s) to preview data.</FluentLabel>
-                                    }
-                                    else if (SelectedCount == 1 && selectedPreviewItemID is not null)
-                                    {
-                                        <DXUnitDetailsView AppKey="@AppKey" Type="@dxQueryResult.TypeName" ID="@selectedPreviewItemID.Value" />
-                                    }
-                                    else
-                                    {
-                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                                            <FluentLabel Typo="Typography.Body"><strong>Selected items</strong></FluentLabel>
-                                            <FluentDivider />
-
-                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
-                                                @foreach (var display in SelectedDisplayStrings)
-                                                {
-                                                    <FluentLabel>@display</FluentLabel>
-                                                }
-                                            </FluentStack>
-                                        </FluentStack>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Panel2>
-            </FluentSplitter>
-        </div>
-    </div>
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                            @foreach (var display in SelectedDisplayStrings)
+                            {
+                                <FluentLabel>@display</FluentLabel>
+                            }
+                        </FluentStack>
+                    </FluentStack>
+                }
+            </div>
+        </DetailContent>
+    </DXDataSetBaseView>
 
     @if (_showDialog)
     {
@@ -227,4 +191,7 @@ else
                         Value="@IsAllRowsSelected"
                         ValueChanged="@SetSelectAllRows" />
     </div>;
+
+    private RenderFragment<JObject> SelectRowCellTemplate => item => @<FluentCheckbox Value="@IsSelected(dxQueryResult.GetID(item))"
+                                                                                       ValueChanged="@(v => SetSelected(dxQueryResult.GetID(item), v))" />;
 }

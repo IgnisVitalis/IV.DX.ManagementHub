@@ -19,6 +19,14 @@
       "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub.Lit;User ID=postgres;Password=root;",
       "createdAtUtc": "2026-02-16T18:22:25.3940072+00:00",
       "isInitialized": true
+    },
+    {
+      "key": "lit2",
+      "title": "Lit2",
+      "databaseType": "PostgreSQL",
+      "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub.Lit2;User ID=postgres;Password=root;",
+      "createdAtUtc": "2026-02-18T10:15:32.5064465+00:00",
+      "isInitialized": true
     }
   ],
   "databaseType": null,

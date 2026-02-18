@@ -2,77 +2,114 @@
 
 @using IV.DataProvider.WebApp.Services.Web.Contracts
 @using IV.ManagementHub.Web.ApiClients
+@using IV.ManagementHub.Web.Components.Custom
 @using IV.ManagementHub.Web.Components.Custom.Base
+@using IV.ManagementHub.Web.Services
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
 
 @inherits ManagementHubComponentBase
 
 @inject IApiClientResolver Resolver
 @inject NavigationManager NavigationManager
+@inject AppAuthState AuthState
 
 <PageTitle>Instances</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="16">
-    <FluentStack Orientation="Orientation.Horizontal"
-                 Width="100%"
-                 HorizontalAlignment="HorizontalAlignment.SpaceBetween"
-                 VerticalAlignment="VerticalAlignment.Center">
-        <FluentLabel Typo="Typography.H5" Weight="FontWeight.Bold">Instances</FluentLabel>
-
-        <FluentButton Appearance="Appearance.Accent"
-                      Disabled="@_isBusy"
-                      aria-label="Add instance"
+<DXDataSetBaseView TItem="DXInstanceDto"
+                   Items="@_instances.AsQueryable()"
+                   IsLoading="@_isLoading"
+                   IsEmpty="@(_instances.Count == 0)"
+                   Collapsed="@_collapse"
+                   Orientation="@_orientation"
+                   OnResized="OnResizedHandler"
+                   OnRowClick="OnInstanceRowClicked"
+                   RowActionsTitle="Actions"
+                   RowActionsWidth="7rem">
+    <ToolbarContent>
+        <FluentButton aria-label="Add instance"
                       Title="Add instance"
-                      IconStart="@(new Icons.Regular.Size16.AddCircle())"
-                      OnClick="StartAddInstance">
-        </FluentButton>
-    </FluentStack>
+                      IconEnd="@(new Icons.Regular.Size16.AddCircle())"
+                      Disabled="@_isBusy"
+                      OnClick="StartAddInstance" />
+    </ToolbarContent>
+    <EmptyContent>
+        <FluentLabel>No instances configured.</FluentLabel>
+    </EmptyContent>
+    <Columns>
+        <PropertyColumn TGridItem="DXInstanceDto"
+                        TProp="string"
+                        Title="Title"
+                        Property="@(instance => instance.Title)" />
+        <PropertyColumn TGridItem="DXInstanceDto"
+                        TProp="string"
+                        Title="Key"
+                        Property="@(instance => instance.Key)" />
+        <PropertyColumn TGridItem="DXInstanceDto"
+                        TProp="string"
+                        Title="Database Type"
+                        Property="@(instance => instance.DatabaseType)" />
+        <TemplateColumn TGridItem="DXInstanceDto" Title="Created (UTC)">
+            <ChildContent Context="instance">
+                <FluentLabel>@instance.CreatedAtUtc.UtcDateTime.ToString("u")</FluentLabel>
+            </ChildContent>
+        </TemplateColumn>
+    </Columns>
+    <RowActions Context="instance">
+        <FluentButton aria-label="Select instance"
+                      Title="Select instance"
+                      IconEnd="@(new Icons.Regular.Size16.ArrowExportUp())"
+                      OnClick="@(() => SelectInstance(instance.Key))" />
+    </RowActions>
+    <DetailToolbarContent>
+        <FluentStack Orientation="Orientation.Horizontal"
+                     Width="100%"
+                     HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                     VerticalAlignment="VerticalAlignment.Center">
+            <FluentButton aria-label="Select instance"
+                          Title="Select instance"
+                          IconEnd="@(new Icons.Regular.Size16.ArrowExportUp())"
+                          Disabled="@(_selectedPreviewInstance is null)"
+                          OnClick="SelectSelectedInstance" />
 
-    @if (!string.IsNullOrWhiteSpace(_error))
-    {
-        <FluentMessageBar Intent="MessageIntent.Error">
-            @_error
-        </FluentMessageBar>
-    }
-
-    @if (!string.IsNullOrWhiteSpace(_info))
-    {
-        <FluentMessageBar Intent="MessageIntent.Success">
-            @_info
-        </FluentMessageBar>
-    }
-
-    <FluentCard>
-        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="8">
-            @if (_isLoading)
-            {
-                <FluentProgressRing />
-            }
-            else if (_instances.Count == 0)
-            {
-                <FluentLabel>No instances configured.</FluentLabel>
-            }
-            else
-            {
-                @foreach (var instance in _instances)
-                {
-                    <FluentStack Orientation="Orientation.Horizontal"
-                                 Width="100%"
-                                 VerticalAlignment="VerticalAlignment.Center"
-                                 HorizontalAlignment="HorizontalAlignment.SpaceBetween">
-                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="2">
-                            <FluentLabel Typo="Typography.Body" Weight="FontWeight.Bold">@instance.Title</FluentLabel>
-                            <FluentLabel Typo="Typography.Body">Key: @instance.Key</FluentLabel>
-                        </FluentStack>
-                        <FluentButton Appearance="Appearance.Outline"
-                                      OnClick="@(() => OpenInstance(instance.Key))">
-                            Open
-                        </FluentButton>
-                    </FluentStack>
-                    <FluentDivider />
-                }
-            }
+            <FluentButton aria-label="Close preview"
+                          Appearance="Appearance.Stealth"
+                          Disabled="@(_selectedPreviewInstance is null)"
+                          OnClick="OnClosedPreview">
+                <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" Color="Color.Accent" />
+            </FluentButton>
         </FluentStack>
-    </FluentCard>
+    </DetailToolbarContent>
+    <DetailContent>
+        @if (_selectedPreviewInstance is null)
+        {
+            <FluentLabel>Select an instance row to preview details.</FluentLabel>
+        }
+        else
+        {
+            <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
+                <div class="dx-viewer-field">
+                    <FluentLabel Class="dx-viewer-title">Title</FluentLabel>
+                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.Title</FluentLabel>
+                </div>
+
+                <div class="dx-viewer-field">
+                    <FluentLabel Class="dx-viewer-title">Key</FluentLabel>
+                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.Key</FluentLabel>
+                </div>
+
+                <div class="dx-viewer-field">
+                    <FluentLabel Class="dx-viewer-title">Database Provider</FluentLabel>
+                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.DatabaseType</FluentLabel>
+                </div>
+
+                <div class="dx-viewer-field">
+                    <FluentLabel Class="dx-viewer-title">Created (UTC)</FluentLabel>
+                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.CreatedAtUtc.UtcDateTime.ToString("u")</FluentLabel>
+                </div>
+            </FluentStack>
+        }
+    </DetailContent>
+</DXDataSetBaseView>
 
     @if (_showAddWizard)
     {
@@ -171,22 +208,23 @@
 
                 <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                        <FluentButton Appearance="Appearance.Accent"
+                                      IconStart="@(new Icons.Regular.Size24.Save())"
+                                      Disabled="@_isBusy"
+                                      OnClick="CreateInstanceAsync">
+                            @(_isBusy ? "Saving..." : "Save")
+                        </FluentButton>
                         <FluentButton Appearance="Appearance.Neutral"
+                                      IconStart="@(new Icons.Regular.Size24.DismissSquare())"
                                       Disabled="@_isBusy"
                                       OnClick="CancelAddInstance">
                             Cancel
-                        </FluentButton>
-                        <FluentButton Appearance="Appearance.Accent"
-                                      Disabled="@_isBusy"
-                                      OnClick="CreateInstanceAsync">
-                            @(_isBusy ? "Saving..." : "Create")
                         </FluentButton>
                     </FluentStack>
                 </FluentToolbar>
             </div>
         </div>
     }
-</FluentStack>
 
 @code
 {
@@ -195,7 +233,10 @@
     private bool _isLoading;
     private bool _isBusy;
     private bool _showAddWizard;
+    private bool _collapse = true;
     private bool _useRawConnectionString;
+    private Orientation _orientation = Orientation.Horizontal;
+    private DXInstanceDto? _selectedPreviewInstance;
     private string _databaseType = "PostgreSQL";
     private string _connectionString = string.Empty;
     private string _dbHost = "localhost";
@@ -229,6 +270,21 @@
             var instances = await _instancesApiClient.GetItemsAsync();
             _instances.Clear();
             _instances.AddRange(instances.OrderBy(instance => instance.Title, StringComparer.OrdinalIgnoreCase));
+
+            if (_selectedPreviewInstance is not null)
+            {
+                var matchedInstance = _instances.FirstOrDefault(instance =>
+                    string.Equals(instance.Key, _selectedPreviewInstance.Key, StringComparison.OrdinalIgnoreCase));
+
+                if (matchedInstance is null)
+                {
+                    OnClosedPreview();
+                }
+                else
+                {
+                    SelectPreviewInstance(matchedInstance);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -304,7 +360,7 @@
             _showAddWizard = false;
             _info = result.Message;
             await LoadInstancesAsync();
-            OpenInstance(result.Instance.Key);
+            SelectInstance(result.Instance.Key);
         }
         catch (Exception ex)
         {
@@ -316,9 +372,48 @@
         }
     }
 
-    private void OpenInstance(string instanceKey)
+    private void SelectInstance(string instanceKey)
     {
-        NavigationManager.NavigateTo($"/app/{instanceKey}/instance");
+        if (string.IsNullOrWhiteSpace(instanceKey))
+        {
+            return;
+        }
+
+        var trimmedKey = instanceKey.Trim();
+        AuthState.SetAppKey(trimmedKey);
+        NavigationManager.NavigateTo($"/app/{trimmedKey}/instances");
+    }
+
+    private Task OnInstanceRowClicked(DXInstanceDto instance)
+    {
+        SelectPreviewInstance(instance);
+        return Task.CompletedTask;
+    }
+
+    private void SelectPreviewInstance(DXInstanceDto instance)
+    {
+        _selectedPreviewInstance = instance;
+        _collapse = false;
+    }
+
+    private void SelectSelectedInstance()
+    {
+        if (_selectedPreviewInstance is null)
+        {
+            return;
+        }
+
+        SelectInstance(_selectedPreviewInstance.Key);
+    }
+
+    private void OnClosedPreview()
+    {
+        _selectedPreviewInstance = null;
+        _collapse = true;
+    }
+
+    private void OnResizedHandler(SplitterResizedEventArgs args)
+    {
     }
 
     private static string BuildPostgreSqlConnectionString(

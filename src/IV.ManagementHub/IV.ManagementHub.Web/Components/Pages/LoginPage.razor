@@ -1,8 +1,11 @@
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Services
 @inject RootAuthApiClient RootAuthApiClient
 @inject AppAuthState AuthState
 @inject AppState AppState
 @inject NavigationManager NavigationManager
+@inject IApiClientResolver Resolver
 
 <FluentDesignSystemProvider Id="login-root">
     <div class="login-shell">
@@ -235,8 +238,12 @@
                 return;
             }
 
-            AuthState.SetAccessToken(result.AccessToken, _username, AppState.DefaultAppKey);
-            NavigationManager.NavigateTo($"/app/{AppState.DefaultAppKey}/instances", replace: true);
+            var fallbackAppKey = AppState.DefaultAppKey;
+            AuthState.SetAccessToken(result.AccessToken, _username, fallbackAppKey);
+
+            var initialAppKey = await ResolveInitialAppKeyAsync(fallbackAppKey);
+            AuthState.SetAppKey(initialAppKey);
+            NavigationManager.NavigateTo($"/app/{initialAppKey}/instances", replace: true);
         }
         catch (Exception ex)
         {
@@ -245,6 +252,27 @@
         finally
         {
             _isSubmitting = false;
+        }
+    }
+
+    private async Task<string> ResolveInitialAppKeyAsync(string fallbackAppKey)
+    {
+        try
+        {
+            var instancesApiClient = Resolver.Get<DXInstancesApiClient>(fallbackAppKey);
+            var instances = await instancesApiClient.GetItemsAsync();
+            var oldestInstance = instances
+                .Where(instance => !string.IsNullOrWhiteSpace(instance.Key))
+                .OrderBy(instance => instance.CreatedAtUtc)
+                .FirstOrDefault();
+
+            return string.IsNullOrWhiteSpace(oldestInstance?.Key)
+                ? fallbackAppKey
+                : oldestInstance.Key.Trim();
+        }
+        catch
+        {
+            return fallbackAppKey;
         }
     }
 }

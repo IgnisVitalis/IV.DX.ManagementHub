@@ -218,6 +218,12 @@ namespace IV.ManagementHub.Web.Components.Pages
             return Task.CompletedTask;
         }
 
+        private Task OnDataRowClicked(JObject row)
+        {
+            var id = dxQueryResult.GetID(row);
+            return OnRowClicked(id);
+        }
+
         private bool IsSelected(Guid id) => id != default && _selectedIdSet.Contains(id);
 
         private Task SetSelected(Guid id, bool? selected)
