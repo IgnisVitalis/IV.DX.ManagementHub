@@ -1,31 +1,31 @@
 {
   "rootUserName": "root",
-  "rootPasswordHash": "aCQejWVoTAa6f1fKE2zjhdWhm\u002B/2q23ET0gYWetAshg=",
-  "rootPasswordSalt": "/g/oxnDl7dRLd7Pxa3aqZg==",
-  "createdAtUtc": "2026-02-16T18:21:49.3398179+00:00",
+  "rootPasswordHash": "fJMRXJwowCrnaSZneXAvWKdHYcvku0DlCzkMN2HZ5Ro=",
+  "rootPasswordSalt": "8lK\u002B07\u002BPt9KIygNhYifQ2Q==",
+  "createdAtUtc": "2026-03-10T18:18:23.940658+00:00",
   "instances": [
     {
-      "key": "vik",
-      "title": "Vik",
+      "key": "viktest",
+      "title": "VikTest",
       "databaseType": "PostgreSQL",
       "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub;User ID=postgres;Password=root;",
-      "createdAtUtc": "2026-02-16T18:22:02.0314823+00:00",
+      "createdAtUtc": "2026-03-10T18:18:37.4944153+00:00",
       "isInitialized": true
     },
     {
-      "key": "lit",
-      "title": "Lit",
+      "key": "viktest2",
+      "title": "VikTest2",
       "databaseType": "PostgreSQL",
-      "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub.Lit;User ID=postgres;Password=root;",
-      "createdAtUtc": "2026-02-16T18:22:25.3940072+00:00",
+      "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub2;User ID=postgres;Password=root;",
+      "createdAtUtc": "2026-03-10T18:19:56.7211469+00:00",
       "isInitialized": true
     },
     {
-      "key": "lit2",
-      "title": "Lit2",
+      "key": "viktest3",
+      "title": "VikTest3",
       "databaseType": "PostgreSQL",
-      "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub.Lit2;User ID=postgres;Password=root;",
-      "createdAtUtc": "2026-02-18T10:15:32.5064465+00:00",
+      "connectionString": "Server=localhost;Port=5432;Database=IV.ManagementHub3;User ID=postgres;Password=root;",
+      "createdAtUtc": "2026-03-11T08:02:56.7525301+00:00",
       "isInitialized": true
     }
   ],

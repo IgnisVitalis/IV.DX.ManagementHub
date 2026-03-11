@@ -1,5 +1,5 @@
-using IV.DX.Application.Contracts.Abstractions;
 using IV.DX.Hosting;
+using System.Reflection;
 
 namespace IV.ManagementHub.ApiService.Bootstrap
 {
@@ -42,6 +42,9 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
                 if (instance.IsInitialized == true)
                 {
+                    // Refresh structure cache — may be empty after app restart since StartDXAsync is skipped.
+                    // runtimeBinder.Bind already set the correct connection string, so this reads the right DB.
+                    await RefreshStructureCacheAsync(rootServiceProvider, ct);
                     runtimeState.MarkDatabaseActivated(instance.DatabaseType, instance.ConnectionString);
                     runtimeState.MarkInstanceActivated(normalizedInstanceKey);
                     return new BootstrapActivationResult(true, $"DX runtime is already active for instance '{normalizedInstanceKey}'.");
@@ -64,6 +67,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
                 if (hasPersistedInitializedEquivalentInstance)
                 {
+                    await RefreshStructureCacheAsync(rootServiceProvider, ct);
                     runtimeState.MarkDatabaseActivated(instance.DatabaseType, instance.ConnectionString);
                     runtimeState.MarkInstanceActivated(normalizedInstanceKey);
                     return new BootstrapActivationResult(true, $"DX runtime is already active for instance '{normalizedInstanceKey}'.");
@@ -84,19 +88,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                     return new BootstrapActivationResult(true, $"DX runtime is already active for instance '{normalizedInstanceKey}'.");
                 }
 
-                if (BootstrapDatabaseProbe.HasDxCoreSignature(instance))
-                {
-                    runtimeState.MarkDatabaseActivated(instance.DatabaseType, instance.ConnectionString);
-                    runtimeState.MarkInstanceActivated(normalizedInstanceKey);
-                    return new BootstrapActivationResult(true, $"DX runtime is already active for instance '{normalizedInstanceKey}'.");
-                }
-
-                using var scope = rootServiceProvider.CreateScope();
-                var init = scope.ServiceProvider.GetRequiredService<IDXInitializer>();
-                await init.InitDXCoreDataAsync(ct);
-                await init.InitDXQueryDataAsync(ct);
-                await init.InitDXSecurityDataAsync(ct);
-                await init.InitCustomDataAsync("Migration/MH.json", ct);
+                await rootServiceProvider.StartDXAsync(ct);
 
                 runtimeState.MarkDatabaseActivated(instance.DatabaseType, instance.ConnectionString);
                 runtimeState.MarkInstanceActivated(normalizedInstanceKey);
@@ -171,6 +163,26 @@ namespace IV.ManagementHub.ApiService.Bootstrap
         private static void ReinitializeDxHandlers(IServiceProvider rootServiceProvider)
         {
             rootServiceProvider.InitializeDXHandlers();
+        }
+
+        // IDXStructureCache is internal in IV.DX — resolve and call via reflection.
+        private static async Task RefreshStructureCacheAsync(IServiceProvider serviceProvider, CancellationToken ct)
+        {
+            var cacheType = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => { try { return a.GetTypes(); } catch { return Array.Empty<Type>(); } })
+                .FirstOrDefault(t => t.IsInterface && t.Name == "IDXStructureCache");
+
+            if (cacheType is null) return;
+
+            var cache = serviceProvider.GetService(cacheType);
+            if (cache is null) return;
+
+            var refreshMethod = cacheType.GetMethod("RefreshAsync");
+            if (refreshMethod is null) return;
+
+            var result = refreshMethod.Invoke(cache, new object[] { ct });
+            if (result is Task task)
+                await task;
         }
     }
 }

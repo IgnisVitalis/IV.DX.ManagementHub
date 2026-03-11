@@ -93,10 +93,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.RootOnly, policy => policy.RequireRole(AuthRoles.Root));
 });
 
-builder.Services.AddDXCore(builder.Configuration);
+builder.Services
+    .AddDX(builder.Configuration)
+    .AddSecurity()
+    .AddCustomData("Migration/MH.json")
+    .Build();
 ConfigureDynamicDxDatabaseOptions(builder.Services);
-builder.Services.AddDXPipeline();
-builder.Services.AddDXInitializer();
 builder.Services.AddScoped<IDXUnitStructureService, DXUnitStructureService>();
 
 
@@ -110,7 +112,6 @@ app.UseAuthorization();
 
 var runtimeState = app.Services.GetRequiredService<BootstrapRuntimeState>();
 var settingsSnapshot = app.Services.GetRequiredService<BootstrapSettingsSnapshot>();
-var runtimeBinder = app.Services.GetRequiredService<IDatabaseRuntimeBinder>();
 var runtimeActivator = app.Services.GetRequiredService<IBootstrapRuntimeActivator>();
 
 app.Use(async (context, next) =>
@@ -168,23 +169,11 @@ app.Use(async (context, next) =>
         return;
     }
 
+    // Set per-request connection context (AsyncLocal — each request flow gets its own copy,
+    // so concurrent requests for different instances cannot corrupt each other).
+    InstanceConnectionContext.Set(instance);
+
     var isSwitchingInstance = !string.Equals(runtimeState.CurrentInstanceKey, instance.Key, StringComparison.OrdinalIgnoreCase);
-
-    if (isSwitchingInstance)
-    {
-        var bindingResult = runtimeBinder.Bind(instance);
-        if (!bindingResult.IsSuccess)
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = $"Failed to bind database settings for instance '{instance.Key}'. {bindingResult.Message}"
-            });
-            return;
-        }
-
-        runtimeState.MarkCurrentInstance(instance.Key);
-    }
 
     if (isSwitchingInstance || !runtimeState.IsInstanceActivated(instance.Key))
     {
@@ -237,8 +226,8 @@ static void ConfigureDynamicDxDatabaseOptions(IServiceCollection services)
         var optionsInstance = Activator.CreateInstance(optionsType)
             ?? throw new InvalidOperationException("Unable to create DXDatabaseOptions instance.");
 
-        typeProperty?.SetValue(optionsInstance, configuration["Database:Type"]);
-        connectionStringProperty?.SetValue(optionsInstance, configuration["Database:ConnectionString"]);
+        typeProperty?.SetValue(optionsInstance, InstanceConnectionContext.DatabaseType ?? configuration["Database:Type"]);
+        connectionStringProperty?.SetValue(optionsInstance, InstanceConnectionContext.ConnectionString ?? configuration["Database:ConnectionString"]);
 
         return Activator.CreateInstance(optionsWrapperType, optionsInstance)
             ?? throw new InvalidOperationException("Unable to create DX database options wrapper.");

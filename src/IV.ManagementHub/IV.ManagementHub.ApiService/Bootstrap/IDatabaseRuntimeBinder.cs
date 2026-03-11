@@ -2,6 +2,24 @@ using Microsoft.Extensions.Options;
 
 namespace IV.ManagementHub.ApiService.Bootstrap
 {
+    /// <summary>
+    /// Per-request (AsyncLocal) database connection context.
+    /// Each async request flow gets its own copy so concurrent requests
+    /// for different instances do not corrupt each other via shared IConfiguration.
+    /// </summary>
+    internal static class InstanceConnectionContext
+    {
+        private static readonly AsyncLocal<string?> _connectionString = new();
+        private static readonly AsyncLocal<string?> _databaseType = new();
+        public static string? ConnectionString => _connectionString.Value;
+        public static string? DatabaseType => _databaseType.Value;
+        public static void Set(BootstrapInstanceSettings instance)
+        {
+            _connectionString.Value = instance.ConnectionString;
+            _databaseType.Value = instance.DatabaseType;
+        }
+    }
+
     public interface IDatabaseRuntimeBinder
     {
         BootstrapBindingResult Bind(BootstrapInstanceSettings instance);
