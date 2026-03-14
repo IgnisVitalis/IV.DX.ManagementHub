@@ -6,6 +6,7 @@ param(
     [string]$Configuration = "Release",
 
     [string]$DxVersion,
+    [string]$DxPresentationVersion,
     [switch]$SkipDxSync,
     [switch]$ErrorsOnly
 )
@@ -53,7 +54,12 @@ function Get-HighestSemVer {
     return ($parsedVersions | Sort-Object Parsed -Descending | Select-Object -First 1).Raw
 }
 
-function Get-LatestLocalDxVersion {
+function Get-LatestLocalPackageVersion {
+    param([Parameter(Mandatory = $true)][string]$PackageId)
+
+    $packageFolderName = $PackageId.ToLowerInvariant()
+    $nupkgPattern = '^' + [regex]::Escape($PackageId) + '\.(?<Version>\d+\.\d+\.\d+)\.nupkg$'
+
     $sourcePaths = @()
     $sourceLines = dotnet nuget list source 2>$null
 
@@ -68,7 +74,7 @@ function Get-LatestLocalDxVersion {
     }
 
     if ($env:USERPROFILE) {
-        $sourcePaths += (Join-Path $env:USERPROFILE ".nuget\packages\iv.dx")
+        $sourcePaths += (Join-Path $env:USERPROFILE ".nuget\packages\$packageFolderName")
     }
 
     $sourcePaths = $sourcePaths |
@@ -81,14 +87,14 @@ function Get-LatestLocalDxVersion {
             continue
         }
 
-        $nupkgFiles = Get-ChildItem -Path $path -Recurse -File -Filter "IV.DX*.nupkg" -ErrorAction SilentlyContinue
+        $nupkgFiles = Get-ChildItem -Path $path -Recurse -File -Filter "$PackageId*.nupkg" -ErrorAction SilentlyContinue
         foreach ($file in $nupkgFiles) {
-            if ($file.Name -match '^IV\.DX\.(?<Version>\d+\.\d+\.\d+)\.nupkg$') {
+            if ($file.Name -match $nupkgPattern) {
                 $versions += $Matches.Version
             }
         }
 
-        if ((Split-Path -Leaf $path).ToLowerInvariant() -eq "iv.dx") {
+        if ((Split-Path -Leaf $path).ToLowerInvariant() -eq $packageFolderName) {
             $versionFolders = Get-ChildItem -LiteralPath $path -Directory -ErrorAction SilentlyContinue
             foreach ($folder in $versionFolders) {
                 if ($folder.Name -match '^\d+\.\d+\.\d+$') {
@@ -101,18 +107,22 @@ function Get-LatestLocalDxVersion {
     return Get-HighestSemVer -Versions $versions
 }
 
-function Get-DxProjectVersionInfos {
-    param([string]$ResolvedSolutionPath)
+function Get-PackageVersionInfos {
+    param(
+        [Parameter(Mandatory = $true)][string]$SolutionPath,
+        [Parameter(Mandatory = $true)][string]$PackageId
+    )
 
-    $solutionFullPath = if ([IO.Path]::IsPathRooted($ResolvedSolutionPath)) {
-        (Resolve-Path $ResolvedSolutionPath).Path
+    $solutionFullPath = if ([IO.Path]::IsPathRooted($SolutionPath)) {
+        (Resolve-Path $SolutionPath).Path
     }
     else {
-        (Resolve-Path (Join-Path $repoRoot $ResolvedSolutionPath)).Path
+        (Resolve-Path (Join-Path $repoRoot $SolutionPath)).Path
     }
 
     $solutionDir = Split-Path -Parent $solutionFullPath
-    $dxPattern = '<PackageReference\s+Include="IV\.DX"\s+Version="([^"]+)"\s*/>'
+    $escapedId = [regex]::Escape($PackageId)
+    $pattern = "<PackageReference\s+Include=""$escapedId""\s+Version=""([^""]+)""\s*/>"
 
     $versionInfos = @()
     $projects = dotnet sln $solutionFullPath list |
@@ -122,7 +132,7 @@ function Get-DxProjectVersionInfos {
         $relativePath = $projectLine.Trim()
         $projectFullPath = (Resolve-Path (Join-Path $solutionDir $relativePath)).Path
         $content = Get-Content -Raw -LiteralPath $projectFullPath
-        $match = [regex]::Match($content, $dxPattern)
+        $match = [regex]::Match($content, $pattern)
         if (-not $match.Success) {
             continue
         }
@@ -137,55 +147,69 @@ function Get-DxProjectVersionInfos {
     return $versionInfos
 }
 
-if (-not $SkipDxSync) {
-    $versionInfos = @(Get-DxProjectVersionInfos -ResolvedSolutionPath $SolutionPath)
+function Sync-PackageVersion {
+    param(
+        [Parameter(Mandatory = $true)][string]$SolutionPath,
+        [Parameter(Mandatory = $true)][string]$PackageId,
+        [string]$RequestedVersion
+    )
+
+    $versionInfos = @(Get-PackageVersionInfos -SolutionPath $SolutionPath -PackageId $PackageId)
     if ($versionInfos.Count -eq 0) {
-        Write-Host "No IV.DX PackageReference entries found for sync."
+        Write-Host "No $PackageId PackageReference entries found for sync."
+        return
     }
-    else {
-        $currentProjectVersion = Get-HighestSemVer -Versions ($versionInfos | ForEach-Object { $_.Version })
-        $latestLocalVersion = Get-LatestLocalDxVersion
 
-        $targetDxVersion = $DxVersion
-        if ([string]::IsNullOrWhiteSpace($targetDxVersion)) {
-            $targetDxVersion = $currentProjectVersion
-            if (-not [string]::IsNullOrWhiteSpace($latestLocalVersion)) {
-                $currentParsed = $null
-                $localParsed = $null
+    $currentProjectVersion = Get-HighestSemVer -Versions ($versionInfos | ForEach-Object { $_.Version })
+    $latestLocalVersion = Get-LatestLocalPackageVersion -PackageId $PackageId
 
-                $currentParsedOk = [version]::TryParse($currentProjectVersion, [ref]$currentParsed)
-                $localParsedOk = [version]::TryParse($latestLocalVersion, [ref]$localParsed)
+    $targetVersion = $RequestedVersion
+    if ([string]::IsNullOrWhiteSpace($targetVersion)) {
+        $targetVersion = $currentProjectVersion
+        if (-not [string]::IsNullOrWhiteSpace($latestLocalVersion)) {
+            $currentParsed = $null
+            $localParsed = $null
 
-                if ($localParsedOk -and (($currentParsedOk -and $localParsed -gt $currentParsed) -or -not $currentParsedOk)) {
-                    $targetDxVersion = $latestLocalVersion
-                }
+            $currentParsedOk = [version]::TryParse($currentProjectVersion, [ref]$currentParsed)
+            $localParsedOk = [version]::TryParse($latestLocalVersion, [ref]$localParsed)
+
+            if ($localParsedOk -and (($currentParsedOk -and $localParsed -gt $currentParsed) -or -not $currentParsedOk)) {
+                $targetVersion = $latestLocalVersion
             }
         }
-
-        if ([string]::IsNullOrWhiteSpace($targetDxVersion)) {
-            throw "Unable to detect target IV.DX version."
-        }
-
-        Write-Host "Syncing IV.DX package version to '$targetDxVersion'..."
-
-        foreach ($info in $versionInfos) {
-            if ($info.Version -eq $targetDxVersion) {
-                Write-Host "IV.DX already up to date in $($info.RelativePath)"
-                continue
-            }
-
-            $projectFullPath = Join-Path $repoRoot $info.RelativePath
-            $content = Get-Content -Raw -LiteralPath $projectFullPath
-            $updatedContent = [regex]::Replace($content, '(<PackageReference\s+Include="IV\.DX"\s+Version=")[^"]+("\s*/>)',
-                {
-                    param($match)
-                    return $match.Groups[1].Value + $targetDxVersion + $match.Groups[2].Value
-                })
-
-            Set-Content -LiteralPath $projectFullPath -Value $updatedContent -NoNewline
-            Write-Host "Updated IV.DX version in $($info.RelativePath): $($info.Version) -> $targetDxVersion"
-        }
     }
+
+    if ([string]::IsNullOrWhiteSpace($targetVersion)) {
+        throw "Unable to detect target $PackageId version."
+    }
+
+    Write-Host "Syncing $PackageId version to '$targetVersion'..."
+
+    $escapedId = [regex]::Escape($PackageId)
+    foreach ($info in $versionInfos) {
+        if ($info.Version -eq $targetVersion) {
+            Write-Host "$PackageId already up to date in $($info.RelativePath)"
+            continue
+        }
+
+        $projectFullPath = Join-Path $repoRoot $info.RelativePath
+        $content = Get-Content -Raw -LiteralPath $projectFullPath
+        $updatedContent = [regex]::Replace(
+            $content,
+            "(<PackageReference\s+Include=""$escapedId""\s+Version="")[^""]+(""\s*/>)",
+            {
+                param($m)
+                return $m.Groups[1].Value + $targetVersion + $m.Groups[2].Value
+            })
+
+        Set-Content -LiteralPath $projectFullPath -Value $updatedContent -NoNewline
+        Write-Host "Updated $PackageId in $($info.RelativePath): $($info.Version) -> $targetVersion"
+    }
+}
+
+if (-not $SkipDxSync) {
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX" -RequestedVersion $DxVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.Presentation" -RequestedVersion $DxPresentationVersion
 }
 
 Write-Host "Building solution: $SolutionPath"
