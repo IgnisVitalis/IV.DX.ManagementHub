@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace IV.ManagementHub.ApiService.Controllers.v1
+namespace IV.ManagementHub.ApiService.Controllers
 {
     [ApiController]
     [Route("api/auth")]

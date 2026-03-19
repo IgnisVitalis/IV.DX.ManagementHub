@@ -4,25 +4,28 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Net;
 
-namespace IV.ManagementHub.ApiService.Controllers.v1
+namespace IV.ManagementHub.ApiService.Controllers
 {
     [ApiController]
-    [Route("api/DXUnitStructure")]
-    public class DXUnitStructureController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
+    [Route("api/DXQueryResult")]
+    public class DXQueryResultController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
     {
-        /// <summary>Get DX unit structure definition by type name.</summary>
-        [HttpGet("{name}")]
+        /// <summary>Get DX query result by query ID.</summary>
+        [HttpGet("{dxQueryID:guid}/{dxFilterID:guid?}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<JObject>> GetByName([FromRoute] string name)
+        public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryID, [FromRoute] Guid? dxFilterID)
         {
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
 
-            using var response = await client.GetAsync($"api/management/unit-structure/{name}", ct);
+            var url = dxFilterID.HasValue
+                ? $"api/management/query-result/{dxQueryID}/{dxFilterID.Value}"
+                : $"api/management/query-result/{dxQueryID}";
+            using var response = await client.GetAsync(url, ct);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (response.StatusCode == HttpStatusCode.NotFound)
                 return NotFound();
 
             if (!response.IsSuccessStatusCode)

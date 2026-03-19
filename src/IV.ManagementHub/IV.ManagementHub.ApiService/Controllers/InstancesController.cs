@@ -4,7 +4,7 @@ using IV.ManagementHub.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
-namespace IV.ManagementHub.ApiService.Controllers.v1
+namespace IV.ManagementHub.ApiService.Controllers
 {
     [ApiController]
     [Route("api/instances")]

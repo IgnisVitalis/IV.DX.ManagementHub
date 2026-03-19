@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace IV.ManagementHub.ApiService.Controllers.v1
+namespace IV.ManagementHub.ApiService.Controllers
 {
     public sealed class ExcludeTypeNameAttribute : Attribute, IActionConstraintFactory, IOrderedFilter
     {

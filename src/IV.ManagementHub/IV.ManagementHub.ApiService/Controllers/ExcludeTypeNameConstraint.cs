@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ActionConstraints;
 
-namespace IV.ManagementHub.ApiService.Controllers.v1
+namespace IV.ManagementHub.ApiService.Controllers
 {
     public sealed class ExcludeTypeNameConstraint : IActionConstraint
     {
