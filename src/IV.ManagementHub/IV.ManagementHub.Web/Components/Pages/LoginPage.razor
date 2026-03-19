@@ -1,11 +1,10 @@
-@using IV.DataProvider.WebApp.Services.Web.Contracts
 @using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Services
 @inject RootAuthApiClient RootAuthApiClient
 @inject AppAuthState AuthState
 @inject AppState AppState
 @inject NavigationManager NavigationManager
-@inject IApiClientResolver Resolver
+@inject DXInstancesApiClient InstancesApiClient
 
 <FluentDesignSystemProvider Id="login-root">
     <div class="login-shell">
@@ -243,7 +242,10 @@
 
             var initialAppKey = await ResolveInitialAppKeyAsync(fallbackAppKey);
             AuthState.SetAppKey(initialAppKey);
-            NavigationManager.NavigateTo($"/app/{initialAppKey}/instances", replace: true);
+            var targetUrl = string.IsNullOrWhiteSpace(initialAppKey)
+                ? "/app/instances"
+                : $"/app/{initialAppKey}/instances";
+            NavigationManager.NavigateTo(targetUrl, replace: true);
         }
         catch (Exception ex)
         {
@@ -259,8 +261,7 @@
     {
         try
         {
-            var instancesApiClient = Resolver.Get<DXInstancesApiClient>(fallbackAppKey);
-            var instances = await instancesApiClient.GetItemsAsync();
+            var instances = await InstancesApiClient.GetItemsAsync();
             var oldestInstance = instances
                 .Where(instance => !string.IsNullOrWhiteSpace(instance.Key))
                 .OrderBy(instance => instance.CreatedAtUtc)

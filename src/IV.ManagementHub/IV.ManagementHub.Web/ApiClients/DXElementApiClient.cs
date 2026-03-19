@@ -1,9 +1,11 @@
-﻿using IV.DX.Kernel.Models;
+using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DX.Kernel.Models;
+using IV.ManagementHub.Web.Services;
 using Microsoft.JSInterop;
 
 namespace IV.DataProvider.WebApp.Services.Web.ApiClients;
 
-internal class DXElementApiClient(HttpClient httpClient, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXElementDefinitionUnit>(httpClient, JSRuntime)
+internal class DXElementApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXElementDefinitionUnit>(clientProvider, JSRuntime)
 {
 
 }

@@ -1,8 +1,9 @@
-﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.ManagementHub.Common.Models.DXUnits;
+using IV.ManagementHub.Web.Services;
 using Microsoft.JSInterop;
 
-internal class DXDataSetViewApiClient(HttpClient httpClient, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXDataSetViewUnit>(httpClient, JSRuntime)
+internal class DXDataSetViewApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXDataSetViewUnit>(clientProvider, JSRuntime)
 {
 
 }

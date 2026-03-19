@@ -19,7 +19,10 @@ namespace IV.ManagementHub.Web.Components.Layout
 
         protected override async Task OnInitializedAsync()
         {
-            _dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            if (!string.IsNullOrWhiteSpace(base.AppKey))
+            {
+                _dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            }
             _lastAppKey = base.AppKey;
 
             await LoadNavigationAsync();
@@ -27,17 +30,14 @@ namespace IV.ManagementHub.Web.Components.Layout
 
         protected override async Task OnParametersSetAsync()
         {
-            if (_dxNavigationItemUnitApiClient is null)
-            {
-                return;
-            }
-
             if (string.Equals(_lastAppKey, base.AppKey, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            _dxNavigationItemUnitApiClient = Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
+            _dxNavigationItemUnitApiClient = string.IsNullOrWhiteSpace(base.AppKey)
+                ? null
+                : Resolver.Get<DXNavigationItemUnitApiClient>(base.AppKey);
             _lastAppKey = base.AppKey;
             await LoadNavigationAsync();
         }

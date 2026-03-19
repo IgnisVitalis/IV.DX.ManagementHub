@@ -1,12 +1,11 @@
 @inherits LayoutComponentBase
-@using IV.DataProvider.WebApp.Services.Web.Contracts;
 @using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Components.Layout;
 @using IV.ManagementHub.Web.Services
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject NavigationManager NavigationManager
 @inject AppState AppState
-@inject IApiClientResolver Resolver
+@inject DXInstancesApiClient InstancesApiClient
 
 <FluentDesignSystemProvider Id="app-root">
     <FluentLayout>
@@ -84,8 +83,7 @@
 
         try
         {
-            var instancesApiClient = Resolver.Get<DXInstancesApiClient>(appKey);
-            var instances = await instancesApiClient.GetItemsAsync();
+                var instances = await InstancesApiClient.GetItemsAsync();
 
             if (instances.Count == 0)
             {
@@ -115,7 +113,7 @@
         var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/');
         var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        if (segments.Length >= 2 &&
+        if (segments.Length >= 3 &&
             string.Equals(segments[0], "app", StringComparison.OrdinalIgnoreCase) &&
             !string.IsNullOrWhiteSpace(segments[1]))
         {

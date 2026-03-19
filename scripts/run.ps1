@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 param(
-    [string]$ProjectPath = "src/IV.ManagementHub/IV.ManagementHub.AppHost/IV.ManagementHub.AppHost.csproj",
+    [string]$WebPath      = "src/IV.ManagementHub/IV.ManagementHub.Web/IV.ManagementHub.Web.csproj",
     [string]$SolutionPath = "src/IV.ManagementHub/IV.ManagementHub.sln",
 
     [ValidateSet("Debug", "Release")]
@@ -16,7 +16,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$apiServiceRoot = Join-Path $repoRoot "src/IV.ManagementHub/IV.ManagementHub.ApiService"
+$webRoot = Join-Path $repoRoot "src/IV.ManagementHub/IV.ManagementHub.Web"
 
 Set-Location $repoRoot
 
@@ -37,7 +37,7 @@ if ($RemoveBootstrapSettings) {
     Write-Host "Removing bootstrap settings files..."
 
     $bootstrapFiles = Get-ChildItem `
-        -Path $apiServiceRoot `
+        -Path $webRoot `
         -Recurse `
         -Filter "bootstrap.settings.json" `
         -File `
@@ -56,8 +56,8 @@ if ($RemoveBootstrapSettings) {
 
 if (-not $NoBuild) {
     $buildParams = @{
-        SolutionPath   = $SolutionPath
-        Configuration  = $Configuration
+        SolutionPath  = $SolutionPath
+        Configuration = $Configuration
     }
 
     if ($DxVersion)  { $buildParams.DxVersion  = $DxVersion }
@@ -69,18 +69,11 @@ if (-not $NoBuild) {
     }
 }
 
-$dotnetArgs = @(
-    "run",
-    "--project", $ProjectPath,
-    "-c", $Configuration,
-    "--no-build"
-)
+$noRestoreFlag = $NoRestore -or (-not $NoBuild)
 
-if ($NoRestore -or -not $NoBuild) {
-    $dotnetArgs += "--no-restore"
-}
+$webArgs = @("run", "--project", $WebPath, "-c", $Configuration, "--no-build")
+if ($noRestoreFlag) { $webArgs += "--no-restore" }
 
-Write-Host "Starting application..."
-Write-Host "dotnet $($dotnetArgs -join ' ')"
-
-Invoke-DotNet -Args $dotnetArgs -ErrorContext "Application run failed."
+Write-Host "Starting Web..."
+Write-Host "dotnet $($webArgs -join ' ')"
+Invoke-DotNet -Args $webArgs -ErrorContext "Web run failed."

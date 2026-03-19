@@ -1,36 +1,29 @@
 using IV.DataProvider.WebApp.Services.Web.Contracts;
+using IV.ManagementHub.ApiService.Bootstrap;
+using IV.ManagementHub.ApiService.Services;
 using IV.ManagementHub.Web.Services;
 using Microsoft.JSInterop;
-using System.Net.Http.Headers;
 
 namespace IV.DataProvider.WebApp.Services.Web.Services
 {
     public sealed class ApiClientResolver(
-        IHttpClientFactory factory,
+        BootstrapSettingsSnapshot settingsSnapshot,
+        InstanceApiClientFactory instanceFactory,
         IJSRuntime jsRuntime,
-        AppAuthState authState,
-        ApiSourceCatalog apiSourceCatalog,
         IServiceProvider sp) : IApiClientResolver
     {
-        public T Get<T>(string? sourceKey) where T : class
+        public T Get<T>(string? instanceKey) where T : class
         {
-            var requestedInstanceKey = !string.IsNullOrWhiteSpace(sourceKey)
-                ? sourceKey
-                : authState.AppKey;
+            var settings = settingsSnapshot.Current;
+            var instance = settings?.ResolveInstance(instanceKey)
+                ?? settings?.Instances.FirstOrDefault();
 
-            var source = apiSourceCatalog.Resolve(authState.AppKey);
+            if (instance is null)
+                throw new InvalidOperationException(
+                    $"No DX instance found for key '{instanceKey}'. Ensure at least one instance is registered.");
 
-            var http = factory.CreateClient(source.HttpClientName);
-            http.DefaultRequestHeaders.Authorization = authState.IsAuthenticated
-                ? new AuthenticationHeaderValue("Bearer", authState.AccessToken)
-                : null;
-            http.DefaultRequestHeaders.Remove("X-MH-Instance");
-            if (!string.IsNullOrWhiteSpace(requestedInstanceKey))
-            {
-                http.DefaultRequestHeaders.Add("X-MH-Instance", requestedInstanceKey);
-            }
-
-            return (T)ActivatorUtilities.CreateInstance(sp, typeof(T), http, jsRuntime);
+            var provider = new InstanceClientProvider(instanceFactory, instance.ApiUrl, instance.ServiceKey);
+            return (T)ActivatorUtilities.CreateInstance(sp, typeof(T), provider, jsRuntime);
         }
     }
 }

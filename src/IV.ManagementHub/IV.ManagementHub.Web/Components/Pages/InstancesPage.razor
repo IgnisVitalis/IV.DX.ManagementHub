@@ -1,6 +1,6 @@
+@page "/app/instances"
 @page "/app/{AppKey}/instances"
 
-@using IV.DataProvider.WebApp.Services.Web.Contracts
 @using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Components.Custom
 @using IV.ManagementHub.Web.Components.Custom.Base
@@ -9,7 +9,7 @@
 
 @inherits ManagementHubComponentBase
 
-@inject IApiClientResolver Resolver
+@inject DXInstancesApiClient InstancesApiClient
 @inject NavigationManager NavigationManager
 @inject AppAuthState AuthState
 
@@ -186,7 +186,6 @@
 
 @code
 {
-    private DXInstancesApiClient? _instancesApiClient;
     private readonly List<DXInstanceDto> _instances = [];
     private bool _isLoading;
     private bool _isBusy;
@@ -203,23 +202,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _instancesApiClient = Resolver.Get<DXInstancesApiClient>(base.AppKey);
         await LoadInstancesAsync();
     }
 
     private async Task LoadInstancesAsync()
     {
-        if (_instancesApiClient is null)
-        {
-            return;
-        }
-
         _error = null;
         _isLoading = true;
 
         try
         {
-            var instances = await _instancesApiClient.GetItemsAsync();
+            var instances = await InstancesApiClient.GetItemsAsync();
             _instances.Clear();
             _instances.AddRange(instances.OrderBy(instance => instance.Title, StringComparer.OrdinalIgnoreCase));
 
@@ -263,7 +256,7 @@
 
     private async Task CreateInstanceAsync()
     {
-        if (_instancesApiClient is null || _isBusy)
+        if (_isBusy)
         {
             return;
         }
@@ -292,7 +285,7 @@
         _isBusy = true;
         try
         {
-            var result = await _instancesApiClient.CreateAsync(new CreateInstanceRequest(
+            var result = await InstancesApiClient.CreateAsync(new CreateInstanceRequest(
                 _newInstanceKey,
                 _newInstanceTitle,
                 _apiUrl,

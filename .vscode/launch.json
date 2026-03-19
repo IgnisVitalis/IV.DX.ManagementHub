@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Aspire AppHost (Hot Reload)",
+      "name": "Web (Hot Reload)",
       "type": "coreclr",
       "request": "launch",
       "program": "dotnet",
@@ -10,13 +10,27 @@
         "watch",
         "run",
         "--project",
-        "src/IV.ManagementHub/IV.ManagementHub.AppHost/IV.ManagementHub.AppHost.csproj",
+        "src/IV.ManagementHub/IV.ManagementHub.Web/IV.ManagementHub.Web.csproj",
         "--launch-profile",
         "https"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
+    },
+    {
+      "name": "Web (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/IV.ManagementHub/IV.ManagementHub.Web/bin/Debug/net9.0/IV.ManagementHub.Web.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/src/IV.ManagementHub/IV.ManagementHub.Web",
+      "console": "integratedTerminal",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7097;http://localhost:5286"
+      }
     }
   ]
 }

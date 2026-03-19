@@ -4,6 +4,6 @@ namespace IV.ManagementHub.Web.Components.Custom.Base
 {
     public abstract class ManagementHubComponentBase : ComponentBase
     {
-        [Parameter, EditorRequired] public string AppKey { get; set; } = default!;     
+        [Parameter] public string AppKey { get; set; } = string.Empty;
     }
 }

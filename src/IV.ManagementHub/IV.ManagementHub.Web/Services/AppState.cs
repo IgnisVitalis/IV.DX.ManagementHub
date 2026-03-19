@@ -1,3 +1,5 @@
+using IV.ManagementHub.ApiService.Bootstrap;
+
 namespace IV.ManagementHub.Web.Services
 {
     public sealed class AppState
@@ -6,18 +8,18 @@ namespace IV.ManagementHub.Web.Services
         public record NavGroup(string Key, string Title, string Icon, IReadOnlyList<NavItem> Items);
         public record AppInfo(string Key, string Title);
 
-        private readonly ApiSourceCatalog _apiSourceCatalog;
+        private readonly BootstrapSettingsSnapshot _settingsSnapshot;
 
-        public AppState(ApiSourceCatalog apiSourceCatalog)
+        public AppState(BootstrapSettingsSnapshot settingsSnapshot)
         {
-            _apiSourceCatalog = apiSourceCatalog;
+            _settingsSnapshot = settingsSnapshot;
         }
 
-        public IReadOnlyList<AppInfo> Apps => _apiSourceCatalog.Sources
-            .Select(source => new AppInfo(source.Key, source.Title))
+        public IReadOnlyList<AppInfo> Apps => (_settingsSnapshot.Current?.Instances ?? [])
+            .Select(instance => new AppInfo(instance.Key, instance.Title))
             .ToList();
 
-        public string DefaultAppKey => _apiSourceCatalog.DefaultKey;
+        public string DefaultAppKey => _settingsSnapshot.Current?.Instances.FirstOrDefault()?.Key ?? string.Empty;
 
         public bool IsValidApp(string? key) =>
             !string.IsNullOrWhiteSpace(key) &&

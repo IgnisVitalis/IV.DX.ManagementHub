@@ -5,7 +5,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
     /// Each async request flow gets its own copy so concurrent requests
     /// for different instances do not interfere with each other.
     /// </summary>
-    internal static class InstanceApiContext
+    public static class InstanceApiContext
     {
         private static readonly AsyncLocal<string?> _apiUrl = new();
         private static readonly AsyncLocal<string?> _serviceKey = new();

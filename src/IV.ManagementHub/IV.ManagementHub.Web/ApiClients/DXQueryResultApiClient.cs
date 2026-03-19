@@ -1,18 +1,20 @@
-﻿using IV.ManagementHub.Web.Models;
+using IV.ManagementHub.Web.Models;
+using IV.ManagementHub.Web.Services;
 using Microsoft.JSInterop;
 
-internal class DXQueryResultApiClient(HttpClient httpClient, IJSRuntime JSRuntime)
+internal class DXQueryResultApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
 {
     public virtual async Task<DXQueryResult> GetAsync(Guid dxQueryID, Guid? dxFilterID, CancellationToken ct = default)
     {
-        var requestUri = $"api/DXQueryResult/{dxQueryID}";
+        var requestUri = $"api/management/query-result/{dxQueryID}";
 
         if (dxFilterID.HasValue)
         {
             requestUri += $"/{dxFilterID}";
         }
 
-        var result = await httpClient.GetAsync(requestUri, ct);
+        var http = await clientProvider.GetClientAsync(ct);
+        var result = await http.GetAsync(requestUri, ct);
 
         var str = await result.Content.ReadAsStringAsync(ct);
 

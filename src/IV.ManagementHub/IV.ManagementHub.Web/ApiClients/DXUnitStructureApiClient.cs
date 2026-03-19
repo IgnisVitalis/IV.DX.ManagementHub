@@ -1,14 +1,16 @@
-﻿using IV.ManagementHub.Common.Models;
+using IV.ManagementHub.Common.Models;
+using IV.ManagementHub.Web.Services;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 
 namespace IV.ManagementHub.Web.ApiClients
 {
-    public class DXUnitStructureApiClient(HttpClient httpClient, IJSRuntime JSRuntime)
+    public class DXUnitStructureApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
     {
         public virtual async Task<DXModelDefinition> GetAsync(string typeName, CancellationToken cancellationToken = default)
         {
-            var response = await httpClient.GetAsync($"api/DXUnitStructure/{typeName}");
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.GetAsync($"api/management/unit-structure/{typeName}", cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {

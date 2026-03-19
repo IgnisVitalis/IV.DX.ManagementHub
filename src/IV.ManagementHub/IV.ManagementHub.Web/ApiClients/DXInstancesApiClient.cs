@@ -1,57 +1,62 @@
-using Microsoft.JSInterop;
-using Newtonsoft.Json;
-using System.Text;
+using IV.ManagementHub.ApiService.Bootstrap;
 
 namespace IV.ManagementHub.Web.ApiClients
 {
-    internal sealed class DXInstancesApiClient(HttpClient httpClient, IJSRuntime jsRuntime)
+    internal sealed class DXInstancesApiClient(IBootstrapInstanceService instanceService)
     {
         public async Task<IReadOnlyList<DXInstanceDto>> GetItemsAsync(CancellationToken cancellationToken = default)
         {
-            using var response = await httpClient.GetAsync("api/instances", cancellationToken);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            return JsonConvert.DeserializeObject<List<DXInstanceDto>>(body) ?? [];
+            var instances = await instanceService.GetInstancesAsync(cancellationToken);
+            return instances
+                .Select(i => new DXInstanceDto
+                {
+                    Key = i.Key,
+                    Title = i.Title,
+                    ApiUrl = i.ApiUrl,
+                    CreatedAtUtc = i.CreatedAtUtc
+                })
+                .ToList();
         }
 
         public async Task<CreateInstanceResult> CreateAsync(CreateInstanceRequest request, CancellationToken cancellationToken = default)
         {
-            var payload = JsonConvert.SerializeObject(request);
-            using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var response = await httpClient.PostAsync("api/instances", content, cancellationToken);
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = await instanceService.CreateInstanceAsync(
+                new BootstrapCreateInstanceRequest(
+                    request.Key,
+                    request.Title,
+                    request.ApiUrl,
+                    request.ServiceKey),
+                cancellationToken);
 
-            var payloadResponse = JsonConvert.DeserializeObject<CreateInstanceResponse>(responseBody);
-            if (response.IsSuccessStatusCode && payloadResponse?.Instance is not null)
+            if (result.Status == BootstrapCreateInstanceStatus.Created && result.Instance is not null)
             {
-                return CreateInstanceResult.Success(payloadResponse.Instance, payloadResponse.Message ?? "Instance created.");
+                var dto = new DXInstanceDto
+                {
+                    Key = result.Instance.Key,
+                    Title = result.Instance.Title,
+                    ApiUrl = result.Instance.ApiUrl,
+                    CreatedAtUtc = result.Instance.CreatedAtUtc
+                };
+                return CreateInstanceResult.Success(dto, result.Message ?? "Instance created.");
             }
 
-            return CreateInstanceResult.Fail(payloadResponse?.Message ?? $"Failed to create instance ({(int)response.StatusCode}).");
+            return CreateInstanceResult.Fail(result.Message ?? "Failed to create instance.");
         }
     }
 
-    internal sealed record DXInstanceDto
+    internal sealed class DXInstanceDto
     {
-        [JsonProperty("key")]
         public string Key { get; init; } = string.Empty;
-
-        [JsonProperty("title")]
         public string Title { get; init; } = string.Empty;
-
-        [JsonProperty("apiUrl")]
         public string ApiUrl { get; init; } = string.Empty;
-
-        [JsonProperty("createdAtUtc")]
         public DateTimeOffset CreatedAtUtc { get; init; }
     }
 
     internal sealed record CreateInstanceRequest(
-        [property: JsonProperty("key")] string Key,
-        [property: JsonProperty("title")] string Title,
-        [property: JsonProperty("apiUrl")] string ApiUrl,
-        [property: JsonProperty("serviceKey")] string ServiceKey);
+        string Key,
+        string Title,
+        string ApiUrl,
+        string ServiceKey);
 
     internal sealed record CreateInstanceResult(bool IsSuccess, DXInstanceDto? Instance, string? Message, string? Error)
     {
@@ -60,14 +65,5 @@ namespace IV.ManagementHub.Web.ApiClients
 
         public static CreateInstanceResult Fail(string error) =>
             new(false, null, null, error);
-    }
-
-    internal sealed class CreateInstanceResponse
-    {
-        [JsonProperty("message")]
-        public string? Message { get; init; }
-
-        [JsonProperty("instance")]
-        public DXInstanceDto? Instance { get; init; }
     }
 }
