@@ -21,7 +21,6 @@ namespace IV.ManagementHub.ApiService.Bootstrap
     {
         Completed,
         AlreadyConfigured,
-        ActivationFailed,
         ValidationError
     }
 

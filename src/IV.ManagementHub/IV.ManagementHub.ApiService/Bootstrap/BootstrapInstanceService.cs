@@ -2,8 +2,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 {
     public sealed class BootstrapInstanceService(
         IBootstrapSettingsStore store,
-        BootstrapSettingsSnapshot settingsSnapshot,
-        IBootstrapRuntimeActivator runtimeActivator) : IBootstrapInstanceService
+        BootstrapSettingsSnapshot settingsSnapshot) : IBootstrapInstanceService
     {
         private readonly SemaphoreSlim _sync = new(1, 1);
 
@@ -26,12 +25,12 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             }
 
             if (string.IsNullOrWhiteSpace(request.Title) ||
-                string.IsNullOrWhiteSpace(request.DatabaseType) ||
-                string.IsNullOrWhiteSpace(request.ConnectionString))
+                string.IsNullOrWhiteSpace(request.ApiUrl) ||
+                string.IsNullOrWhiteSpace(request.ServiceKey))
             {
                 return new BootstrapCreateInstanceResult(
                     BootstrapCreateInstanceStatus.ValidationError,
-                    Message: "Title, database type and connection string are required.");
+                    Message: "Title, API URL and service key are required.");
             }
 
             await _sync.WaitAsync(ct);
@@ -47,8 +46,8 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
                 var normalizedKey = NormalizeKey(request.Key, request.Title);
                 var normalizedTitle = request.Title.Trim();
-                var normalizedDbType = request.DatabaseType.Trim();
-                var normalizedConnection = request.ConnectionString.Trim();
+                var normalizedApiUrl = request.ApiUrl.Trim().TrimEnd('/');
+                var normalizedServiceKey = request.ServiceKey.Trim();
 
                 if (string.IsNullOrWhiteSpace(normalizedKey))
                 {
@@ -66,23 +65,13 @@ namespace IV.ManagementHub.ApiService.Bootstrap
                         "Instance with the same key already exists.");
                 }
 
-                if (settings.Instances.Count > 0 &&
-                    settings.Instances.Any(instance =>
-                        !string.Equals(instance.DatabaseType, normalizedDbType, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return new BootstrapCreateInstanceResult(
-                        BootstrapCreateInstanceStatus.ValidationError,
-                        Message: "All instances must use the same database provider type.");
-                }
-
                 var instance = new BootstrapInstanceSettings
                 {
                     Key = normalizedKey,
                     Title = normalizedTitle,
-                    DatabaseType = normalizedDbType,
-                    ConnectionString = normalizedConnection,
-                    CreatedAtUtc = DateTimeOffset.UtcNow,
-                    IsInitialized = false
+                    ApiUrl = normalizedApiUrl,
+                    ServiceKey = normalizedServiceKey,
+                    CreatedAtUtc = DateTimeOffset.UtcNow
                 };
 
                 var updatedSettings = new BootstrapSettings
@@ -99,54 +88,6 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
                 await store.SaveAsync(updatedSettings, ct);
                 settingsSnapshot.Set(updatedSettings);
-
-                var activationResult = await runtimeActivator.ActivateAsync(normalizedKey, ct);
-                if (!activationResult.IsSuccess)
-                {
-                    var rollbackSettings = new BootstrapSettings
-                    {
-                        RootUserName = settings.RootUserName,
-                        RootPasswordHash = settings.RootPasswordHash,
-                        RootPasswordSalt = settings.RootPasswordSalt,
-                        CreatedAtUtc = settings.CreatedAtUtc,
-                        Instances = settings.Instances
-                            .Select(existingInstance => existingInstance.Normalize())
-                            .ToList()
-                    };
-
-                    await store.SaveAsync(rollbackSettings, ct);
-                    settingsSnapshot.Set(rollbackSettings);
-
-                    return new BootstrapCreateInstanceResult(
-                        BootstrapCreateInstanceStatus.ActivationFailed,
-                        null,
-                        $"Instance activation failed and the instance was not saved. {activationResult.Message}");
-                }
-
-                var activatedSettings = new BootstrapSettings
-                {
-                    RootUserName = updatedSettings.RootUserName,
-                    RootPasswordHash = updatedSettings.RootPasswordHash,
-                    RootPasswordSalt = updatedSettings.RootPasswordSalt,
-                    CreatedAtUtc = updatedSettings.CreatedAtUtc,
-                    Instances = updatedSettings.Instances
-                        .Select(existingInstance =>
-                            string.Equals(existingInstance.Key, normalizedKey, StringComparison.OrdinalIgnoreCase)
-                                ? new BootstrapInstanceSettings
-                                {
-                                    Key = existingInstance.Key,
-                                    Title = existingInstance.Title,
-                                    DatabaseType = existingInstance.DatabaseType,
-                                    ConnectionString = existingInstance.ConnectionString,
-                                    CreatedAtUtc = existingInstance.CreatedAtUtc,
-                                    IsInitialized = true
-                                }
-                                : existingInstance.Normalize())
-                        .ToList()
-                };
-
-                await store.SaveAsync(activatedSettings, ct);
-                settingsSnapshot.Set(activatedSettings);
 
                 return new BootstrapCreateInstanceResult(
                     BootstrapCreateInstanceStatus.Created,
@@ -178,7 +119,7 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             return new BootstrapInstanceDescriptor(
                 normalized.Key,
                 normalized.Title,
-                normalized.DatabaseType,
+                normalized.ApiUrl,
                 normalized.CreatedAtUtc);
         }
 

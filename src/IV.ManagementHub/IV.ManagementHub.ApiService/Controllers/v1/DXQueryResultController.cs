@@ -1,29 +1,38 @@
-using Asp.Versioning;
-using IV.DX.Application.Contracts.Abstractions;
 using IV.ManagementHub.ApiService.Controllers;
+using IV.ManagementHub.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
+using System.Net;
 
 namespace IV.ManagementHub.ApiService.Controllers.v1
 {
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/DXQueryResult")]
-    public class DXQueryResultController(IDXQueryResultProvider dxQueryResultProvider) : DXApiControllerBase
+    [Route("api/DXQueryResult")]
+    public class DXQueryResultController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
     {
-        /// <summary>Get DXUnitStructure object by Name.</summary>
+        /// <summary>Get DX query result by query ID.</summary>
         [HttpGet("{dxQueryID:guid}/{dxFilterID:guid?}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryID, [FromRoute] Guid? dxFilterID)
         {
-            var dxQueryResult = await dxQueryResultProvider.GetAsync(dxQueryID, dxFilterID);
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            if (dxQueryResult == null)
+            var url = dxFilterID.HasValue
+                ? $"api/management/query-result/{dxQueryID}/{dxFilterID.Value}"
+                : $"api/management/query-result/{dxQueryID}";
+            using var response = await client.GetAsync(url, ct);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
                 return NotFound();
 
-            return dxQueryResult;
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JObject.Parse(body);
         }
     }
 }

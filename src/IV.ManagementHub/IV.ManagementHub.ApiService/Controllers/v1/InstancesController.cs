@@ -1,15 +1,15 @@
-using Asp.Versioning;
 using IV.ManagementHub.ApiService.Bootstrap;
 using IV.ManagementHub.ApiService.Controllers;
+using IV.ManagementHub.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace IV.ManagementHub.ApiService.Controllers.v1
 {
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/instances")]
-    public sealed class InstancesController(IBootstrapInstanceService instanceService) : DXApiControllerBase
+    [Route("api/instances")]
+    public sealed class InstancesController(
+        IBootstrapInstanceService instanceService) : DXApiControllerBase
     {
         [HttpGet]
         [Produces("application/json")]
@@ -21,7 +21,7 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
             {
                 Key = instance.Key,
                 Title = instance.Title,
-                DatabaseType = instance.DatabaseType,
+                ApiUrl = instance.ApiUrl,
                 CreatedAtUtc = instance.CreatedAtUtc
             }).ToList());
         }
@@ -32,15 +32,14 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreateInstanceResponse>> Create([FromBody] CreateInstanceRequest request, CancellationToken ct)
         {
             var result = await instanceService.CreateInstanceAsync(
                 new BootstrapCreateInstanceRequest(
                     request.Key,
                     request.Title,
-                    request.DatabaseType,
-                    request.ConnectionString),
+                    request.ApiUrl,
+                    request.ServiceKey),
                 ct);
 
             var response = new CreateInstanceResponse
@@ -52,7 +51,7 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
                     {
                         Key = result.Instance.Key,
                         Title = result.Instance.Title,
-                        DatabaseType = result.Instance.DatabaseType,
+                        ApiUrl = result.Instance.ApiUrl,
                         CreatedAtUtc = result.Instance.CreatedAtUtc
                     }
             };
@@ -63,10 +62,10 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
                 BootstrapCreateInstanceStatus.SetupNotCompleted => BadRequest(response),
                 BootstrapCreateInstanceStatus.ValidationError => BadRequest(response),
                 BootstrapCreateInstanceStatus.Conflict => Conflict(response),
-                BootstrapCreateInstanceStatus.ActivationFailed => StatusCode(StatusCodes.Status500InternalServerError, response),
                 _ => BadRequest(response)
             };
         }
+
     }
 
     public sealed class CreateInstanceRequest
@@ -77,11 +76,11 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         [JsonProperty("title")]
         public string Title { get; init; } = string.Empty;
 
-        [JsonProperty("databaseType")]
-        public string DatabaseType { get; init; } = "PostgreSQL";
+        [JsonProperty("apiUrl")]
+        public string ApiUrl { get; init; } = string.Empty;
 
-        [JsonProperty("connectionString")]
-        public string ConnectionString { get; init; } = string.Empty;
+        [JsonProperty("serviceKey")]
+        public string ServiceKey { get; init; } = string.Empty;
     }
 
     public sealed class CreateInstanceResponse
@@ -101,8 +100,8 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
         [JsonProperty("title")]
         public string Title { get; init; } = string.Empty;
 
-        [JsonProperty("databaseType")]
-        public string DatabaseType { get; init; } = string.Empty;
+        [JsonProperty("apiUrl")]
+        public string ApiUrl { get; init; } = string.Empty;
 
         [JsonProperty("createdAtUtc")]
         public DateTimeOffset CreatedAtUtc { get; init; }

@@ -12,10 +12,6 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
         public List<BootstrapInstanceSettings> Instances { get; init; } = [];
 
-        public string? DatabaseType { get; init; }
-
-        public string? ConnectionString { get; init; }
-
         public bool IsConfigured =>
             !string.IsNullOrWhiteSpace(RootUserName) &&
             !string.IsNullOrWhiteSpace(RootPasswordHash) &&
@@ -44,27 +40,11 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             var normalizedInstances = Instances
                 .Where(instance =>
                     !string.IsNullOrWhiteSpace(instance.Key) &&
-                    !string.IsNullOrWhiteSpace(instance.DatabaseType) &&
-                    !string.IsNullOrWhiteSpace(instance.ConnectionString))
+                    !string.IsNullOrWhiteSpace(instance.ApiUrl))
                 .Select(instance => instance.Normalize())
                 .GroupBy(instance => instance.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(group => group.First())
                 .ToList();
-
-            if (normalizedInstances.Count == 0 &&
-                !string.IsNullOrWhiteSpace(DatabaseType) &&
-                !string.IsNullOrWhiteSpace(ConnectionString))
-            {
-                normalizedInstances.Add(new BootstrapInstanceSettings
-                {
-                    Key = "default",
-                    Title = "Default",
-                    DatabaseType = DatabaseType.Trim(),
-                    ConnectionString = ConnectionString.Trim(),
-                    CreatedAtUtc = CreatedAtUtc == default ? DateTimeOffset.UtcNow : CreatedAtUtc,
-                    IsInitialized = true
-                });
-            }
 
             return new BootstrapSettings
             {

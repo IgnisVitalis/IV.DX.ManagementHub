@@ -14,7 +14,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 
         public virtual async Task<IEnumerable<T>> GetItemsAsync(string? dxFilter = default, CancellationToken cancellationToken = default)
         {
-            var requestUri = $"api/v1.0/{typeName}";
+            var requestUri = $"api/{typeName}";
 
             if (dxFilter != default)
             {
@@ -33,7 +33,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 
         public virtual async Task<T> Get(Guid id, CancellationToken cancellationToken = default)
         {
-            var response = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}");
+            var response = await httpClient.GetAsync($"api/{typeName}/{id}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -55,7 +55,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 
             var content = new StringContent(serializedBlock, Encoding.UTF8, "application/json");
 
-            var result = await httpClient.PostAsync($"api/v1.0/{typeName}", content, cancellationToken);
+            var result = await httpClient.PostAsync($"api/{typeName}", content, cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 
@@ -68,12 +68,12 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
         {
             var id = item.ID;
 
-            var result = await httpClient.DeleteAsync($"api/v1.0/{typeName}/{id}", cancellationToken);
+            var result = await httpClient.DeleteAsync($"api/{typeName}/{id}", cancellationToken);
         }
 
         public async Task ExportEntityAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            var result = await httpClient.GetAsync($"api/v1.0/{typeName}/{id}", cancellationToken);
+            var result = await httpClient.GetAsync($"api/{typeName}/{id}", cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 

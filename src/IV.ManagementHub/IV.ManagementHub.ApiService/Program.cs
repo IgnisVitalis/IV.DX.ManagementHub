@@ -1,15 +1,9 @@
-using Asp.Versioning;
-using IV.DX.Hosting;
 using IV.ManagementHub.ApiService.Bootstrap;
-using IV.ManagementHub.ApiService.Contracts.Services;
 using IV.ManagementHub.ApiService.Security;
 using IV.ManagementHub.ApiService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
-using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,29 +25,9 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
         };
     });
 
-builder.Services
-    .AddApiVersioning(options =>
-    {
-        options.ReportApiVersions = true;
-        options.AssumeDefaultVersionWhenUnspecified = true;
-        options.DefaultApiVersion = new ApiVersion(1, 0);
-        options.ApiVersionReader = new UrlSegmentApiVersionReader();
-    })
-    .AddApiExplorer(o =>
-    {
-        o.GroupNameFormat = "'v'VVV";
-        o.SubstituteApiVersionInUrl = true;
-    });
-
 var bootstrapSettingsPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "bootstrap.settings.json");
 var bootstrapSettingsStore = new JsonBootstrapSettingsStore(bootstrapSettingsPath);
 var bootstrapSettings = (await bootstrapSettingsStore.LoadAsync())?.Normalize();
-
-if (bootstrapSettings?.Instances.FirstOrDefault() is BootstrapInstanceSettings defaultInstance)
-{
-    builder.Configuration["Database:Type"] = defaultInstance.DatabaseType;
-    builder.Configuration["Database:ConnectionString"] = defaultInstance.ConnectionString;
-}
 
 var rootAuthOptions = builder.Configuration.GetSection(RootAuthOptions.SectionName).Get<RootAuthOptions>() ?? new RootAuthOptions();
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(rootAuthOptions.SigningKey));
@@ -62,11 +36,11 @@ builder.Services.AddSingleton(rootAuthOptions);
 builder.Services.AddSingleton<RootTokenService>();
 builder.Services.AddSingleton<IBootstrapSettingsStore>(bootstrapSettingsStore);
 builder.Services.AddSingleton(new BootstrapSettingsSnapshot(bootstrapSettings));
-builder.Services.AddSingleton(new BootstrapRuntimeState());
-builder.Services.AddSingleton<IDatabaseRuntimeBinder, DatabaseRuntimeBinder>();
-builder.Services.AddSingleton<IBootstrapRuntimeActivator, BootstrapRuntimeActivator>();
 builder.Services.AddSingleton<IBootstrapSetupService, BootstrapSetupService>();
 builder.Services.AddSingleton<IBootstrapInstanceService, BootstrapInstanceService>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<InstanceApiClientFactory>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -93,26 +67,14 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(AuthPolicies.RootOnly, policy => policy.RequireRole(AuthRoles.Root));
 });
 
-builder.Services
-    .AddDX(builder.Configuration)
-    .AddSecurity()
-    .AddCustomData("Migration/MH.json")
-    .Build();
-ConfigureDynamicDxDatabaseOptions(builder.Services);
-builder.Services.AddScoped<IDXUnitStructureService, DXUnitStructureService>();
-
-
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-var runtimeState = app.Services.GetRequiredService<BootstrapRuntimeState>();
 var settingsSnapshot = app.Services.GetRequiredService<BootstrapSettingsSnapshot>();
-var runtimeActivator = app.Services.GetRequiredService<IBootstrapRuntimeActivator>();
 
 app.Use(async (context, next) =>
 {
@@ -123,8 +85,8 @@ app.Use(async (context, next) =>
         return;
     }
 
-    if (path.StartsWithSegments("/api/v1.0/setup") ||
-        path.StartsWithSegments("/api/v1.0/auth"))
+    if (path.StartsWithSegments("/api/setup") ||
+        path.StartsWithSegments("/api/auth"))
     {
         await next();
         return;
@@ -141,7 +103,7 @@ app.Use(async (context, next) =>
         return;
     }
 
-    if (path.StartsWithSegments("/api/v1.0/instances"))
+    if (path.StartsWithSegments("/api/instances"))
     {
         await next();
         return;
@@ -169,25 +131,9 @@ app.Use(async (context, next) =>
         return;
     }
 
-    // Set per-request connection context (AsyncLocal — each request flow gets its own copy,
-    // so concurrent requests for different instances cannot corrupt each other).
-    InstanceConnectionContext.Set(instance);
-
-    var isSwitchingInstance = !string.Equals(runtimeState.CurrentInstanceKey, instance.Key, StringComparison.OrdinalIgnoreCase);
-
-    if (isSwitchingInstance || !runtimeState.IsInstanceActivated(instance.Key))
-    {
-        var activationResult = await runtimeActivator.ActivateAsync(instance.Key, context.RequestAborted);
-        if (!activationResult.IsSuccess)
-        {
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                error = $"DX runtime activation failed for instance '{instance.Key}'. {activationResult.Message}"
-            });
-            return;
-        }
-    }
+    // Set per-request API context (AsyncLocal — each request flow gets its own copy,
+    // so concurrent requests for different instances cannot interfere with each other).
+    InstanceApiContext.Set(instance);
 
     await next();
 });
@@ -202,34 +148,3 @@ app.MapControllers();
 app.MapDefaultEndpoints();
 
 app.Run();
-
-static void ConfigureDynamicDxDatabaseOptions(IServiceCollection services)
-{
-    var persistenceAssembly = AppDomain.CurrentDomain.GetAssemblies()
-        .FirstOrDefault(assembly => string.Equals(assembly.GetName().Name, "IV.DX.Persistence", StringComparison.Ordinal))
-        ?? Assembly.Load("IV.DX.Persistence");
-
-    var optionsType = persistenceAssembly.GetType("IV.DX.Persistence.DXDatabaseOptions");
-    if (optionsType is null)
-    {
-        return;
-    }
-
-    var iOptionsType = typeof(IOptions<>).MakeGenericType(optionsType);
-    var optionsWrapperType = typeof(OptionsWrapper<>).MakeGenericType(optionsType);
-    var typeProperty = optionsType.GetProperty("Type");
-    var connectionStringProperty = optionsType.GetProperty("ConnectionString");
-
-    services.Replace(ServiceDescriptor.Transient(iOptionsType, serviceProvider =>
-    {
-        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-        var optionsInstance = Activator.CreateInstance(optionsType)
-            ?? throw new InvalidOperationException("Unable to create DXDatabaseOptions instance.");
-
-        typeProperty?.SetValue(optionsInstance, InstanceConnectionContext.DatabaseType ?? configuration["Database:Type"]);
-        connectionStringProperty?.SetValue(optionsInstance, InstanceConnectionContext.ConnectionString ?? configuration["Database:ConnectionString"]);
-
-        return Activator.CreateInstance(optionsWrapperType, optionsInstance)
-            ?? throw new InvalidOperationException("Unable to create DX database options wrapper.");
-    }));
-}

@@ -1,4 +1,3 @@
-using Asp.Versioning;
 using IV.ManagementHub.ApiService.Bootstrap;
 using IV.ManagementHub.ApiService.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -8,8 +7,7 @@ using Newtonsoft.Json;
 namespace IV.ManagementHub.ApiService.Controllers.v1
 {
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/auth")]
+    [Route("api/auth")]
     public sealed class AuthController(
         IBootstrapSetupService bootstrapSetupService,
         RootTokenService tokenService) : ControllerBase

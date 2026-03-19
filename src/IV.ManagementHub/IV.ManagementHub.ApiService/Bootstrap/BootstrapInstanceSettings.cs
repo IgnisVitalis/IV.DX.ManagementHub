@@ -6,13 +6,11 @@ namespace IV.ManagementHub.ApiService.Bootstrap
 
         public string Title { get; init; } = string.Empty;
 
-        public string DatabaseType { get; init; } = "PostgreSQL";
+        public string ApiUrl { get; init; } = string.Empty;
 
-        public string ConnectionString { get; init; } = string.Empty;
+        public string ServiceKey { get; init; } = string.Empty;
 
         public DateTimeOffset CreatedAtUtc { get; init; }
-
-        public bool? IsInitialized { get; init; }
 
         public BootstrapInstanceSettings Normalize()
         {
@@ -23,10 +21,9 @@ namespace IV.ManagementHub.ApiService.Bootstrap
             {
                 Key = normalizedKey,
                 Title = normalizedTitle,
-                DatabaseType = (DatabaseType ?? string.Empty).Trim(),
-                ConnectionString = (ConnectionString ?? string.Empty).Trim(),
-                CreatedAtUtc = CreatedAtUtc,
-                IsInitialized = IsInitialized ?? true
+                ApiUrl = (ApiUrl ?? string.Empty).Trim().TrimEnd('/'),
+                ServiceKey = (ServiceKey ?? string.Empty).Trim(),
+                CreatedAtUtc = CreatedAtUtc
             };
         }
     }

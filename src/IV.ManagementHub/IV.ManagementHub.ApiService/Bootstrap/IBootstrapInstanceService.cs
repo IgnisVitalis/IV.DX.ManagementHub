@@ -10,14 +10,14 @@ namespace IV.ManagementHub.ApiService.Bootstrap
     public sealed record BootstrapInstanceDescriptor(
         string Key,
         string Title,
-        string DatabaseType,
+        string ApiUrl,
         DateTimeOffset CreatedAtUtc);
 
     public sealed record BootstrapCreateInstanceRequest(
         string Key,
         string Title,
-        string DatabaseType,
-        string ConnectionString);
+        string ApiUrl,
+        string ServiceKey);
 
     public sealed record BootstrapCreateInstanceResult(
         BootstrapCreateInstanceStatus Status,
@@ -29,7 +29,6 @@ namespace IV.ManagementHub.ApiService.Bootstrap
         Created,
         ValidationError,
         SetupNotCompleted,
-        Conflict,
-        ActivationFailed
+        Conflict
     }
 }

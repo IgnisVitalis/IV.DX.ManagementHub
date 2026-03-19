@@ -11,7 +11,7 @@ namespace IV.ManagementHub.Web.Services
         public async Task<SetupStatusResult> GetSetupStatusAsync(string? sourceKey = null, CancellationToken cancellationToken = default)
         {
             var client = GetClient(sourceKey);
-            using var response = await client.GetAsync("api/v1.0/setup/status", cancellationToken);
+            using var response = await client.GetAsync("api/setup/status", cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -58,7 +58,7 @@ namespace IV.ManagementHub.Web.Services
             });
 
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync("api/v1.0/setup/complete", content, cancellationToken);
+            using var response = await client.PostAsync("api/setup/complete", content, cancellationToken);
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
             var completeResponse = JsonConvert.DeserializeObject<SetupCompleteResponse>(responseBody);
 
@@ -88,7 +88,7 @@ namespace IV.ManagementHub.Web.Services
             });
 
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync("api/v1.0/auth/token", content, cancellationToken);
+            using var response = await client.PostAsync("api/auth/token", content, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {

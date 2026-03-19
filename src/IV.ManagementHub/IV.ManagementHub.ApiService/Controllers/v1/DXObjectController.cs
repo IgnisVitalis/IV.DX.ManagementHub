@@ -1,43 +1,36 @@
-using Asp.Versioning;
-using IV.DX.Application.Contracts.Abstractions;
-using IV.DX.Kernel.Models;
 using IV.ManagementHub.ApiService.Controllers;
-using IV.ManagementHub.ApiService.Controllers.v1;
+using IV.ManagementHub.ApiService.Services;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net;
+using System.Text;
 
 namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
 {
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/{typeName}")]
-    //[ExcludeTypeName("DXUnitDefinitionUnit")]
-    public class DXObjectController : DXApiControllerBase
+    [Route("api/{typeName}")]
+    public class DXObjectController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
     {
-        private readonly IDXUnitDataService _dataService;
-        private readonly IDXUnitDataReader _dataReader;
-
-        public DXObjectController(IDXUnitDataService dataService, IDXUnitDataReader dataReader)
-        {
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-            _dataReader = dataReader ?? throw new ArgumentNullException(nameof(dataReader));
-        }
-
         /// <summary>Get all objects of the specified type.</summary>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async virtual Task<ActionResult<JArray>> GetAllAsync([FromRoute] string typeName, [FromQuery] string? filter = null)
+        public async Task<ActionResult<JArray>> GetAllAsync([FromRoute] string typeName, [FromQuery] string? filter = null)
         {
-            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            var items = string.IsNullOrEmpty(filter)
-                ? await _dataReader.GetItemsAsync(typeName, ct: ct)
-                : await _dataReader.GetItemsAsync(typeName, filter, ct: ct);
+            var url = string.IsNullOrEmpty(filter)
+                ? $"api/management/{typeName}"
+                : $"api/management/{typeName}?filter={Uri.EscapeDataString(filter)}";
 
-            var jarray = new JArray(items);
+            using var response = await client.GetAsync(url, ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
 
-            return jarray;
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JArray.Parse(body);
         }
 
         /// <summary>Search using long filter (POST, JSON).</summary>
@@ -45,15 +38,18 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async virtual Task<ActionResult<JArray>> SearchAsync([FromRoute] string typeName, [FromBody] string body)
+        public async Task<ActionResult<JArray>> SearchAsync([FromRoute] string typeName, [FromBody] string filter)
         {
-            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            var items = await _dataReader.GetItemsAsync(typeName, body, ct: ct);
+            using var content = new StringContent(JsonConvert.SerializeObject(filter), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync($"api/management/{typeName}/search", content, ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
 
-            var jarray = new JArray(items);
-
-            return jarray;
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JArray.Parse(body);
         }
 
         /// <summary>Get object of the specified type by ID.</summary>
@@ -61,13 +57,19 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async virtual Task<ActionResult<JObject>> GetByIdAsync([FromRoute] string typeName, [FromRoute] Guid id)
+        public async Task<ActionResult<JObject>> GetByIdAsync([FromRoute] string typeName, [FromRoute] Guid id)
         {
-            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            var item = await _dataReader.GetItemAsync(typeName, id, ct: ct);
+            using var response = await client.GetAsync($"api/management/{typeName}/{id}", ct);
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return NotFound();
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
 
-            return item is null ? NotFound() : item;
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JObject.Parse(body);
         }
 
         /// <summary>Get multiple objects of the specified type by IDs.</summary>
@@ -75,16 +77,21 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async virtual Task<ActionResult<JArray>> GetByIdsAsync([FromRoute] string typeName, [FromBody] Guid[] ids)
+        public async Task<ActionResult<JArray>> GetByIdsAsync([FromRoute] string typeName, [FromBody] Guid[] ids)
         {
-            var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
-
             if (ids is null || ids.Length == 0)
                 return new JArray();
 
-            var items = await _dataReader.GetItemsAsync(typeName, ids, ct: ct);
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            return new JArray(items);
+            using var content = new StringContent(JsonConvert.SerializeObject(ids), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync($"api/management/{typeName}/by-ids", content, ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync(ct);
+            return JArray.Parse(body);
         }
 
         /// <summary>Create or update an object of the specified type.</summary>
@@ -92,38 +99,31 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public async virtual Task<ActionResult<JObject>> CreateOrUpdateAsync([FromRoute] string typeName, [FromBody] JObject body)
+        public async Task<ActionResult<JObject>> CreateOrUpdateAsync([FromRoute] string typeName, [FromBody] JObject body)
         {
-            var actualItem = await _dataService.InsertOrUpdateAsync(body);
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            return actualItem;
+            using var content = new StringContent(body.ToString(Formatting.None), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync($"api/management/{typeName}", content, ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync(ct);
+            return JObject.Parse(responseBody);
         }
 
         /// <summary>Remove an object of the specified type by ID.</summary>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async virtual Task<IActionResult> DeleteAsync([FromRoute] string typeName, [FromRoute] Guid id)
+        public async Task<IActionResult> DeleteAsync([FromRoute] string typeName, [FromRoute] Guid id)
         {
-            var block = new DXDataBlock<DXUnitRecord>
-            {
-                Meta = new DXMeta
-                {
-                    Kind = "DXUnit",
-                    Type = typeName,
-                    Op = "Delete",
-                    IsMulti = true,
-                    IsRequired = false
-                },
-                Data = new DXData<DXUnitRecord>
-                {
-                    Delete = new List<DXDeleteRef>
-                    {
-                        new DXDeleteRef { ID = id }
-                    }
-                }
-            };
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
 
-            await _dataService.DeleteAsync(JObject.FromObject(block));
+            using var response = await client.DeleteAsync($"api/management/{typeName}/{id}", ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
 
             return NoContent();
         }

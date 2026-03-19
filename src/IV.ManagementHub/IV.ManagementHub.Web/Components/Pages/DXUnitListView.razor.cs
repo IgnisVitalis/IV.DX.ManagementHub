@@ -51,6 +51,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private BulkActionKind? _pendingBulkAction;
         private bool _showBulkConfirm;
         private bool _isBulkActionRunning;
+        private string? _bulkActionErrorMessage;
 
         private string BulkConfirmTitle =>
             _pendingBulkAction switch
@@ -448,6 +449,7 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             var action = _pendingBulkAction.Value;
             _isBulkActionRunning = true;
+            _bulkActionErrorMessage = null;
 
             try
             {
@@ -466,6 +468,10 @@ namespace IV.ManagementHub.Web.Components.Pages
                         await coreApi.ExportAsync(dxQueryResult.TypeName, ids);
                         break;
                 }
+            }
+            catch (Exception ex)
+            {
+                _bulkActionErrorMessage = ex.Message;
             }
             finally
             {

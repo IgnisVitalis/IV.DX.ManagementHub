@@ -5,7 +5,7 @@ internal class DXQueryResultApiClient(HttpClient httpClient, IJSRuntime JSRuntim
 {
     public virtual async Task<DXQueryResult> GetAsync(Guid dxQueryID, Guid? dxFilterID, CancellationToken ct = default)
     {
-        var requestUri = $"api/v1.0/DXQueryResult/{dxQueryID}";
+        var requestUri = $"api/DXQueryResult/{dxQueryID}";
 
         if (dxFilterID.HasValue)
         {

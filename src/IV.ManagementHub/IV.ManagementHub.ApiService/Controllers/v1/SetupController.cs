@@ -1,4 +1,3 @@
-using Asp.Versioning;
 using IV.ManagementHub.ApiService.Bootstrap;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +6,7 @@ using Newtonsoft.Json;
 namespace IV.ManagementHub.ApiService.Controllers.v1
 {
     [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/setup")]
+    [Route("api/setup")]
     public sealed class SetupController(IBootstrapSetupService bootstrapSetupService) : ControllerBase
     {
         [AllowAnonymous]
@@ -53,11 +51,6 @@ namespace IV.ManagementHub.ApiService.Controllers.v1
                 {
                     RequiresRestart = result.RequiresRestart,
                     Message = result.Message ?? "Setup already completed."
-                }),
-                BootstrapCompleteStatus.ActivationFailed => StatusCode(StatusCodes.Status500InternalServerError, new SetupCompleteResponse
-                {
-                    RequiresRestart = result.RequiresRestart,
-                    Message = result.Message ?? "DX runtime activation failed."
                 }),
                 _ => Ok(new SetupCompleteResponse
                 {

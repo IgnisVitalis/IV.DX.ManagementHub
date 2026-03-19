@@ -8,7 +8,7 @@ namespace IV.ManagementHub.Web.ApiClients
     {
         public async Task<IReadOnlyList<DXInstanceDto>> GetItemsAsync(CancellationToken cancellationToken = default)
         {
-            using var response = await httpClient.GetAsync("api/v1.0/instances", cancellationToken);
+            using var response = await httpClient.GetAsync("api/instances", cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -19,7 +19,7 @@ namespace IV.ManagementHub.Web.ApiClients
         {
             var payload = JsonConvert.SerializeObject(request);
             using var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            using var response = await httpClient.PostAsync("api/v1.0/instances", content, cancellationToken);
+            using var response = await httpClient.PostAsync("api/instances", content, cancellationToken);
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
             var payloadResponse = JsonConvert.DeserializeObject<CreateInstanceResponse>(responseBody);
@@ -40,8 +40,8 @@ namespace IV.ManagementHub.Web.ApiClients
         [JsonProperty("title")]
         public string Title { get; init; } = string.Empty;
 
-        [JsonProperty("databaseType")]
-        public string DatabaseType { get; init; } = string.Empty;
+        [JsonProperty("apiUrl")]
+        public string ApiUrl { get; init; } = string.Empty;
 
         [JsonProperty("createdAtUtc")]
         public DateTimeOffset CreatedAtUtc { get; init; }
@@ -50,8 +50,8 @@ namespace IV.ManagementHub.Web.ApiClients
     internal sealed record CreateInstanceRequest(
         [property: JsonProperty("key")] string Key,
         [property: JsonProperty("title")] string Title,
-        [property: JsonProperty("databaseType")] string DatabaseType,
-        [property: JsonProperty("connectionString")] string ConnectionString);
+        [property: JsonProperty("apiUrl")] string ApiUrl,
+        [property: JsonProperty("serviceKey")] string ServiceKey);
 
     internal sealed record CreateInstanceResult(bool IsSuccess, DXInstanceDto? Instance, string? Message, string? Error)
     {

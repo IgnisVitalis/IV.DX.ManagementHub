@@ -47,8 +47,8 @@
                         Property="@(instance => instance.Key)" />
         <PropertyColumn TGridItem="DXInstanceDto"
                         TProp="string"
-                        Title="Database Type"
-                        Property="@(instance => instance.DatabaseType)" />
+                        Title="API URL"
+                        Property="@(instance => instance.ApiUrl)" />
         <TemplateColumn TGridItem="DXInstanceDto" Title="Created (UTC)">
             <ChildContent Context="instance">
                 <FluentLabel>@instance.CreatedAtUtc.UtcDateTime.ToString("u")</FluentLabel>
@@ -99,8 +99,8 @@
                 </div>
 
                 <div class="dx-viewer-field">
-                    <FluentLabel Class="dx-viewer-title">Database Provider</FluentLabel>
-                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.DatabaseType</FluentLabel>
+                    <FluentLabel Class="dx-viewer-title">API URL</FluentLabel>
+                    <FluentLabel Class="dx-viewer-value">@_selectedPreviewInstance.ApiUrl</FluentLabel>
                 </div>
 
                 <div class="dx-viewer-field">
@@ -147,63 +147,20 @@
                         </FluentStack>
 
                         <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                            <FluentLabel>Database type</FluentLabel>
-                            <FluentTextField Value="@_databaseType"
-                                             ValueChanged="@(value => _databaseType = value ?? string.Empty)"
+                            <FluentLabel>API URL</FluentLabel>
+                            <FluentTextField Value="@_apiUrl"
+                                             ValueChanged="@(value => _apiUrl = value ?? string.Empty)"
+                                             Placeholder="https://my-dx-app.example.com"
                                              Style="width:100%;" />
                         </FluentStack>
 
-                        <FluentSwitch Label="Use raw connection string (advanced)"
-                                      Value="@_useRawConnectionString"
-                                      ValueChanged="OnUseRawConnectionStringChanged" />
-
-                        @if (_useRawConnectionString)
-                        {
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>Connection string</FluentLabel>
-                                <FluentTextField Value="@_connectionString"
-                                                 ValueChanged="@(value => _connectionString = value ?? string.Empty)"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-                        }
-                        else
-                        {
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>Host</FluentLabel>
-                                <FluentTextField Value="@_dbHost"
-                                                 ValueChanged="@(value => _dbHost = value ?? string.Empty)"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>Port</FluentLabel>
-                                <FluentTextField Value="@_dbPort"
-                                                 ValueChanged="@(value => _dbPort = value ?? string.Empty)"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>Database</FluentLabel>
-                                <FluentTextField Value="@_dbName"
-                                                 ValueChanged="@(value => _dbName = value ?? string.Empty)"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>DB Username</FluentLabel>
-                                <FluentTextField Value="@_dbUser"
-                                                 ValueChanged="@(value => _dbUser = value ?? string.Empty)"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-
-                            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                                <FluentLabel>DB Password</FluentLabel>
-                                <FluentTextField Value="@_dbPassword"
-                                                 ValueChanged="@(value => _dbPassword = value ?? string.Empty)"
-                                                 TextFieldType="TextFieldType.Password"
-                                                 Style="width:100%;" />
-                            </FluentStack>
-                        }
+                        <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                            <FluentLabel>Service Key</FluentLabel>
+                            <FluentTextField Value="@_serviceKey"
+                                             ValueChanged="@(value => _serviceKey = value ?? string.Empty)"
+                                             TextFieldType="TextFieldType.Password"
+                                             Style="width:100%;" />
+                        </FluentStack>
                     </FluentStack>
                 </div>
 
@@ -235,16 +192,10 @@
     private bool _isBusy;
     private bool _showAddWizard;
     private bool _collapse = true;
-    private bool _useRawConnectionString;
     private Orientation _orientation = Orientation.Horizontal;
     private DXInstanceDto? _selectedPreviewInstance;
-    private string _databaseType = "PostgreSQL";
-    private string _connectionString = string.Empty;
-    private string _dbHost = "localhost";
-    private string _dbPort = "5432";
-    private string _dbName = "IV.ManagementHub";
-    private string _dbUser = "postgres";
-    private string _dbPassword = string.Empty;
+    private string _apiUrl = string.Empty;
+    private string _serviceKey = string.Empty;
     private string _newInstanceTitle = string.Empty;
     private string _newInstanceKey = string.Empty;
     private string? _error;
@@ -310,12 +261,6 @@
         _error = null;
     }
 
-    private void OnUseRawConnectionStringChanged(bool value)
-    {
-        _useRawConnectionString = value;
-        _error = null;
-    }
-
     private async Task CreateInstanceAsync()
     {
         if (_instancesApiClient is null || _isBusy)
@@ -332,13 +277,15 @@
             return;
         }
 
-        var connection = _useRawConnectionString
-            ? _connectionString
-            : BuildPostgreSqlConnectionString(_dbHost, _dbPort, _dbName, _dbUser, _dbPassword);
-
-        if (string.IsNullOrWhiteSpace(connection))
+        if (string.IsNullOrWhiteSpace(_apiUrl))
         {
-            _error = "Connection string is required.";
+            _error = "API URL is required.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_serviceKey))
+        {
+            _error = "Service key is required.";
             return;
         }
 
@@ -348,8 +295,8 @@
             var result = await _instancesApiClient.CreateAsync(new CreateInstanceRequest(
                 _newInstanceKey,
                 _newInstanceTitle,
-                _databaseType,
-                connection));
+                _apiUrl,
+                _serviceKey));
 
             if (!result.IsSuccess || result.Instance is null)
             {
@@ -427,24 +374,5 @@
 
     private void OnResizedHandler(SplitterResizedEventArgs args)
     {
-    }
-
-    private static string BuildPostgreSqlConnectionString(
-        string host,
-        string port,
-        string database,
-        string userName,
-        string password)
-    {
-        if (string.IsNullOrWhiteSpace(host) ||
-            string.IsNullOrWhiteSpace(port) ||
-            string.IsNullOrWhiteSpace(database) ||
-            string.IsNullOrWhiteSpace(userName))
-        {
-            return string.Empty;
-        }
-
-        var escapedPassword = (password ?? string.Empty).Replace(";", ";;", StringComparison.Ordinal);
-        return $"Server={host.Trim()};Port={port.Trim()};Database={database.Trim()};User ID={userName.Trim()};Password={escapedPassword};";
     }
 }
