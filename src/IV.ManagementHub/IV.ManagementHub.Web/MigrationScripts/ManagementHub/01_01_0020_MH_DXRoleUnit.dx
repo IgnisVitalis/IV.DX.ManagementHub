@@ -1,0 +1,45 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXRoleUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": false
+    },
+    "Data": {
+      "Items": [
+        {
+          "ID": "c3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f7a",
+          "TimeStamp": "2026-03-19T00:00:00",
+          "Name": "MH Instance Manager",
+          "DXElements": {
+            "DXUnitGrantElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXUnitGrantElement",
+                "Op": "Patch",
+                "IsMulti": true,
+                "IsRequired": false
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "ID": "d4f5a6b7-8c9d-4e0f-1a2b-3c4d5e6f7a8b",
+                    "TimeStamp": "2026-03-19T00:00:00",
+                    "DXUnitID": "c3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f7a",
+                    "Read": true,
+                    "Write": true,
+                    "Delete": true,
+                    "Effect": 1,
+                    "DXUnit": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]

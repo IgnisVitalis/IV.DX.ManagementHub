@@ -1,4 +1,3 @@
-using IV.ManagementHub.ApiService.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -7,7 +6,7 @@ namespace IV.ManagementHub.ApiService.Controllers
 {
 
     [ApiController]
-    [Authorize(Policy = AuthPolicies.RootOnly)]
+    [Authorize]
     public abstract class DXApiControllerBase : ControllerBase
     {
         protected string UserId =>

@@ -31,8 +31,8 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         protected override async Task OnInitializedAsync()
         {
-            this._coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
-            this._dxUnitStructureApiCLient = this.Resolver.Get<DXUnitStructureApiClient>(base.AppKey);
+            this._coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
+            this._dxUnitStructureApiCLient = await this.Resolver.GetAsync<DXUnitStructureApiClient>(base.AppKey);
 
             this._dxUnitDefinitionStructure = await this._dxUnitStructureApiCLient.GetAsync(Type);
 

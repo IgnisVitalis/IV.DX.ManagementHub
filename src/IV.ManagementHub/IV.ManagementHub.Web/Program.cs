@@ -1,22 +1,60 @@
+using System.Collections.Concurrent;
+using System.Text.Json;
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DataProvider.WebApp.Services.Web.Services;
+using IV.DX.Hosting;
+using IV.DX.Kernel.Models;
+using IV.DX.Presentation.Hosting;
+using IV.DX.WebApi.Auth.DependencyInjection;
+using IV.DX.WebApi.DependencyInjection;
+using IV.DX.WebApi.Management.DependencyInjection;
 using IV.ManagementHub.ApiService.Bootstrap;
-using IV.ManagementHub.ApiService.Controllers;
-using IV.ManagementHub.ApiService.Security;
+using IV.ManagementHub.ApiService.Controllers;  // DXApiControllerBase assembly
 using IV.ManagementHub.ApiService.Services;
-using IV.ManagementHub.Web;
-using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components;
 using IV.ManagementHub.Web.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.FluentUI.AspNetCore.Components;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Serialization;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var bootstrapJsonOptions = new JsonSerializerOptions
+{
+    PropertyNameCaseInsensitive = true
+};
 
-// Add services to the container.
+// --- DX Core ---
+builder.Services
+    .AddDX(builder.Configuration)
+    .AddSecurity()
+    .RegisterHostedService();
+
+builder.Services.AddDXHandlers(typeof(Program).Assembly);
+
+// --- DX Presentation ---
+builder.Services
+    .AddDXPresentation()
+    .RegisterHostedService();
+
+// --- MH Presentation data (runs after DX Presentation types are defined) ---
+builder.Services.AddHostedService<MHCustomDataHostedService>();
+
+// --- DX Management API (service key auth + dx-system policy) ---
+builder.Services.AddDXWebApiManagement();
+
+// --- DX JWT auth ---
+builder.Services.AddDXWebApiJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
+builder.Services.AddDXWebApiDefaults();
+
+// --- Controllers ---
+builder.Services.AddControllers()
+    .AddDXWebApiAuthControllers()           // api/auth/* (DX login/refresh/logout)
+    .AddDXManagementControllers()           // api/management/* (DX CRUD, adds Newtonsoft)
+    .AddApplicationPart(typeof(DXApiControllerBase).Assembly);  // MH proxy controllers
+
+// --- DX Rate limiting ---
+builder.Services.AddDXWebApiRateLimiting(builder.Configuration);
+
+// --- Blazor ---
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -24,65 +62,13 @@ builder.Services.AddFluentUIComponents();
 
 builder.Services.AddOutputCache();
 
-builder.Services.AddProblemDetails();
-
-builder.Services.AddControllers()
-    .AddApplicationPart(typeof(AuthController).Assembly)
-    .AddNewtonsoftJson(options =>
-    {
-        options.SerializerSettings.ContractResolver = new DefaultContractResolver
-        {
-            NamingStrategy = null
-        };
-    });
-
-var bootstrapSettingsPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "bootstrap.settings.json");
-var bootstrapSettingsStore = new JsonBootstrapSettingsStore(bootstrapSettingsPath);
-var bootstrapSettings = (await bootstrapSettingsStore.LoadAsync())?.Normalize();
-
-var rootAuthOptions = builder.Configuration.GetSection(RootAuthOptions.SectionName).Get<RootAuthOptions>() ?? new RootAuthOptions();
-var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(rootAuthOptions.SigningKey));
-
-builder.Services.AddSingleton(rootAuthOptions);
-builder.Services.AddSingleton<RootTokenService>();
-builder.Services.AddSingleton<IBootstrapSettingsStore>(bootstrapSettingsStore);
-builder.Services.AddSingleton(new BootstrapSettingsSnapshot(bootstrapSettings));
-builder.Services.AddSingleton<IBootstrapSetupService, BootstrapSetupService>();
-builder.Services.AddSingleton<IBootstrapInstanceService, BootstrapInstanceService>();
-
+// --- MH services ---
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<InstanceApiClientFactory>();
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = rootAuthOptions.Issuer,
-            ValidAudience = rootAuthOptions.Audience,
-            IssuerSigningKey = signingKey,
-            NameClaimType = "sub",
-            RoleClaimType = "role",
-            ClockSkew = TimeSpan.FromSeconds(30)
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy(AuthPolicies.RootOnly, policy => policy.RequireRole(AuthRoles.Root));
-});
 
 builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();
 builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<AppAuthState>();
-builder.Services.AddScoped<RootAuthApiClient>();
-builder.Services.AddScoped<DXInstancesApiClient>();
 
 var app = builder.Build();
 
@@ -94,15 +80,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseDXWebApiCorrelationId();
+app.UseDXWebApiSecurityHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseDXWebApiExecutionContext();
+app.UseDXWebApiRateLimiting();
 
-app.UseAntiforgery();
+// Per-process proxy instance registry (populated lazily on first proxy request)
+var proxyRegistry = new ConcurrentDictionary<string, (string BaseUrl, string ServiceKey)>(
+    StringComparer.OrdinalIgnoreCase);
 
-app.UseOutputCache();
-
-var settingsSnapshot = app.Services.GetRequiredService<BootstrapSettingsSnapshot>();
-
+// --- Proxy middleware: routes /api/{typeName} to the selected DX instance ---
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path;
@@ -112,62 +101,83 @@ app.Use(async (context, next) =>
         return;
     }
 
-    if (path.StartsWithSegments("/api/setup") ||
-        path.StartsWithSegments("/api/auth"))
+    // Skip DX-native and auth routes
+    if (path.StartsWithSegments("/api/auth") ||
+        path.StartsWithSegments("/api/management") ||
+        path.StartsWithSegments("/api/service-auth"))
     {
         await next();
         return;
     }
 
-    var settings = settingsSnapshot.Current;
-    if (settings?.IsConfigured != true)
-    {
-        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        await context.Response.WriteAsJsonAsync(new
-        {
-            error = "Service setup is not completed. Complete setup in UI."
-        });
-        return;
-    }
-
-    if (path.StartsWithSegments("/api/instances"))
-    {
-        await next();
-        return;
-    }
-
-    var requestedInstanceKey = context.Request.Headers["X-MH-Instance"].FirstOrDefault();
-    if (string.IsNullOrWhiteSpace(requestedInstanceKey))
+    // Proxy routes require X-MH-Instance header
+    var instanceKey = context.Request.Headers["X-MH-Instance"].FirstOrDefault();
+    if (string.IsNullOrWhiteSpace(instanceKey))
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new
-        {
-            error = "Missing instance key. Send 'X-MH-Instance' header."
-        });
+        await context.Response.WriteAsJsonAsync(new { error = "Missing instance key. Send 'X-MH-Instance' header." });
         return;
     }
 
-    var instance = settings.ResolveInstance(requestedInstanceKey);
-    if (instance is null)
+    if (!proxyRegistry.TryGetValue(instanceKey, out var entry))
     {
-        context.Response.StatusCode = StatusCodes.Status404NotFound;
-        await context.Response.WriteAsJsonAsync(new
+        // Load all instances from bootstrap settings and populate registry
+        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+        var bootstrapSettingsPath = Path.Combine(
+            environment.ContentRootPath,
+            "App_Data",
+            "bootstrap.settings.json");
+
+        try
         {
-            error = $"Instance '{requestedInstanceKey}' was not found."
-        });
-        return;
+            if (File.Exists(bootstrapSettingsPath))
+            {
+                await using var stream = File.OpenRead(bootstrapSettingsPath);
+                var settings = await JsonSerializer.DeserializeAsync<BootstrapSettingsDocument>(
+                    stream,
+                    bootstrapJsonOptions,
+                    cancellationToken: context.RequestAborted);
+
+                foreach (var unit in settings?.Instances
+                    ?.Where(u => !string.IsNullOrWhiteSpace(u.Key)
+                        && !string.IsNullOrWhiteSpace(u.ApiUrl)
+                        && !string.IsNullOrWhiteSpace(u.ServiceKey))
+                    ?? Enumerable.Empty<BootstrapInstanceDocument>())
+                {
+                    proxyRegistry[unit.Key] = (unit.ApiUrl, unit.ServiceKey);
+                }
+            }
+        }
+        catch { /* registry stays empty; 404 below */ }
+
+        if (!proxyRegistry.TryGetValue(instanceKey, out entry))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await context.Response.WriteAsJsonAsync(new { error = $"Instance '{instanceKey}' was not found." });
+            return;
+        }
     }
 
-    InstanceApiContext.Set(instance);
-
+    InstanceApiContext.Set(entry.BaseUrl, entry.ServiceKey);
     await next();
 });
 
+app.UseAntiforgery();
+app.UseOutputCache();
 app.MapStaticAssets();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();
+
+file sealed class BootstrapSettingsDocument
+{
+    public List<BootstrapInstanceDocument> Instances { get; set; } = [];
+}
+
+file sealed class BootstrapInstanceDocument
+{
+    public string Key { get; set; } = string.Empty;
+    public string ApiUrl { get; set; } = string.Empty;
+    public string ServiceKey { get; set; } = string.Empty;
+}

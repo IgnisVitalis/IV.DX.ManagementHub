@@ -1,107 +1,45 @@
-@using IV.ManagementHub.Web.ApiClients
+@using IV.DX.Application.Contracts.Abstractions
+@using IV.DX.Application.Contracts.Models
 @using IV.ManagementHub.Web.Services
-@inject RootAuthApiClient RootAuthApiClient
+@inject IDXSecurityService SecurityService
 @inject AppAuthState AuthState
-@inject AppState AppState
 @inject NavigationManager NavigationManager
-@inject DXInstancesApiClient InstancesApiClient
 
 <FluentDesignSystemProvider Id="login-root">
     <div class="login-shell">
         <FluentCard Class="login-card"
                     Style="width:min(340px, calc(100vw - 2rem));max-width:340px;padding:0.9rem 0.9rem 1.1rem;height:auto !important;min-height:0 !important;display:block;align-self:center;justify-self:center;"
                     @onkeydown="OnKeyDownAsync">
-            @if (_isLoadingSetupStatus)
-            {
-                <FluentStack Orientation="Orientation.Vertical"
-                             Width="100%"
-                             VerticalGap="12"
-                             HorizontalAlignment="HorizontalAlignment.Center">
-                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
-                    <FluentProgressRing />
-                    <FluentLabel>Loading setup status...</FluentLabel>
+            <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
+                <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
+
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                    <FluentLabel Typo="Typography.Body">Username</FluentLabel>
+                    <FluentTextField Value="@_username"
+                                     ValueChanged="@(value => _username = value ?? string.Empty)"
+                                     Style="width:100%;" />
                 </FluentStack>
-            }
-            else if (_setupStatus?.RequiresSetup == true)
-            {
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
-                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">Initial Setup</FluentLabel>
-                    <FluentLabel Typo="Typography.Body">Configure super admin account</FluentLabel>
 
-                    @if (!string.IsNullOrWhiteSpace(_setupError))
-                    {
-                        <FluentLabel Color="Color.Error">@_setupError</FluentLabel>
-                    }
-
-                    @if (!string.IsNullOrWhiteSpace(_setupInfo))
-                    {
-                        <FluentLabel Color="Color.Success">@_setupInfo</FluentLabel>
-                    }
-
-                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                        <FluentLabel Typo="Typography.Body">Username</FluentLabel>
-                        <FluentTextField Value="@_setupUserName"
-                                         ValueChanged="@(value => _setupUserName = value ?? string.Empty)"
-                                         Style="width:100%;" />
-                    </FluentStack>
-
-                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                        <FluentLabel Typo="Typography.Body">Password</FluentLabel>
-                        <FluentTextField Value="@_setupPassword"
-                                         ValueChanged="@(value => _setupPassword = value ?? string.Empty)"
-                                         TextFieldType="TextFieldType.Password"
-                                         Style="width:100%;" />
-                    </FluentStack>
-
-                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                        <FluentLabel Typo="Typography.Body">Confirm Password</FluentLabel>
-                        <FluentTextField Value="@_setupPasswordConfirm"
-                                         ValueChanged="@(value => _setupPasswordConfirm = value ?? string.Empty)"
-                                         TextFieldType="TextFieldType.Password"
-                                         Style="width:100%;" />
-                    </FluentStack>
-
-                    <FluentButton Appearance="Appearance.Accent"
-                                  OnClick="CompleteSetupAsync"
-                                  Disabled="@_isSubmitting"
-                                  Style="width:100%;">
-                        @(_isSubmitting ? "Saving..." : "Complete Setup")
-                    </FluentButton>
+                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
+                    <FluentLabel Typo="Typography.Body">Password</FluentLabel>
+                    <FluentTextField Value="@_password"
+                                     ValueChanged="@(value => _password = value ?? string.Empty)"
+                                     TextFieldType="TextFieldType.Password"
+                                     Style="width:100%;" />
                 </FluentStack>
-            }
-            else
-            {
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="12">
-                    <FluentLabel Typo="Typography.Subject" Weight="FontWeight.Bold">IV.ManagementHub</FluentLabel>
 
-                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                        <FluentLabel Typo="Typography.Body">Username</FluentLabel>
-                        <FluentTextField Value="@_username"
-                                         ValueChanged="@(value => _username = value ?? string.Empty)"
-                                         Style="width:100%;" />
-                    </FluentStack>
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <FluentLabel Color="Color.Error">@_error</FluentLabel>
+                }
 
-                    <FluentStack Orientation="Orientation.Vertical" Width="100%" VerticalGap="6">
-                        <FluentLabel Typo="Typography.Body">Password</FluentLabel>
-                        <FluentTextField Value="@_password"
-                                         ValueChanged="@(value => _password = value ?? string.Empty)"
-                                         TextFieldType="TextFieldType.Password"
-                                         Style="width:100%;" />
-                    </FluentStack>
-
-                    @if (!string.IsNullOrWhiteSpace(_error))
-                    {
-                        <FluentLabel Color="Color.Error">@_error</FluentLabel>
-                    }
-
-                    <FluentButton Appearance="Appearance.Accent"
-                                  OnClick="SignInAsync"
-                                  Disabled="@_isSubmitting"
-                                  Style="width:100%;">
-                        @(_isSubmitting ? "Signing in..." : "Sign in")
-                    </FluentButton>
-                </FluentStack>
-            }
+                <FluentButton Appearance="Appearance.Accent"
+                              OnClick="SignInAsync"
+                              Disabled="@_isSubmitting"
+                              Style="width:100%;">
+                    @(_isSubmitting ? "Signing in..." : "Sign in")
+                </FluentButton>
+            </FluentStack>
         </FluentCard>
     </div>
 </FluentDesignSystemProvider>
@@ -113,108 +51,11 @@
     private bool _isSubmitting;
     private string? _error;
 
-    private bool _isLoadingSetupStatus = true;
-    private SetupStatusResult? _setupStatus;
-    private string _setupUserName = string.Empty;
-    private string _setupPassword = string.Empty;
-    private string _setupPasswordConfirm = string.Empty;
-    private string? _setupError;
-    private string? _setupInfo;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadSetupStatusAsync();
-    }
-
-    private async Task LoadSetupStatusAsync()
-    {
-        _isLoadingSetupStatus = true;
-        _setupError = null;
-
-        try
-        {
-            _setupStatus = await RootAuthApiClient.GetSetupStatusAsync(AppState.DefaultAppKey);
-            if (!string.IsNullOrWhiteSpace(_setupStatus.Error))
-            {
-                _setupError = _setupStatus.Error;
-            }
-        }
-        catch (Exception ex)
-        {
-            _setupError = ex.Message;
-        }
-        finally
-        {
-            _isLoadingSetupStatus = false;
-        }
-    }
-
     private async Task OnKeyDownAsync(KeyboardEventArgs args)
     {
-        if (!string.Equals(args.Key, "Enter", StringComparison.Ordinal))
+        if (string.Equals(args.Key, "Enter", StringComparison.Ordinal))
         {
-            return;
-        }
-
-        if (_setupStatus?.RequiresSetup == true)
-        {
-            return;
-        }
-
-        await SignInAsync();
-    }
-
-    private async Task CompleteSetupAsync()
-    {
-        if (_isSubmitting)
-        {
-            return;
-        }
-
-        _setupError = null;
-        _setupInfo = null;
-        _isSubmitting = true;
-
-        try
-        {
-            if (string.IsNullOrWhiteSpace(_setupUserName) || string.IsNullOrWhiteSpace(_setupPassword))
-            {
-                _setupError = "Username and password are required.";
-                return;
-            }
-
-            if (!string.Equals(_setupPassword, _setupPasswordConfirm, StringComparison.Ordinal))
-            {
-                _setupError = "Password and confirmation do not match.";
-                return;
-            }
-
-            var result = await RootAuthApiClient.CompleteSetupAsync(
-                new SetupCompleteRequest(
-                    _setupUserName,
-                    _setupPassword),
-                AppState.DefaultAppKey);
-
-            if (!result.IsSuccess)
-            {
-                _setupError = result.Error ?? "Setup failed.";
-                return;
-            }
-
-            _setupInfo = result.Message ?? "Setup completed.";
-            _setupStatus = new SetupStatusResult(
-                RequiresSetup: false,
-                RequiresRestart: false,
-                RuntimeReady: true,
-                HasInstances: false);
-        }
-        catch (Exception ex)
-        {
-            _setupError = ex.Message;
-        }
-        finally
-        {
-            _isSubmitting = false;
+            await SignInAsync();
         }
     }
 
@@ -230,22 +71,20 @@
 
         try
         {
-            var result = await RootAuthApiClient.LoginAsync(_username, _password, AppState.DefaultAppKey);
-            if (!result.IsSuccess || string.IsNullOrWhiteSpace(result.AccessToken))
+            var result = await SecurityService.LoginLocalAsync(new DXLoginLocalRequest
             {
-                _error = result.Error ?? "Authentication failed.";
-                return;
-            }
+                Subject   = _username,
+                Password  = _password,
+                UserAgent = "ManagementHub/Blazor",
+                IpAddress = "127.0.0.1",
+                DeviceId  = "mh-blazor"
+            });
 
-            var fallbackAppKey = AppState.DefaultAppKey;
-            AuthState.SetAccessToken(result.AccessToken, _username, fallbackAppKey);
-
-            var initialAppKey = await ResolveInitialAppKeyAsync(fallbackAppKey);
-            AuthState.SetAppKey(initialAppKey);
-            var targetUrl = string.IsNullOrWhiteSpace(initialAppKey)
-                ? "/app/instances"
-                : $"/app/{initialAppKey}/instances";
-            NavigationManager.NavigateTo(targetUrl, replace: true);
+            AuthState.SetAccessToken(result.AccessToken, _username, string.Empty);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            _error = "Invalid username or password.";
         }
         catch (Exception ex)
         {
@@ -254,26 +93,6 @@
         finally
         {
             _isSubmitting = false;
-        }
-    }
-
-    private async Task<string> ResolveInitialAppKeyAsync(string fallbackAppKey)
-    {
-        try
-        {
-            var instances = await InstancesApiClient.GetItemsAsync();
-            var oldestInstance = instances
-                .Where(instance => !string.IsNullOrWhiteSpace(instance.Key))
-                .OrderBy(instance => instance.CreatedAtUtc)
-                .FirstOrDefault();
-
-            return string.IsNullOrWhiteSpace(oldestInstance?.Key)
-                ? fallbackAppKey
-                : oldestInstance.Key.Trim();
-        }
-        catch
-        {
-            return fallbackAppKey;
         }
     }
 }

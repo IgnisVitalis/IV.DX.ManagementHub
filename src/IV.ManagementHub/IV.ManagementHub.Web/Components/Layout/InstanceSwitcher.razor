@@ -1,8 +1,7 @@
-@using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Components.Custom
 @using IV.ManagementHub.Web.Services
 
-@inject DXInstancesApiClient InstancesApiClient
+@inject AppState AppState
 @inject AppAuthState AuthState
 @inject NavigationManager NavigationManager
 
@@ -24,23 +23,11 @@
     protected override async Task OnParametersSetAsync()
     {
         _selectedInstanceKey = CurrentAppKey;
-        await LoadOptionsAsync();
-    }
-
-    private async Task LoadOptionsAsync()
-    {
-        try
-        {
-                var instances = await InstancesApiClient.GetItemsAsync();
-            _options = instances
-                .OrderBy(instance => instance.Title, StringComparer.OrdinalIgnoreCase)
-                .Select(instance => new KeyValuePair<string, string>(instance.Key, instance.Title))
-                .ToList();
-        }
-        catch
-        {
-            _options = [];
-        }
+        var apps = await AppState.GetAppsAsync();
+        _options = apps
+            .OrderBy(a => a.Title, StringComparer.OrdinalIgnoreCase)
+            .Select(a => new KeyValuePair<string, string>(a.Key, a.Title))
+            .ToList();
     }
 
     private Task OnInstanceChangedAsync(string instanceKey)

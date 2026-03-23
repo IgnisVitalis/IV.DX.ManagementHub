@@ -20,7 +20,7 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         protected override async Task OnParametersSetAsync()
         {
-            this._coreApiCLient = this.Resolver.Get<DXUnitCoreApiClient>(base.AppKey);            
+            this._coreApiCLient = await this.Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
         }
 
         private async Task DeleteAsync()

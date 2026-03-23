@@ -34,9 +34,9 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         protected override async Task OnInitializedAsync()
         {
-            this._dxEnumApiClient = Resolver.Get<DXEnumApiClient>(base.AppKey);
-            this._dxElementApiClient = Resolver.Get<DXElementApiClient>(base.AppKey);
-            this._dxUnitApiClient = Resolver.Get<DXUnitApiClient>(base.AppKey);
+            this._dxEnumApiClient = await Resolver.GetAsync<DXEnumApiClient>(base.AppKey);
+            this._dxElementApiClient = await Resolver.GetAsync<DXElementApiClient>(base.AppKey);
+            this._dxUnitApiClient = await Resolver.GetAsync<DXUnitApiClient>(base.AppKey);
 
             if (Definition.Name.Equals("DXObjectEnumElement"))
             {

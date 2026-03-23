@@ -10,7 +10,7 @@ namespace IV.ManagementHub.Web.ApiClients
         public virtual async Task<DXModelDefinition> GetAsync(string typeName, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.GetAsync($"api/management/unit-structure/{typeName}", cancellationToken);
+            var response = await http.GetAsync(clientProvider.GetUnitStructureUri(typeName), cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {

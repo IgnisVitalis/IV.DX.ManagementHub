@@ -16,7 +16,7 @@ namespace IV.ManagementHub.Web.ApiClients
             var content = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
 
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.PostAsync($"api/management/{typeName}", content, cancellationToken);
+            var response = await http.PostAsync(clientProvider.GetSaveUri(typeName), content, cancellationToken);
 
             var str = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -37,7 +37,7 @@ namespace IV.ManagementHub.Web.ApiClients
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.PostAsync($"api/management/{typeName}", content, cancellationToken);
+            var response = await http.PostAsync(clientProvider.GetSaveUri(typeName), content, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var str = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -50,7 +50,7 @@ namespace IV.ManagementHub.Web.ApiClients
         public async Task<JObject> Get(string typeName, Guid id, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.GetAsync($"api/management/{typeName}/{id}", cancellationToken);
+            var response = await http.GetAsync(clientProvider.GetItemUri(typeName, id), cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -69,7 +69,7 @@ namespace IV.ManagementHub.Web.ApiClients
         public async Task<DXDataBlock<DXUnitRecord>?> GetRecord(string typeName, Guid id, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.GetAsync($"api/management/{typeName}/{id}", cancellationToken);
+            var response = await http.GetAsync(clientProvider.GetItemUri(typeName, id), cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 return null;
@@ -119,13 +119,7 @@ namespace IV.ManagementHub.Web.ApiClients
 
         public async Task<IEnumerable<JObject>> GetItems(string typeName, string? query = default, CancellationToken cancellationToken = default)
         {
-            var request = $"api/management/{typeName}";
-
-            if (!string.IsNullOrEmpty(query))
-            {
-                request += $"?filter={query}";
-            }
-
+            var request = clientProvider.GetCollectionUri(typeName, query);
             var http = await clientProvider.GetClientAsync(cancellationToken);
             var response = await http.GetAsync(request, cancellationToken);
 
@@ -146,14 +140,14 @@ namespace IV.ManagementHub.Web.ApiClients
         public async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var result = await http.DeleteAsync($"api/management/{typeName}/{itemID}", cancellationToken);
+            var result = await http.DeleteAsync(clientProvider.GetDeleteUri(typeName, itemID), cancellationToken);
             result.EnsureSuccessStatusCode();
         }
 
         public async Task ExportAsync(string typeName, Guid id, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var result = await http.GetAsync($"api/management/{typeName}/{id}", cancellationToken);
+            var result = await http.GetAsync(clientProvider.GetItemUri(typeName, id), cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 
@@ -190,7 +184,7 @@ namespace IV.ManagementHub.Web.ApiClients
             var content = new StringContent(JsonConvert.SerializeObject(idArray), Encoding.UTF8, "application/json");
 
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.PostAsync($"api/management/{typeName}/by-ids", content, cancellationToken);
+            var response = await http.PostAsync(clientProvider.GetByIdsUri(typeName), content, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var str = await response.Content.ReadAsStringAsync(cancellationToken);

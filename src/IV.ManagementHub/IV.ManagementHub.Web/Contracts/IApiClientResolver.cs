@@ -1,7 +1,10 @@
-﻿namespace IV.DataProvider.WebApp.Services.Web.Contracts
+using IV.ManagementHub.Common.Models;
+
+namespace IV.DataProvider.WebApp.Services.Web.Contracts
 {
-    internal interface IApiClientResolver
+    public interface IApiClientResolver
     {
-        T Get<T>(string sourceKey) where T : class;
+        Task<T> GetAsync<T>(string? instanceKey) where T : class;
+        Task<IReadOnlyList<MHInstanceUnit>> GetInstancesAsync(CancellationToken ct = default);
     }
 }

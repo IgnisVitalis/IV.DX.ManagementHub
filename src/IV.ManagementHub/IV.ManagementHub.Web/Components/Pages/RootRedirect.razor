@@ -1,17 +1,11 @@
 @page "/"
 @using IV.ManagementHub.Web.Services
 @inject NavigationManager NavigationManager
-@inject AppAuthState AuthState
-@inject AppState AppState
 
 @code
 {
     protected override void OnInitialized()
     {
-        var appKey = string.IsNullOrWhiteSpace(AuthState.AppKey)
-            ? AppState.DefaultAppKey
-            : AuthState.AppKey.Trim();
-
-        NavigationManager.NavigateTo($"/app/{Uri.EscapeDataString(appKey)}/instances", replace: true);
+        NavigationManager.NavigateTo("/app/instances", replace: true);
     }
 }

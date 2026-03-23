@@ -39,8 +39,8 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             _isLoaded = false;
 
-            _coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
-            _dxUnitStructureApiClient = Resolver.Get<DXUnitStructureApiClient>(base.AppKey);
+            _coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
+            _dxUnitStructureApiClient = await Resolver.GetAsync<DXUnitStructureApiClient>(base.AppKey);
 
             _dxUnitDefinitionStructure = await _dxUnitStructureApiClient.GetAsync(Type);
             await LoadDXUnit(Type, ID, _dxUnitDefinitionStructure);

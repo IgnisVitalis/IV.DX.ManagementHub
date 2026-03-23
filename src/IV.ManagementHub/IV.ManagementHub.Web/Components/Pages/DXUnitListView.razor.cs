@@ -63,9 +63,9 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         protected override async Task OnParametersSetAsync()
         {
-            coreApi = Resolver.Get<DXUnitCoreApiClient>(base.AppKey);
-            dxQueryApi = Resolver.Get<DXQueryResultApiClient>(base.AppKey);
-            dxDataSetViewApiClient = Resolver.Get<DXDataSetViewApiClient>(base.AppKey);
+            coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
+            dxQueryApi = await Resolver.GetAsync<DXQueryResultApiClient>(base.AppKey);
+            dxDataSetViewApiClient = await Resolver.GetAsync<DXDataSetViewApiClient>(base.AppKey);
 
             await LoadDataAsync(true);
         }

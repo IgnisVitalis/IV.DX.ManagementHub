@@ -1,11 +1,9 @@
 @inherits LayoutComponentBase
-@using IV.ManagementHub.Web.ApiClients
 @using IV.ManagementHub.Web.Components.Layout;
 @using IV.ManagementHub.Web.Services
 @using Microsoft.FluentUI.AspNetCore.Components
 @inject NavigationManager NavigationManager
 @inject AppState AppState
-@inject DXInstancesApiClient InstancesApiClient
 
 <FluentDesignSystemProvider Id="app-root">
     <FluentLayout>
@@ -43,8 +41,6 @@
 @code
 {
     private const string DefaultHeaderTitle = "IV.ManagementHub";
-    private readonly Dictionary<string, string> _instanceTitleCache = new(StringComparer.OrdinalIgnoreCase);
-    private string? _lastResolvedAppKey;
     private string _headerTitle = DefaultHeaderTitle;
 
     private string CurrentAppKey => ResolveAppKeyFromCurrentUri();
@@ -52,74 +48,43 @@
     protected override async Task OnParametersSetAsync()
     {
         var appKey = CurrentAppKey;
-        if (string.Equals(_lastResolvedAppKey, appKey, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        _lastResolvedAppKey = appKey;
-        await ResolveHeaderTitleAsync(appKey);
-    }
-
-    private void OpenUserSettings()
-    {
-        var appKey = string.IsNullOrWhiteSpace(CurrentAppKey) ? AppState.DefaultAppKey : CurrentAppKey;
-        NavigationManager.NavigateTo($"/app/{appKey}/user");
-    }
-
-    private async Task ResolveHeaderTitleAsync(string appKey)
-    {
         if (string.IsNullOrWhiteSpace(appKey))
         {
             _headerTitle = DefaultHeaderTitle;
             return;
         }
 
-        if (_instanceTitleCache.TryGetValue(appKey, out var cachedTitle))
-        {
-            _headerTitle = cachedTitle;
-            return;
-        }
-
-        try
-        {
-                var instances = await InstancesApiClient.GetItemsAsync();
-
-            if (instances.Count == 0)
-            {
-                _instanceTitleCache[appKey] = string.Empty;
-                _headerTitle = string.Empty;
-                return;
-            }
-
-            var selectedInstance = instances.FirstOrDefault(instance =>
-                string.Equals(instance.Key, appKey, StringComparison.OrdinalIgnoreCase));
-
-            var resolvedTitle = string.IsNullOrWhiteSpace(selectedInstance?.Title)
-                ? appKey
-                : selectedInstance.Title;
-
-            _instanceTitleCache[appKey] = resolvedTitle;
-            _headerTitle = resolvedTitle;
-        }
-        catch
-        {
-            _headerTitle = appKey;
-        }
+        var apps = await AppState.GetAppsAsync();
+        var app = apps.FirstOrDefault(a =>
+            string.Equals(a.Key, appKey, StringComparison.OrdinalIgnoreCase));
+        _headerTitle = string.IsNullOrWhiteSpace(app?.Title) ? appKey : app.Title;
     }
+
+    private void OpenUserSettings()
+    {
+        var appKey = CurrentAppKey;
+        if (!string.IsNullOrWhiteSpace(appKey))
+            NavigationManager.NavigateTo($"/app/{appKey}/user");
+    }
+
+    private static readonly HashSet<string> _reservedSegments = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "instances", "dxUnitSetView", "user", "dashboard", "settings"
+    };
 
     private string ResolveAppKeyFromCurrentUri()
     {
         var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/');
         var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-        if (segments.Length >= 3 &&
+        if (segments.Length >= 2 &&
             string.Equals(segments[0], "app", StringComparison.OrdinalIgnoreCase) &&
-            !string.IsNullOrWhiteSpace(segments[1]))
+            !string.IsNullOrWhiteSpace(segments[1]) &&
+            !_reservedSegments.Contains(segments[1]))
         {
             return segments[1];
         }
 
-        return AppState.DefaultAppKey;
+        return string.Empty;
     }
 }

@@ -1,0 +1,41 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXTenantUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": false
+    },
+    "Data": {
+      "Items": [
+        {
+          "ID": "b8d9e0f1-2a3b-4c4d-5e6f-7a8b9c0d1e2f",
+          "TimeStamp": "2026-03-19T00:00:00",
+          "Name": "ManagementHub",
+          "DXElements": {
+            "DXRoleElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXRoleElement",
+                "Op": "Patch",
+                "IsMulti": true,
+                "IsRequired": false
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "ID": "c9e0f1a2-3b4c-4d5e-6f7a-8b9c0d1e2f3a",
+                    "TimeStamp": "2026-03-19T00:00:00",
+                    "DXUnitID": "b8d9e0f1-2a3b-4c4d-5e6f-7a8b9c0d1e2f",
+                    "Role": "c3e4f5a6-7b8c-4d9e-0f1a-2b3c4d5e6f7a"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]

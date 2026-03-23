@@ -1,0 +1,23 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXIdentityLoginUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": false
+    },
+    "Data": {
+      "Items": [
+        {
+          "ID": "b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4e",
+          "TimeStamp": "2026-03-20T00:00:00",
+          "Subject": "admin",
+          "SecretHash": "admin",
+          "Provider": 1,
+          "Identity": "a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3d"
+        }
+      ]
+    }
+  }
+]

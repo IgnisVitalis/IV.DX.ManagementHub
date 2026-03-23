@@ -1,0 +1,65 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXQueryUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": false
+    },
+    "Data": {
+      "Items": [
+        {
+          "ID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+          "TimeStamp": "2026-03-21T00:00:00",
+          "DXUnitDefinition": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+          "Name": "MH Instance query",
+          "Description": "Query for managed DX instances",
+          "DXElements": {
+            "DXQueryColumnElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXQueryColumnElement",
+                "Op": "Patch",
+                "IsMulti": true,
+                "IsRequired": false
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "DXUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "ID": "5d73fa32-6020-4920-a387-d74d8e296727",
+                    "TimeStamp": "2026-03-21T15:30:32.40586Z",
+                    "DXQueryUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "Name": "Title",
+                    "Expression": "Title",
+                    "Order": 10
+                  },
+                  {
+                    "DXUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "ID": "c8a451c3-5d46-49ad-88f5-93c2e88012a0",
+                    "TimeStamp": "2026-03-21T15:30:32.405874Z",
+                    "DXQueryUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "Name": "Key",
+                    "Expression": "Key",
+                    "Order": 20
+                  },
+                  {
+                    "DXUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "ID": "ffcde2c8-02d0-4327-804c-f0a4be83651a",
+                    "TimeStamp": "2026-03-21T15:30:32.406197Z",
+                    "DXQueryUnitID": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
+                    "Name": "BaseUrl",
+                    "Expression": "BaseUrl",
+                    "Order": 30
+                  }
+                ],
+                "Delete": null
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]

@@ -1,4 +1,4 @@
-﻿@using IV.ManagementHub.Web.Components.Custom
+@using IV.ManagementHub.Web.Components.Custom
 @using IV.ManagementHub.Web.Components.Custom.Base
 @inherits ManagementHubComponentBase
 
@@ -6,14 +6,8 @@
     <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
     <nav class="sitenav" aria-labelledby="main-menu">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
-            <FluentNavLink Href="@(string.IsNullOrEmpty(AppKey) ? "/app/instances" : $"/app/{AppKey}/instances")"
-                           Match="NavLinkMatch.Prefix"
-                           Icon="@(new Icons.Regular.Size20.Home())"
-                           IconColor="Color.Accent">
-                Instances
-            </FluentNavLink>
-
-            @if (roots is not null)
+            <FluentNavLink Href="/app/instances" Match="NavLinkMatch.Prefix">Instances</FluentNavLink>
+            @if (!string.IsNullOrEmpty(AppKey) && roots is not null)
             {
                 @foreach (var root in roots)
                 {
@@ -23,10 +17,7 @@
                                    @key="root.Id" />
                 }
             }
-
         </FluentNavMenu>
-
-
     </nav>
 </div>
 

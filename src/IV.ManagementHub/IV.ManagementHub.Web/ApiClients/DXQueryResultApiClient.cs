@@ -6,13 +6,7 @@ internal class DXQueryResultApiClient(IInstanceClientProvider clientProvider, IJ
 {
     public virtual async Task<DXQueryResult> GetAsync(Guid dxQueryID, Guid? dxFilterID, CancellationToken ct = default)
     {
-        var requestUri = $"api/management/query-result/{dxQueryID}";
-
-        if (dxFilterID.HasValue)
-        {
-            requestUri += $"/{dxFilterID}";
-        }
-
+        var requestUri = clientProvider.GetQueryResultUri(dxQueryID, dxFilterID);
         var http = await clientProvider.GetClientAsync(ct);
         var result = await http.GetAsync(requestUri, ct);
 

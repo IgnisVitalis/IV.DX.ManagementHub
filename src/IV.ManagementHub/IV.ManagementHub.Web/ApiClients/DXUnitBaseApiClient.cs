@@ -15,13 +15,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 
         public virtual async Task<IEnumerable<T>> GetItemsAsync(string? dxFilter = default, CancellationToken cancellationToken = default)
         {
-            var requestUri = $"api/management/{typeName}";
-
-            if (dxFilter != default)
-            {
-                requestUri += $"?filter={dxFilter}";
-            }
-
+            var requestUri = ClientProvider.GetCollectionUri(typeName, dxFilter);
             var http = await ClientProvider.GetClientAsync(cancellationToken);
             var result = await http.GetAsync(requestUri, cancellationToken);
             result.EnsureSuccessStatusCode();
@@ -36,7 +30,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
         public virtual async Task<T> Get(Guid id, CancellationToken cancellationToken = default)
         {
             var http = await ClientProvider.GetClientAsync(cancellationToken);
-            var response = await http.GetAsync($"api/management/{typeName}/{id}", cancellationToken);
+            var response = await http.GetAsync(ClientProvider.GetItemUri(typeName, id), cancellationToken);
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -59,7 +53,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
             var content = new StringContent(serializedBlock, Encoding.UTF8, "application/json");
 
             var http = await ClientProvider.GetClientAsync(cancellationToken);
-            var result = await http.PostAsync($"api/management/{typeName}", content, cancellationToken);
+            var result = await http.PostAsync(ClientProvider.GetSaveUri(typeName), content, cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 
@@ -73,13 +67,13 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
             var id = item.ID;
 
             var http = await ClientProvider.GetClientAsync(cancellationToken);
-            await http.DeleteAsync($"api/management/{typeName}/{id}", cancellationToken);
+            await http.DeleteAsync(ClientProvider.GetDeleteUri(typeName, id), cancellationToken);
         }
 
         public async Task ExportEntityAsync(Guid id, CancellationToken cancellationToken = default)
         {
             var http = await ClientProvider.GetClientAsync(cancellationToken);
-            var result = await http.GetAsync($"api/management/{typeName}/{id}", cancellationToken);
+            var result = await http.GetAsync(ClientProvider.GetItemUri(typeName, id), cancellationToken);
 
             var str = await result.Content.ReadAsStringAsync(cancellationToken);
 
