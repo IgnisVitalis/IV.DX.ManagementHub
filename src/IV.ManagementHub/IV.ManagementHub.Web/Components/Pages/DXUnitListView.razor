@@ -73,8 +73,10 @@ else
                                           Appearance="Appearance.Neutral"
                                           Disabled="@_isBulkActionRunning"
                                           OnClick="@(() => OpenEditDialog(selectedPreviewItemID.Value))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
-                                &nbsp;Edit
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+                                    <span>Edit</span>
+                                </FluentStack>
                             </FluentButton>
                         }
                         @if (_dxDataSetView?.IsDeletable == true)
@@ -83,8 +85,10 @@ else
                                           Appearance="Appearance.Neutral"
                                           Disabled="@_isBulkActionRunning"
                                           OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                                &nbsp;Delete
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                                    <span>Delete</span>
+                                </FluentStack>
                             </FluentButton>
                         }
                         @if (_dxDataSetView?.IsExportable == true)
@@ -93,8 +97,10 @@ else
                                           Appearance="Appearance.Neutral"
                                           Disabled="@_isBulkActionRunning"
                                           OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-                                &nbsp;Export
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                                    <span>Export</span>
+                                </FluentStack>
                             </FluentButton>
                         }
                     }
@@ -106,8 +112,10 @@ else
                                           Appearance="Appearance.Neutral"
                                           Disabled="@_isBulkActionRunning"
                                           OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                                &nbsp;Delete
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                                    <span>Delete</span>
+                                </FluentStack>
                             </FluentButton>
                         }
                         @if (_dxDataSetView?.IsExportable == true)
@@ -116,8 +124,10 @@ else
                                           Appearance="Appearance.Neutral"
                                           Disabled="@_isBulkActionRunning"
                                           OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-                                &nbsp;Export
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                                    <span>Export</span>
+                                </FluentStack>
                             </FluentButton>
                         }
                     }
