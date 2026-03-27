@@ -20,7 +20,7 @@ else
         <FluentDivider></FluentDivider> *@
         @* <FluentCard Class="unclip"> *@
             <FluentToolbar id="@Definition.Name" style="width:100%">
-                <FluentButton aria-label="Add item" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
+                <FluentButton aria-label="Add item" Appearance="Appearance.Stealth" IconEnd="@(new Icons.Regular.Size16.AddCircle())" OnClick="Add" />
             </FluentToolbar>
             @if (UseRowEditor)
             {
@@ -37,12 +37,12 @@ else
                         </FluentButton>
                     </TemplateColumn>
 
-                    <TemplateColumn Title="Actions" Align="@Align.Center" Width="10rem">
-                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
-                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Edit(context))">
-                                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" />
+                    <TemplateColumn Title="" Align="@Align.End" Width="10rem">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4" Width="100%" HorizontalAlignment="HorizontalAlignment.Right">
+                            <FluentButton Appearance="Appearance.Neutral" OnClick="@(() => Edit(context))">
+                                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
                             </FluentButton>
-                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Remove(context))">
+                            <FluentButton Appearance="Appearance.Neutral" OnClick="@(() => Remove(context))">
                                 <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                             </FluentButton>
                         </FluentStack>
@@ -63,8 +63,8 @@ else
                                 <DXItemEditor ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context" />
                             </TemplateColumn>
                         }
-                        <TemplateColumn Title="Actions" Align="@Align.Center" Width="6rem">
-                            <FluentButton Appearance="Appearance.Stealth" OnClick="@(() => Remove(context))">
+                        <TemplateColumn Title="" Align="@Align.End" Width="6rem">
+                            <FluentButton Appearance="Appearance.Neutral" OnClick="@(() => Remove(context))">
                                 <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
                             </FluentButton>
                         </TemplateColumn>

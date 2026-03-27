@@ -2,7 +2,7 @@
   {
     "Meta": {
       "Kind": "DXUnit",
-      "Type": "DXNavigationItemUnit",
+      "Type": "DXPNavigationItemUnit",
       "Op": "Patch",
       "IsMulti": true,
       "IsRequired": false

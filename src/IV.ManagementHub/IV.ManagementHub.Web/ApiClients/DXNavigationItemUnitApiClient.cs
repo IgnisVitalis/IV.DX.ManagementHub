@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 
 namespace IV.ManagementHub.Web.ApiClients
 {
-    internal class DXNavigationItemUnitApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXNavigationItemUnit>(clientProvider, JSRuntime)
+    internal class DXPNavigationItemUnitApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime) : DXUnitBaseApiClient<DXPNavigationItemUnit>(clientProvider, JSRuntime)
     {
 
     }

@@ -37,11 +37,11 @@ else
 }
 
 @code {
-    [Parameter, EditorRequired] public BiTreeNode<DXNavigationItemUnit> Node { get; set; } = default!;
+    [Parameter, EditorRequired] public BiTreeNode<DXPNavigationItemUnit> Node { get; set; } = default!;
     [Parameter, EditorRequired] public IDictionary<Guid, bool> ExpandedState { get; set; } = default!;
     [Parameter, EditorRequired] public Func<Guid, string> DataSetViewHrefFactory { get; set; } = default!;
 
-    private DXNavigationItemUnit Item => Node.Item;
+    private DXPNavigationItemUnit Item => Node.Item;
 
     private bool IsExpanded
     {

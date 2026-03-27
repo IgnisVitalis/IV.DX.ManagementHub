@@ -2,7 +2,7 @@
   {
     "Meta": {
       "Kind": "DXUnit",
-      "Type": "DXDataSetViewUnit",
+      "Type": "DXPDataSetViewUnit",
       "Op": "Patch",
       "IsMulti": true,
       "IsRequired": false
@@ -13,6 +13,10 @@
           "ID": "f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d",
           "TimeStamp": "2026-03-19T00:00:00",
           "Name": "MH Instances",
+          "IsCreatable": 1,
+          "IsEditable": 1,
+          "IsDeletable": 1,
+          "IsExportable": 1,
           "DXQuery": "b6d7e8f9-0a1b-4c2d-3e4f-5a6b7c8d9e0f",
           "DXFilter": null
         }

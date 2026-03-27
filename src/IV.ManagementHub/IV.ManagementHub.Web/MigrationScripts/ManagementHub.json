@@ -1,8 +1,8 @@
 [
   "ManagementHub/01_01_0001_MH_MHInstanceUnit.dx",
   "ManagementHub/01_01_0010_MH_DXQueryUnit.dx",
-  "ManagementHub/01_01_0011_MH_DXDataSetViewUnit.dx",
-  "ManagementHub/01_01_0012_MH_DXNavigationItemUnit.dx",
+  "ManagementHub/01_01_0011_MH_DXPDataSetViewUnit.dx",
+  "ManagementHub/01_01_0012_MH_DXPNavigationItemUnit.dx",
   "ManagementHub/01_01_0020_MH_DXRoleUnit.dx",
   "ManagementHub/01_01_0021_MH_DXTenantUnit.dx",
   "ManagementHub/01_01_0030_MH_DXIdentityUnit.dx",

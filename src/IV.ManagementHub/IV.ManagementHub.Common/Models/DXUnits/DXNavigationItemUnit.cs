@@ -3,8 +3,8 @@ using IV.DX.Kernel.Models;
 
 namespace IV.ManagementHub.Common.Models.DXUnits
 {
-    [DXUnit("DXNavigationItemUnit")]
-    public class DXNavigationItemUnit : DXUnit
+    [DXUnit("DXPNavigationItemUnit")]
+    public class DXPNavigationItemUnit : DXUnit
     {
         [DXColumn("Name")]
         public string Name { get; set; }

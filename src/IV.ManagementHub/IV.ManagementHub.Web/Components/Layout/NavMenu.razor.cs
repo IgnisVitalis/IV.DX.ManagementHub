@@ -13,7 +13,7 @@ namespace IV.ManagementHub.Web.Components.Layout
         [Inject] IApiClientResolver Resolver { get; set; } = default!;
         [Inject] IJSRuntime JSRuntime { get; set; } = default!;
 
-        IReadOnlyList<BiTreeNode<DXNavigationItemUnit>> roots = [];
+        IReadOnlyList<BiTreeNode<DXPNavigationItemUnit>> roots = [];
         private string _loadedAppKey = "\0"; // sentinel — never equal to a real key
 
         protected override async Task OnParametersSetAsync()
@@ -32,7 +32,7 @@ namespace IV.ManagementHub.Web.Components.Layout
 
             try
             {
-                var client = await Resolver.GetAsync<DXNavigationItemUnitApiClient>(key);
+                var client = await Resolver.GetAsync<DXPNavigationItemUnitApiClient>(key);
                 var items = await client.GetItemsAsync();
                 roots = BiTreeBuilder.BuildForest(
                     items,

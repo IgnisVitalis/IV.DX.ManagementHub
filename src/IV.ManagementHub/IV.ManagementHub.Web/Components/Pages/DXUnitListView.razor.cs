@@ -1,4 +1,5 @@
 ﻿using IV.DataProvider.WebApp.Services.Web.Contracts;
+using IV.DX.Presentation.Application.Contracts.Models;
 using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom.Base;
 using IV.ManagementHub.Web.Models;
@@ -34,6 +35,7 @@ namespace IV.ManagementHub.Web.Components.Pages
             }
         }
 
+        private DXPDataSetViewUnit? _dxDataSetView;
         private DXQueryResult dxQueryResult = DXQueryResult.Empty();
         private IDictionary<string, object> rows;
         private string? _loadErrorMessage;
@@ -75,6 +77,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private bool _isSaving;
         private bool _collapse = true;
         private bool HasCurrentType => !string.IsNullOrWhiteSpace(dxQueryResult?.TypeName);
+        private bool HasRowActions => _dxDataSetView is { IsEditable: true } or { IsDeletable: true } or { IsExportable: true };
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
         private DataTable values;
@@ -147,14 +150,14 @@ namespace IV.ManagementHub.Web.Components.Pages
 
             try
             {
-                var dxDataSetView = await dxDataSetViewApiClient.Get(_dxDataSetViewID);
-                if (dxDataSetView is null)
+                _dxDataSetView = await dxDataSetViewApiClient.Get(_dxDataSetViewID);
+                if (_dxDataSetView is null)
                 {
                     SetEmptyState("Data set view not found for the selected instance.");
                     return;
                 }
 
-                dxQueryResult = await dxQueryApi.GetAsync(dxDataSetView.DXQuery, dxDataSetView.DXFilter);
+                dxQueryResult = await dxQueryApi.GetAsync(_dxDataSetView.DXQuery, _dxDataSetView.DXFilter);
                 if (dxQueryResult is null || string.IsNullOrWhiteSpace(dxQueryResult.TypeName))
                 {
                     SetEmptyState("Query result is empty or invalid for the selected data set.");
@@ -254,6 +257,31 @@ namespace IV.ManagementHub.Web.Components.Pages
 
         private IEnumerable<string> SelectedDisplayStrings =>
             _selectedIds.Select(id => GetDisplayString(id));
+
+        private IReadOnlyList<DXActionButton> BuildRowActions(JObject item)
+        {
+            var id = dxQueryResult.GetID(item);
+            if (id == default || !HasCurrentType || _dxDataSetView is null)
+                return [];
+
+            var ordered = new List<(int Order, string Key)>();
+            if (_dxDataSetView.IsEditable)   ordered.Add((10, DXActionButtonKeys.Edit));
+            if (_dxDataSetView.IsDeletable)  ordered.Add((20, DXActionButtonKeys.Delete));
+            if (_dxDataSetView.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
+            // future: add custom DXPToolbarActionElements here with their order values
+
+            return DXActionButtonRegistry.Build(
+                ordered.OrderBy(x => x.Order).Select(x => x.Key),
+                new DXActionButtonContext
+                {
+                    EntityID = id,
+                    TypeName = dxQueryResult.TypeName,
+                    AppKey = AppKey,
+                    OnEdit = EventCallback.Factory.Create(this, () => OpenEditDialog(id)),
+                    OnExport = EventCallback.Factory.Create(this, () => ExportSingleAsync(id)),
+                    OnDelete = EventCallback.Factory.Create(this, () => DeleteSingleAsync(id))
+                });
+        }
 
         private async Task ExportSingleAsync(Guid id)
         {
@@ -489,6 +517,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         private void SetEmptyState(string message)
         {
             _loadErrorMessage = message;
+            _dxDataSetView = null;
             dxQueryResult = DXQueryResult.Empty();
             dxUnits = Enumerable.Empty<JObject>();
             values = new DataTable();

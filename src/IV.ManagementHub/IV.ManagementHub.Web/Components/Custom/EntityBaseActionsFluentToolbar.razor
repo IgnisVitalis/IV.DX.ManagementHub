@@ -1,17 +1,39 @@
-﻿@using IV.ManagementHub.Web.Components.Custom.Base
+@using IV.ManagementHub.Web.Components.Custom.Base
+@using IV.ManagementHub.Web.Models
 @inherits ManagementHubComponentBase
 
 <FluentStack Orientation="Orientation.Horizontal"
              HorizontalGap="4"
+             Width="100%"
+             HorizontalAlignment="HorizontalAlignment.Right"
              @onclick:stopPropagation="true"
              @onpointerdown:stopPropagation="true">
-    <FluentButton OnClick="EditAsync">
-        <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
-    </FluentButton>
-    <FluentButton OnClick="ExportAsync">
-        <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
-    </FluentButton>
-    <FluentButton OnClick="DeleteAsync">
-        <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-    </FluentButton>
+    @foreach (var action in VisibleActions)
+    {
+        <FluentButton @key="action.Key"
+                      Appearance="@action.Appearance"
+                      Disabled="@action.Disabled"
+                      Title="@action.Label"
+                      aria-label="@action.Label"
+                      OnClick="@(() => InvokeActionAsync(action))">
+            @switch ((action.IconKey ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case DXActionButtonKeys.Edit:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Export:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Delete:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="@action.IconColor" />
+                    break;
+                default:
+                    @if (!string.IsNullOrWhiteSpace(action.Label))
+                    {
+                        <span>@action.Label</span>
+                    }
+                    break;
+            }
+        </FluentButton>
+    }
 </FluentStack>

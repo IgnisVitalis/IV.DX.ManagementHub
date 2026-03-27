@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/IV/Git/IV.DX -name \"*.cs\" -type f -exec grep -l \"AddDX\\\\|AddDx\" {})"
+    ]
+  }
+}

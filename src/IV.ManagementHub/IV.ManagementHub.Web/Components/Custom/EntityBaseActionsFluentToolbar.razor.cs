@@ -1,15 +1,19 @@
-﻿using IV.DataProvider.WebApp.Services.Web.Contracts;
+using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom.Base;
+using IV.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace IV.ManagementHub.Web.Components.Custom
 {
     public partial class EntityBaseActionsFluentToolbar : ManagementHubComponentBase
     {
-        DXUnitCoreApiClient _coreApiCLient;
-        [Parameter, EditorRequired] public Guid EntityID { get; set; }
-        [Parameter, EditorRequired] public string TypeName { get; set; }
+        private DXUnitCoreApiClient? _coreApiClient;
+        private IReadOnlyList<DXActionButton> _resolvedActions = [];
+
+        [Parameter] public Guid EntityID { get; set; }
+        [Parameter] public string TypeName { get; set; } = string.Empty;
+        [Parameter] public IReadOnlyList<DXActionButton>? Actions { get; set; }
 
         [Parameter] public EventCallback OnDeleted { get; set; }
         [Parameter] public EventCallback OnExported { get; set; }
@@ -20,12 +24,46 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         protected override async Task OnParametersSetAsync()
         {
-            this._coreApiCLient = await this.Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
+            if (Actions is not null)
+            {
+                _resolvedActions = Actions;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(TypeName))
+                throw new InvalidOperationException($"{nameof(TypeName)} is required when custom {nameof(Actions)} are not provided.");
+
+            _coreApiClient = await Resolver.GetAsync<DXUnitCoreApiClient>(AppKey);
+            _resolvedActions = DXActionButtonRegistry.Build(
+                DXActionButtonRegistry.DefaultActionKeys,
+                new DXActionButtonContext
+                {
+                    EntityID = EntityID,
+                    TypeName = TypeName,
+                    AppKey = AppKey,
+                    OnEdit = EventCallback.Factory.Create(this, EditAsync),
+                    OnExport = EventCallback.Factory.Create(this, ExportAsync),
+                    OnDelete = EventCallback.Factory.Create(this, DeleteAsync)
+                });
+        }
+
+        private IEnumerable<DXActionButton> VisibleActions =>
+            _resolvedActions.Where(action => action.Visible);
+
+        private async Task InvokeActionAsync(DXActionButton action)
+        {
+            if (action.Disabled || !action.OnClick.HasDelegate)
+                return;
+
+            await action.OnClick.InvokeAsync();
         }
 
         private async Task DeleteAsync()
         {
-            await this._coreApiCLient.DeleteAsync(this.TypeName, this.EntityID);
+            if (_coreApiClient is null)
+                return;
+
+            await _coreApiClient.DeleteAsync(TypeName, EntityID);
 
             if (OnDeleted.HasDelegate)
                 await OnDeleted.InvokeAsync();
@@ -33,7 +71,10 @@ namespace IV.ManagementHub.Web.Components.Custom
 
         private async Task ExportAsync()
         {
-            await this._coreApiCLient.ExportAsync(this.TypeName, this.EntityID);
+            if (_coreApiClient is null)
+                return;
+
+            await _coreApiClient.ExportAsync(TypeName, EntityID);
 
             if (OnExported.HasDelegate)
                 await OnExported.InvokeAsync();
