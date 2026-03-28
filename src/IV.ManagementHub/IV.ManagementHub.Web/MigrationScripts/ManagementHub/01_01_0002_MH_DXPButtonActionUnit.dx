@@ -1,0 +1,52 @@
+[
+  {
+    "Meta": {
+      "Kind": "DXUnit",
+      "Type": "DXPButtonActionUnit",
+      "Op": "Patch",
+      "IsMulti": true,
+      "IsRequired": false
+    },
+    "Data": {
+      "Items": [
+        {
+          "ID": "6979d5cf-0e1a-40b8-8399-0482c88b44a4",
+          "TimeStamp": "2026-03-28T00:00:00Z",
+          "Name": "Select",
+          "Description": "Open the selected instance",
+          "Module": "IV.ManagementHub",
+          "Key": "Select",
+          "IsEnabled": true,
+          "Icon": 10,
+          "Emphasis": 1,
+          "RequiresConfirmation": false,
+          "DXElements": {
+            "DXActionParameterElement": {
+              "Meta": {
+                "Kind": "DXElement",
+                "Type": "DXActionParameterElement",
+                "Op": "Patch",
+                "IsMulti": true,
+                "IsRequired": false
+              },
+              "Data": {
+                "Items": [
+                  {
+                    "ID": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+                    "TimeStamp": "2026-03-28T00:00:00Z",
+                    "DXUnitID": "6979d5cf-0e1a-40b8-8399-0482c88b44a4",
+                    "Key": "InstanceId",
+                    "Direction": 1,
+                    "Type": 1,
+                    "Required": true,
+                    "IsMulti": false
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+]
