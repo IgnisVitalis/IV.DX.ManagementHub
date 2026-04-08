@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DataProvider.WebApp.Services.Web.Services;
+using IV.DX.Application.Contracts.Abstractions;
 using IV.DX.Hosting;
 using IV.DX.Kernel.Models;
 using IV.DX.Presentation.Hosting;
@@ -118,32 +119,24 @@ app.Use(async (context, next) =>
 
     if (!proxyRegistry.TryGetValue(instanceKey, out var entry))
     {
-        // Load all instances from the DX management database
+        // Load instances directly from MH's own DX data layer (in-process, handles encrypted columns)
+        var logger = context.RequestServices.GetRequiredService<ILoggerFactory>()
+            .CreateLogger("MH.ProxyMiddleware");
         try
         {
-            var factory = context.RequestServices.GetRequiredService<InstanceApiClientFactory>();
-            var config = context.RequestServices.GetRequiredService<IConfiguration>();
-            var selfUrl = $"{context.Request.Scheme}://{context.Request.Host}";
-            var selfServiceKey = config["Secrets:ServiceKey"] ?? string.Empty;
-
-            if (!string.IsNullOrWhiteSpace(selfServiceKey))
+            var dataReader = context.RequestServices.GetRequiredService<IDXUnitDataReader>();
+            var instances = await dataReader.GetItemsAsync<MHInstanceUnit>(ct: context.RequestAborted);
+            foreach (var unit in instances.Where(u => !string.IsNullOrWhiteSpace(u.Key)
+                && !string.IsNullOrWhiteSpace(u.BaseUrl)
+                && !string.IsNullOrWhiteSpace(u.ServiceKey)))
             {
-                var http = await factory.CreateAsync(selfUrl, selfServiceKey, context.RequestAborted);
-                using var resp = await http.GetAsync("api/management/MHInstanceUnit", context.RequestAborted);
-                if (resp.IsSuccessStatusCode)
-                {
-                    var json = await resp.Content.ReadAsStringAsync(context.RequestAborted);
-                    foreach (var unit in DXUnit.ParseItems<MHInstanceUnit>(json)
-                        .Where(u => !string.IsNullOrWhiteSpace(u.Key)
-                            && !string.IsNullOrWhiteSpace(u.BaseUrl)
-                            && !string.IsNullOrWhiteSpace(u.ServiceKey)))
-                    {
-                        proxyRegistry[unit.Key] = (unit.BaseUrl, unit.ServiceKey);
-                    }
-                }
+                proxyRegistry[unit.Key] = (unit.BaseUrl, unit.ServiceKey);
             }
         }
-        catch { /* db load failed; 404 below */ }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Proxy registry load threw an exception.");
+        }
 
         if (!proxyRegistry.TryGetValue(instanceKey, out entry))
         {
