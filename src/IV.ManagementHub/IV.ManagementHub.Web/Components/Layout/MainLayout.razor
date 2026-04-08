@@ -15,8 +15,7 @@
                 </FluentLabel>
 
                 <FluentSpacer />
-                <FluentIcon Value="@BottomPanelToggleIcon"
-                            OnClick="ToggleBottomPanel" />
+                <FluentIcon Value="@BottomPanelToggleIcon" OnClick="ToggleBottomPanel" />
                 <FluentIcon Value="@(new Icons.Regular.Size20.Settings().WithColor(Color.FillInverse))"
                             OnClick="OpenUserSettings" />
             </FluentStack>
@@ -28,15 +27,9 @@
             </LeftPanel>
            
             <div class="body-content">
-                <FluentSplitter Orientation="Orientation.Vertical"
-                                Panel1MinSize="20%"
-                                Panel2MinSize="@_bottomPanelMinSize"
-                                Panel2Size="@_panel2Size"
-                                Collapsed="@_isBottomPanelCollapsed"
-                                BarSize="4"
-                                BarHandle="false"
-                                OnResized="OnSplitterResized"
-                                Class="fill-parent">
+                <FluentSplitter Orientation="Orientation.Vertical" Panel1MinSize="20%"
+                                Panel2MinSize="@_bottomPanelMinSize" Panel2Size="@_panel2Size" Collapsed="@_isBottomPanelCollapsed"
+                                BarSize="4" BarHandle="false" OnResized="OnSplitterResized" Class="fill-parent">
                     <Panel1>
                         <div class="content">
                             @Body
@@ -186,7 +179,8 @@
             return false;
         }
 
-        if (!double.TryParse(trimmed, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var numericValue))
+        if (!double.TryParse(trimmed, System.Globalization.NumberStyles.Float,
+System.Globalization.CultureInfo.InvariantCulture, out var numericValue))
             return false;
 
         pixels = (int)Math.Ceiling(numericValue * multiplier);
