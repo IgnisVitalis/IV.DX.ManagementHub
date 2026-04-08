@@ -12,6 +12,7 @@ namespace IV.ManagementHub.Web.Components.Layout
     {
         [Inject] IApiClientResolver Resolver { get; set; } = default!;
         [Inject] IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] IV.ManagementHub.Web.Services.ConsoleLogService Log { get; set; } = default!;
 
         IReadOnlyList<BiTreeNode<DXPNavigationItemUnit>> roots = [];
         private string _loadedAppKey = "\0"; // sentinel — never equal to a real key
@@ -40,9 +41,10 @@ namespace IV.ManagementHub.Web.Components.Layout
                     item => item.Parent,
                     item => item.Order);
             }
-            catch
+            catch (Exception ex)
             {
                 roots = [];
+                Log.Error($"[NavMenu:{key}] {ex.Message}");
             }
         }
     }

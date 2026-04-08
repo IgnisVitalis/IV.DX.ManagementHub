@@ -5,10 +5,11 @@
         <FluentSplitter BarHandle="false"
                         Collapsed="@Collapsed"
                         Orientation="@Orientation"
-                        OnResized="@OnResized"
+                        OnResized="HandleResized"
                         BarSize="6"
                         Panel1MinSize="@Panel1MinSize"
-                        Panel2MinSize="@Panel2MinSize"
+                        Panel2Size="@_panel2Size"
+                        Panel2MinSize="@_splitterPanel2MinSize"
                         style="height: 100%; min-height: 0;">
             <Panel1>
                 <div class="dx-split-panel-surface">
@@ -51,10 +52,98 @@
     [Parameter] public Orientation Orientation { get; set; } = Orientation.Horizontal;
     [Parameter] public EventCallback<SplitterResizedEventArgs> OnResized { get; set; }
     [Parameter] public string Panel1MinSize { get; set; } = "25%";
-    [Parameter] public string Panel2MinSize { get; set; } = "25%";
+    [Parameter] public string Panel2Size { get; set; } = "28rem";
+    [Parameter] public string Panel2MinSize { get; set; } = "28rem";
 
     [Parameter] public RenderFragment? LeftToolbar { get; set; }
     [Parameter, EditorRequired] public RenderFragment LeftContent { get; set; } = default!;
     [Parameter] public RenderFragment? RightToolbar { get; set; }
     [Parameter, EditorRequired] public RenderFragment RightContent { get; set; } = default!;
+
+    private string? _panel2Size;
+    private string _splitterPanel2MinSize = "28rem";
+
+    protected override void OnParametersSet()
+    {
+        _splitterPanel2MinSize = NormalizeSplitterSize(Panel2MinSize);
+        _panel2Size ??= GetPreferredPanel2Size();
+    }
+
+    private async Task HandleResized(SplitterResizedEventArgs args)
+    {
+        _panel2Size = ClampPanel2Size($"{args.Panel2Size}px");
+
+        if (OnResized.HasDelegate)
+            await OnResized.InvokeAsync(args);
+    }
+
+    private string GetPreferredPanel2Size()
+    {
+        var preferredSize = NormalizeSplitterSize(Panel2Size);
+
+        if (TryConvertToPixels(preferredSize, out var preferredPixels) &&
+            TryConvertToPixels(_splitterPanel2MinSize, out var minimumPixels) &&
+            preferredPixels < minimumPixels)
+        {
+            return $"{minimumPixels}px";
+        }
+
+        return preferredSize;
+    }
+
+    private string ClampPanel2Size(string size)
+    {
+        var normalizedSize = NormalizeSplitterSize(size);
+
+        if (TryConvertToPixels(normalizedSize, out var currentPixels) &&
+            TryConvertToPixels(_splitterPanel2MinSize, out var minimumPixels) &&
+            currentPixels < minimumPixels)
+        {
+            return $"{minimumPixels}px";
+        }
+
+        return normalizedSize;
+    }
+
+    private static string NormalizeSplitterSize(string? value)
+    {
+        if (TryConvertToPixels(value, out var pixels))
+        {
+            return $"{pixels}px";
+        }
+
+        return value ?? string.Empty;
+    }
+
+    private static bool TryConvertToPixels(string? value, out int pixels)
+    {
+        pixels = 0;
+
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var trimmed = value.Trim();
+        var multiplier = 1d;
+
+        if (trimmed.EndsWith("rem", StringComparison.OrdinalIgnoreCase) ||
+            trimmed.EndsWith("em", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = trimmed[..^3];
+            multiplier = 16d;
+        }
+        else if (trimmed.EndsWith("px", StringComparison.OrdinalIgnoreCase))
+        {
+            trimmed = trimmed[..^2];
+        }
+        else
+        {
+            return false;
+        }
+
+        if (!double.TryParse(trimmed, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var numericValue))
+            return false;
+
+        pixels = (int)Math.Ceiling(numericValue * multiplier);
+        return true;
+    }
 }

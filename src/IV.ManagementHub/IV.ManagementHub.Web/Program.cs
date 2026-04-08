@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text.Json;
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DataProvider.WebApp.Services.Web.Services;
 using IV.DX.Hosting;
@@ -11,15 +10,12 @@ using IV.DX.WebApi.Management.DependencyInjection;
 using IV.ManagementHub.ApiService.Bootstrap;
 using IV.ManagementHub.ApiService.Controllers;  // DXApiControllerBase assembly
 using IV.ManagementHub.ApiService.Services;
+using IV.ManagementHub.Common.Models;
 using IV.ManagementHub.Web.Components;
 using IV.ManagementHub.Web.Services;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-var bootstrapJsonOptions = new JsonSerializerOptions
-{
-    PropertyNameCaseInsensitive = true
-};
 
 // --- DX Core ---
 builder.Services
@@ -69,6 +65,7 @@ builder.Services.AddSingleton<InstanceApiClientFactory>();
 builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();
 builder.Services.AddScoped<AppState>();
 builder.Services.AddScoped<AppAuthState>();
+builder.Services.AddScoped<IV.ManagementHub.Web.Services.ConsoleLogService>();
 
 var app = builder.Build();
 
@@ -121,34 +118,32 @@ app.Use(async (context, next) =>
 
     if (!proxyRegistry.TryGetValue(instanceKey, out var entry))
     {
-        // Load all instances from bootstrap settings and populate registry
-        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
-        var bootstrapSettingsPath = Path.Combine(
-            environment.ContentRootPath,
-            "App_Data",
-            "bootstrap.settings.json");
-
+        // Load all instances from the DX management database
         try
         {
-            if (File.Exists(bootstrapSettingsPath))
-            {
-                await using var stream = File.OpenRead(bootstrapSettingsPath);
-                var settings = await JsonSerializer.DeserializeAsync<BootstrapSettingsDocument>(
-                    stream,
-                    bootstrapJsonOptions,
-                    cancellationToken: context.RequestAborted);
+            var factory = context.RequestServices.GetRequiredService<InstanceApiClientFactory>();
+            var config = context.RequestServices.GetRequiredService<IConfiguration>();
+            var selfUrl = $"{context.Request.Scheme}://{context.Request.Host}";
+            var selfServiceKey = config["Secrets:ServiceKey"] ?? string.Empty;
 
-                foreach (var unit in settings?.Instances
-                    ?.Where(u => !string.IsNullOrWhiteSpace(u.Key)
-                        && !string.IsNullOrWhiteSpace(u.ApiUrl)
-                        && !string.IsNullOrWhiteSpace(u.ServiceKey))
-                    ?? Enumerable.Empty<BootstrapInstanceDocument>())
+            if (!string.IsNullOrWhiteSpace(selfServiceKey))
+            {
+                var http = await factory.CreateAsync(selfUrl, selfServiceKey, context.RequestAborted);
+                using var resp = await http.GetAsync("api/management/MHInstanceUnit", context.RequestAborted);
+                if (resp.IsSuccessStatusCode)
                 {
-                    proxyRegistry[unit.Key] = (unit.ApiUrl, unit.ServiceKey);
+                    var json = await resp.Content.ReadAsStringAsync(context.RequestAborted);
+                    foreach (var unit in DXUnit.ParseItems<MHInstanceUnit>(json)
+                        .Where(u => !string.IsNullOrWhiteSpace(u.Key)
+                            && !string.IsNullOrWhiteSpace(u.BaseUrl)
+                            && !string.IsNullOrWhiteSpace(u.ServiceKey)))
+                    {
+                        proxyRegistry[unit.Key] = (unit.BaseUrl, unit.ServiceKey);
+                    }
                 }
             }
         }
-        catch { /* registry stays empty; 404 below */ }
+        catch { /* db load failed; 404 below */ }
 
         if (!proxyRegistry.TryGetValue(instanceKey, out entry))
         {
@@ -169,15 +164,3 @@ app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();
-
-file sealed class BootstrapSettingsDocument
-{
-    public List<BootstrapInstanceDocument> Instances { get; set; } = [];
-}
-
-file sealed class BootstrapInstanceDocument
-{
-    public string Key { get; set; } = string.Empty;
-    public string ApiUrl { get; set; } = string.Empty;
-    public string ServiceKey { get; set; } = string.Empty;
-}

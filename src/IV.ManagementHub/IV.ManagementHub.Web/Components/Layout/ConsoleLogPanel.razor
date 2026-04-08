@@ -1,0 +1,71 @@
+@using IV.ManagementHub.Web.Services
+@implements IDisposable
+@inject ConsoleLogService LogService
+
+<div class="console-log">
+    <FluentStack Orientation="Orientation.Horizontal"
+                 VerticalAlignment="VerticalAlignment.Center"
+                 Class="console-log__toolbar">
+        <FluentSpacer />
+        <FluentButton IconOnly="true"
+                      Appearance="Appearance.Stealth"
+                      Title="Clear"
+                      Disabled="@(!HasEntries)"
+                      OnClick="LogService.Clear">
+            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+        </FluentButton>
+    </FluentStack>
+
+    <div class="console-log__content">
+        @if (!HasEntries)
+        {
+            <FluentLabel Typo="Typography.Body" Class="console-log__empty">No entries.</FluentLabel>
+        }
+        else
+        {
+            @foreach (var entry in LogService.Entries)
+            {
+                <FluentStack Orientation="Orientation.Horizontal"
+                             VerticalAlignment="VerticalAlignment.Top"
+                             HorizontalGap="6"
+                             Class="console-entry">
+                    <FluentIcon Value="@LevelIcon(entry.Level)" Color="@LevelColor(entry.Level)" Class="console-entry__icon" />
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="1" Class="console-entry__body">
+                        <span class="console-entry__msg">@entry.Message</span>
+                        <span class="console-entry__time">@entry.Timestamp.ToString("HH:mm:ss")</span>
+                    </FluentStack>
+                </FluentStack>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private bool HasEntries => LogService.Entries.Any();
+
+    protected override void OnInitialized()
+    {
+        LogService.Changed += OnChanged;
+    }
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        LogService.Changed -= OnChanged;
+    }
+
+    private static Icon LevelIcon(ConsoleLogLevel level) => level switch
+    {
+        ConsoleLogLevel.Error   => new Icons.Filled.Size16.ErrorCircle(),
+        ConsoleLogLevel.Warning => new Icons.Filled.Size16.Warning(),
+        _                       => new Icons.Regular.Size16.Info(),
+    };
+
+    private static Color LevelColor(ConsoleLogLevel level) => level switch
+    {
+        ConsoleLogLevel.Error   => Color.Error,
+        ConsoleLogLevel.Warning => Color.Warning,
+        _                       => Color.Neutral,
+    };
+}
