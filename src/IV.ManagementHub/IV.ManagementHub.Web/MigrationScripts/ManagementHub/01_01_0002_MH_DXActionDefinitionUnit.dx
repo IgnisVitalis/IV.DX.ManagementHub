@@ -2,7 +2,7 @@
   {
     "Meta": {
       "Kind": "DXUnit",
-      "Type": "DXPButtonActionUnit",
+      "Type": "DXActionDefinitionUnit",
       "Op": "Patch",
       "IsMulti": true,
       "IsRequired": false
@@ -17,9 +17,6 @@
           "Module": "IV.ManagementHub",
           "Key": "Select",
           "IsEnabled": true,
-          "Icon": 10,
-          "Emphasis": 1,
-          "RequiresConfirmation": false,
           "DXElements": {
             "DXActionParameterElement": {
               "Meta": {
