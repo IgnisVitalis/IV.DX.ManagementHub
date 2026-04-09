@@ -1,4 +1,7 @@
-﻿using IV.DataProvider.WebApp.Services.Web.Contracts;
+﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
+using IV.DataProvider.WebApp.Services.Web.Contracts;
+using IV.DX.Application.Contracts.Actions;
+using IV.DX.Kernel.Models;
 using IV.DX.Presentation.Application.Contracts.Models;
 using IV.ManagementHub.Web.ApiClients;
 using IV.ManagementHub.Web.Components.Custom.Base;
@@ -16,9 +19,16 @@ namespace IV.ManagementHub.Web.Components.Pages
         [Inject]
         IApiClientResolver Resolver { get; set; } = default!;
 
+        [Inject]
+        IDXActionExecutor ActionExecutor { get; set; } = default!;
+
         DXUnitCoreApiClient coreApi = default!;
         DXQueryResultApiClient dxQueryApi = default!;
         DXDataSetViewApiClient dxDataSetViewApiClient = default!;
+        DXPButtonActionUnitApiClient buttonActionApiClient = default!;
+        DXActionDefinitionUnitApiClient actionDefinitionApiClient = default!;
+
+        private record CustomButtonDef(int Order, DXPButtonActionUnit Button, DXActionDefinitionUnit ActionDef);
 
         private Guid _dxDataSetViewID;
 
@@ -36,6 +46,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         }
 
         private DXPDataSetViewUnit? _dxDataSetView;
+        private readonly List<CustomButtonDef> _customButtonDefs = new();
         private DXQueryResult dxQueryResult = DXQueryResult.Empty();
         private IDictionary<string, object> rows;
         private string? _loadErrorMessage;
@@ -68,6 +79,8 @@ namespace IV.ManagementHub.Web.Components.Pages
             coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
             dxQueryApi = await Resolver.GetAsync<DXQueryResultApiClient>(base.AppKey);
             dxDataSetViewApiClient = await Resolver.GetAsync<DXDataSetViewApiClient>(base.AppKey);
+            buttonActionApiClient = await Resolver.GetAsync<DXPButtonActionUnitApiClient>(base.AppKey);
+            actionDefinitionApiClient = await Resolver.GetAsync<DXActionDefinitionUnitApiClient>(base.AppKey);
 
             await LoadDataAsync(true);
         }
@@ -77,7 +90,9 @@ namespace IV.ManagementHub.Web.Components.Pages
         private bool _isSaving;
         private bool _collapse = true;
         private bool HasCurrentType => !string.IsNullOrWhiteSpace(dxQueryResult?.TypeName);
-        private bool HasRowActions => _dxDataSetView is { IsEditable: true } or { IsDeletable: true } or { IsExportable: true };
+        private bool HasRowActions =>
+            (_dxDataSetView is { IsEditable: true } or { IsDeletable: true } or { IsExportable: true })
+            || _customButtonDefs.Count > 0;
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
         private DataTable values;
@@ -156,6 +171,8 @@ namespace IV.ManagementHub.Web.Components.Pages
                     SetEmptyState("Data set view not found for the selected instance.");
                     return;
                 }
+
+                await LoadCustomButtonDefsAsync();
 
                 dxQueryResult = await dxQueryApi.GetAsync(_dxDataSetView.DXQuery, _dxDataSetView.DXFilter);
                 if (dxQueryResult is null || string.IsNullOrWhiteSpace(dxQueryResult.TypeName))
@@ -264,13 +281,14 @@ namespace IV.ManagementHub.Web.Components.Pages
             if (id == default || !HasCurrentType || _dxDataSetView is null)
                 return [];
 
+            var result = new List<DXActionButton>();
+
             var ordered = new List<(int Order, string Key)>();
             if (_dxDataSetView.IsEditable)   ordered.Add((10, DXActionButtonKeys.Edit));
             if (_dxDataSetView.IsDeletable)  ordered.Add((20, DXActionButtonKeys.Delete));
             if (_dxDataSetView.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
-            // future: add custom DXPToolbarActionElements here with their order values
 
-            return DXActionButtonRegistry.Build(
+            result.AddRange(DXActionButtonRegistry.Build(
                 ordered.OrderBy(x => x.Order).Select(x => x.Key),
                 new DXActionButtonContext
                 {
@@ -280,7 +298,53 @@ namespace IV.ManagementHub.Web.Components.Pages
                     OnEdit = EventCallback.Factory.Create(this, () => OpenEditDialog(id)),
                     OnExport = EventCallback.Factory.Create(this, () => ExportSingleAsync(id)),
                     OnDelete = EventCallback.Factory.Create(this, () => DeleteSingleAsync(id))
+                }));
+
+            foreach (var def in _customButtonDefs)
+            {
+                var capturedDef = def;
+                var capturedId = id;
+                result.Add(new DXActionButton
+                {
+                    Key = $"custom_{def.ActionDef.Key}",
+                    Label = def.ActionDef.Name,
+                    IconKey = DXActionButtonMapper.ToIconKey(def.Button.Icon),
+                    Appearance = DXActionButtonMapper.ToAppearance(def.Button.Emphasis),
+                    IconColor = DXActionButtonMapper.ToIconColor(def.Button.Emphasis),
+                    OnClick = EventCallback.Factory.Create(this, () => ExecuteCustomActionAsync(capturedDef, capturedId))
                 });
+            }
+
+            return result;
+        }
+
+        private async Task LoadCustomButtonDefsAsync()
+        {
+            _customButtonDefs.Clear();
+            var elements = _dxDataSetView?.DXPComponentButtonActionElement?.Announced;
+            if (elements is null || elements.Count == 0)
+                return;
+
+            foreach (var element in elements)
+            {
+                var buttonUnit = await buttonActionApiClient.Get(element.Action);
+                if (buttonUnit is null)
+                    continue;
+
+                var actionDef = await actionDefinitionApiClient.Get(buttonUnit.ActionDefinition);
+                if (actionDef is null)
+                    continue;
+
+                _customButtonDefs.Add(new CustomButtonDef(element.Order, buttonUnit, actionDef));
+            }
+
+            _customButtonDefs.Sort((a, b) => a.Order.CompareTo(b.Order));
+        }
+
+        private async Task ExecuteCustomActionAsync(CustomButtonDef def, Guid entityId)
+        {
+            var parameters = new DXActionParameters().Set("InstanceId", entityId);
+            await ActionExecutor.ExecuteAsync(def.ActionDef.Module, def.ActionDef.Key, parameters);
         }
 
         private async Task ExportSingleAsync(Guid id)
@@ -518,6 +582,7 @@ namespace IV.ManagementHub.Web.Components.Pages
         {
             _loadErrorMessage = message;
             _dxDataSetView = null;
+            _customButtonDefs.Clear();
             dxQueryResult = DXQueryResult.Empty();
             dxUnits = Enumerable.Empty<JObject>();
             values = new DataTable();

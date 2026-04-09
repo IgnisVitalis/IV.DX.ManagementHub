@@ -1,5 +1,6 @@
-using Microsoft.FluentUI.AspNetCore.Components;
+using IV.DX.Presentation.Application.Contracts.Models.Enums;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace IV.ManagementHub.Web.Models
 {
@@ -30,6 +31,48 @@ namespace IV.ManagementHub.Web.Models
         public const string Edit = "edit";
         public const string Export = "export";
         public const string Delete = "delete";
+        public const string Navigate = "navigate";
+        public const string Add = "add";
+        public const string Refresh = "refresh";
+        public const string Settings = "settings";
+        public const string View = "view";
+        public const string Search = "search";
+        public const string Archive = "archive";
+    }
+
+    public static class DXActionButtonMapper
+    {
+        public static string ToIconKey(DXPActionIconEnum icon) => icon switch
+        {
+            DXPActionIconEnum.Edit     => DXActionButtonKeys.Edit,
+            DXPActionIconEnum.Delete   => DXActionButtonKeys.Delete,
+            DXPActionIconEnum.Export   => DXActionButtonKeys.Export,
+            DXPActionIconEnum.Navigate => DXActionButtonKeys.Navigate,
+            DXPActionIconEnum.Add      => DXActionButtonKeys.Add,
+            DXPActionIconEnum.Refresh  => DXActionButtonKeys.Refresh,
+            DXPActionIconEnum.Settings => DXActionButtonKeys.Settings,
+            DXPActionIconEnum.View     => DXActionButtonKeys.View,
+            DXPActionIconEnum.Search   => DXActionButtonKeys.Search,
+            DXPActionIconEnum.Archive  => DXActionButtonKeys.Archive,
+            _                          => string.Empty
+        };
+
+        public static Appearance ToAppearance(DXPActionEmphasisEnum emphasis) => emphasis switch
+        {
+            DXPActionEmphasisEnum.Accent  => Appearance.Accent,
+            DXPActionEmphasisEnum.Danger  => Appearance.Neutral,
+            _                             => Appearance.Neutral
+        };
+
+        public static Color ToIconColor(DXPActionEmphasisEnum emphasis) => emphasis switch
+        {
+            DXPActionEmphasisEnum.Accent   => Color.Fill,    // white/contrast on filled accent background
+            DXPActionEmphasisEnum.Danger   => Color.Error,
+            DXPActionEmphasisEnum.Info     => Color.Info,
+            DXPActionEmphasisEnum.Warning  => Color.Warning,
+            DXPActionEmphasisEnum.Success  => Color.Success,
+            _                              => Color.Fill
+        };
     }
 
     public static class DXActionButtonRegistry

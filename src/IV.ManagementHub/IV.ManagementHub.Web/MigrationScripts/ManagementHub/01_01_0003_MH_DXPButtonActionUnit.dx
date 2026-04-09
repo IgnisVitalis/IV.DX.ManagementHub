@@ -14,7 +14,7 @@
           "TimeStamp": "2026-03-28T00:00:00Z",
           "ActionDefinition": "6979d5cf-0e1a-40b8-8399-0482c88b44a4",
           "Icon": 10,
-          "Emphasis": 1,
+          "Emphasis": 3,
           "RequiresConfirmation": false
         }
       ]

@@ -22,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddDX(builder.Configuration)
     .AddSecurity()
+    .AddActions(typeof(Program).Assembly)
     .RegisterHostedService();
 
 builder.Services.AddDXHandlers(typeof(Program).Assembly);

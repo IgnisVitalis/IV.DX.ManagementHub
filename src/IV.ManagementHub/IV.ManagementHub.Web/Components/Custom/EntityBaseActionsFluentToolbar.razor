@@ -2,20 +2,17 @@
 @using IV.ManagementHub.Web.Models
 @inherits ManagementHubComponentBase
 
-<FluentStack Orientation="Orientation.Horizontal"
-             HorizontalGap="4"
-             Width="100%"
-             HorizontalAlignment="HorizontalAlignment.Right"
-             @onclick:stopPropagation="true"
+<FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4" Width="100%"
+             HorizontalAlignment="HorizontalAlignment.Right" @onclick:stopPropagation="true"
              @onpointerdown:stopPropagation="true">
     @foreach (var action in VisibleActions)
     {
-        <FluentButton @key="action.Key"
-                      Appearance="@action.Appearance"
-                      Disabled="@action.Disabled"
-                      Title="@action.Label"
-                      aria-label="@action.Label"
-                      OnClick="@(() => InvokeActionAsync(action))">
+
+
+
+        <FluentButton @key="action.Key" Appearance="@action.Appearance" Disabled="@action.Disabled" Title="@action.Label"
+                      aria-label="@action.Label" OnClick="@(() => InvokeActionAsync(action))">
+          
             @switch ((action.IconKey ?? string.Empty).Trim().ToLowerInvariant())
             {
                 case DXActionButtonKeys.Edit:
@@ -26,6 +23,18 @@
                     break;
                 case DXActionButtonKeys.Delete:
                     <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Navigate:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Open())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Add:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.AddCircle())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Refresh:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowClockwise())" Color="@action.IconColor" />
+                    break;
+                case DXActionButtonKeys.Settings:
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Settings())" Color="@action.IconColor" />
                     break;
                 default:
                     @if (!string.IsNullOrWhiteSpace(action.Label))

@@ -3,6 +3,8 @@
 
 @using System.Linq
 @using IV.DX.Kernel.Models;
+@using IV.DX.Presentation.Application.Contracts.Models.Enums
+@using IV.ManagementHub.Web.Models
 @using IV.DataProvider.WebApp.Services.Web.ApiClients
 @using IV.DataProvider.WebApp.Services.Web.Contracts
 @using IV.ManagementHub.Web.Components.Custom
@@ -100,6 +102,20 @@ else
                                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
                                     <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
                                     <span>Export</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                        @foreach (var def in _customButtonDefs)
+                        {
+                            var capturedDef = def;
+                            <FluentButton aria-label="@def.ActionDef.Name"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          Title="@def.ActionDef.Description"
+                                          OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemID!.Value))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Emphasis)" />
+                                    <span>@def.ActionDef.Name</span>
                                 </FluentStack>
                             </FluentButton>
                         }
