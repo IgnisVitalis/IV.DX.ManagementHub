@@ -1,0 +1,18 @@
+﻿using IV.DX.Kernel.Attributes;
+using IV.DX.Kernel.Models;
+
+namespace IV.DX.ManagementHub.Common.Models.DXUnits
+{
+    [DXUnit("DXPNavigationItemUnit")]
+    public class DXPNavigationItemUnit : DXUnit
+    {
+        [DXColumn("Name")]
+        public string Name { get; set; }
+        [DXColumn("Order")]
+        public int Order { get; set; }
+        [DXColumn("Parent")]
+        public Guid? Parent { get; set; }
+        [DXColumn("DataSetView")]
+        public Guid? DataSetView { get; set; }
+    }
+}

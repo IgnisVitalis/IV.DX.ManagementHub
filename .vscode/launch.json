@@ -10,7 +10,7 @@
         "watch",
         "run",
         "--project",
-        "src/IV.ManagementHub/IV.ManagementHub.Web/IV.ManagementHub.Web.csproj",
+        "src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web/IV.DX.ManagementHub.Web.csproj",
         "--launch-profile",
         "https"
       ],
@@ -22,9 +22,9 @@
       "name": "Web (Debug)",
       "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/src/IV.ManagementHub/IV.ManagementHub.Web/bin/Debug/net9.0/IV.ManagementHub.Web.exe",
+      "program": "${workspaceFolder}/src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web/bin/Debug/net9.0/IV.DX.ManagementHub.Web.exe",
       "args": [],
-      "cwd": "${workspaceFolder}/src/IV.ManagementHub/IV.ManagementHub.Web",
+      "cwd": "${workspaceFolder}/src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web",
       "console": "integratedTerminal",
       "stopAtEntry": false,
       "env": {

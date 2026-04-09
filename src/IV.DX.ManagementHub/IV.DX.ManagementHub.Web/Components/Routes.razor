@@ -1,0 +1,36 @@
+@using IV.DX.ManagementHub.Web.Components.Pages
+@using IV.DX.ManagementHub.Web.Services
+@implements IDisposable
+@inject AppAuthState AuthState
+
+@if (AuthState.IsAuthenticated)
+{
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+}
+else
+{
+    <LoginPage />
+}
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        AuthState.Changed += OnAuthStateChanged;
+    }
+
+    private void OnAuthStateChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        AuthState.Changed -= OnAuthStateChanged;
+    }
+}

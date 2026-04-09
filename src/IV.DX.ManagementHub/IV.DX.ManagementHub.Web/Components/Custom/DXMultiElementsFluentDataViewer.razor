@@ -1,0 +1,31 @@
+@using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
+@using System.Linq
+@using System
+
+@inherits ManagementHubComponentBase
+
+@if (Definition == null)
+{
+    <FluentProgressRing />
+}
+else
+{
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
+        <div class="dx-grid-scroll-x">
+            <FluentDataGrid id="@Definition.Name"
+                            Style="min-width:100%; width:max-content;"
+                            Items="@(GetVisibleItems().AsQueryable())"
+                            TGridItem="IV.DX.ManagementHub.Web.Models.DXRecordItem"
+                            RowSize="@DataGridRowSize.Medium">
+                @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+                {
+                    <TemplateColumn Title="@column.Name" Align="Align.Start" Style="overflow:visible">
+                        <DXItemViewer ColumnDefinition="GetColumnDefinition(column, context)" DXItem="context" />
+                    </TemplateColumn>
+                }
+            </FluentDataGrid>
+        </div>
+    </FluentStack>
+}

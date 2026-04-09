@@ -1,4 +1,4 @@
-# Agent Instructions (IV.ManagementHub)
+# Agent Instructions (IV.DX.ManagementHub)
 
 ## The agent is allowed to:
 
@@ -27,7 +27,7 @@
 
 ## UI (Fluent UI Blazor) rule
 
-When implementing or adjusting UI (especially dialogs, viewers, grids, and layout) in `IV.ManagementHub.Web`:
+When implementing or adjusting UI (especially dialogs, viewers, grids, and layout) in `IV.DX.ManagementHub.Web`:
 
 1. **Always prefer Fluent UI Blazor features first**  
    Try to achieve the desired behavior using Fluent UI components and their parameters/settings (e.g., `FluentStack`, `FluentGrid`, `FluentDivider`, `FluentCard`, `FluentDataGrid` options, typography/label settings).

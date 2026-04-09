@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 param(
-    [string]$WebPath      = "src/IV.ManagementHub/IV.ManagementHub.Web/IV.ManagementHub.Web.csproj",
-    [string]$SolutionPath = "src/IV.ManagementHub/IV.ManagementHub.sln",
+    [string]$WebPath      = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web/IV.DX.ManagementHub.Web.csproj",
+    [string]$SolutionPath = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.sln",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Debug",
@@ -16,7 +16,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$webRoot = Join-Path $repoRoot "src/IV.ManagementHub/IV.ManagementHub.Web"
+$webRoot = Join-Path $repoRoot "src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web"
 
 Set-Location $repoRoot
 

@@ -1,0 +1,36 @@
+﻿@using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Newtonsoft.Json.Linq
+@using System.Linq
+@using IV.DX.Kernel.Enums;
+@using System;
+
+@* Editor *@
+
+@if (Definition == null)
+{
+    <FluentProgressRing />
+}
+else
+{
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
+@*         <FluentLabel Typo="Typography.Subject">@Definition.Name</FluentLabel>
+        <FluentDivider></FluentDivider> *@
+        @* <FluentCard Class="unclip"> *@
+            @* <FluentStack Orientation="Orientation.Vertical" Width="100%"> *@
+                @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+                {
+                    @if (column.ColumnType == DXColumnTypeEnum.Bool)
+                    {
+                        <DXItemEditor ColumnDefinition="column" DXItem="DXItem" BoolLabel="@column.Name" />
+                    }
+                    else
+                    {
+                        <FluentLabel>@column.Name</FluentLabel>
+                        <DXItemEditor ColumnDefinition="column" DXItem="DXItem" />
+                    }
+                }
+            @* </FluentStack> *@
+        @* </FluentCard> *@
+    </FluentStack>
+}

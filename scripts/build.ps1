@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 param(
-    [string]$SolutionPath = "src/IV.ManagementHub/IV.ManagementHub.sln",
+    [string]$SolutionPath = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.sln",
 
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",

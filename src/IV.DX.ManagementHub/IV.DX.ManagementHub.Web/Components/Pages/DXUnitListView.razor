@@ -1,0 +1,256 @@
+﻿@page "/app/{AppKey}/dxUnitSetView/{dxDataSetViewID}"
+@page "/app/dxUnitSetView/{dxDataSetViewID}"
+
+@using System.Linq
+@using IV.DX.Kernel.Models;
+@using IV.DX.Presentation.Application.Contracts.Models.Enums
+@using IV.DX.ManagementHub.Web.Models
+@using IV.DataProvider.WebApp.Services.Web.ApiClients
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.DX.ManagementHub.Web.Components.Custom
+@using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components.DataGrid
+@using Newtonsoft.Json.Linq
+@using System.Data
+
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@inherits ManagementHubComponentBase
+
+@if (_isInitialLoading)
+{
+    <FluentProgressRing />
+}
+else
+{
+    @if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
+    {
+        <FluentMessageBar Intent="MessageIntent.Warning">
+            @_loadErrorMessage
+        </FluentMessageBar>
+    }
+
+    <DXDataSetBaseView TItem="Newtonsoft.Json.Linq.JObject"
+                       Items="@dxQueryResult.AsQueryable()"
+                       Collapsed="@_collapse"
+                       Orientation="@orientation"
+                       OnResized="OnResizedHandler"
+                       OnRowClick="OnDataRowClicked"
+                       RowStyle="GetDataRowStyle"
+                       EnableSelectionColumn="true"
+                       SelectionHeaderCellTemplate="@SelectAllHeaderCellTemplate"
+                       SelectionCellContent="@SelectRowCellTemplate"
+                       RowActions="@RowActionsTemplate"
+                       RowActionsAlign="Align.End"
+                       RowActionsTitle="">
+        <ToolbarContent>
+            @if (_dxDataSetView?.IsCreatable == true)
+            {
+                <FluentButton aria-label="Add item" Appearance="Appearance.Stealth" IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(!HasCurrentType)" OnClick="@(() => OpenEditDialog(default(Guid)))" />
+            }
+        </ToolbarContent>
+        <Columns>
+            @foreach (string column in dxQueryResult.Columns)
+            {
+                <PropertyColumn TGridItem="Newtonsoft.Json.Linq.JObject"
+                                TProp="object"
+                                Title="@column"
+                                Property="@(p => dxQueryResult.GetValue(p, column))" />
+            }
+        </Columns>
+        <DetailToolbarContent>
+            <FluentStack Orientation="Orientation.Horizontal"
+                         Width="100%"
+                         HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                         VerticalAlignment="VerticalAlignment.Center">
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
+                    @if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                    {
+                        @if (_dxDataSetView?.IsEditable == true)
+                        {
+                            <FluentButton aria-label="Edit"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          OnClick="@(() => OpenEditDialog(selectedPreviewItemID.Value))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+                                    <span>Edit</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                        @if (_dxDataSetView?.IsDeletable == true)
+                        {
+                            <FluentButton aria-label="Delete"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                                    <span>Delete</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                        @if (_dxDataSetView?.IsExportable == true)
+                        {
+                            <FluentButton aria-label="Export"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                                    <span>Export</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                        @foreach (var def in _customButtonDefs)
+                        {
+                            var capturedDef = def;
+                            <FluentButton aria-label="@def.ActionDef.Name"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          Title="@def.ActionDef.Description"
+                                          OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemID!.Value))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Emphasis)" />
+                                    <span>@def.ActionDef.Name</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                    }
+                    else if (SelectedCount > 1)
+                    {
+                        @if (_dxDataSetView?.IsDeletable == true)
+                        {
+                            <FluentButton aria-label="Delete selected"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Delete))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                                    <span>Delete</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                        @if (_dxDataSetView?.IsExportable == true)
+                        {
+                            <FluentButton aria-label="Export selected"
+                                          Appearance="Appearance.Neutral"
+                                          Disabled="@_isBulkActionRunning"
+                                          OnClick="@(() => RequestBulkAction(BulkActionKind.Export))">
+                                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                                    <span>Export</span>
+                                </FluentStack>
+                            </FluentButton>
+                        }
+                    }
+                </FluentStack>
+
+                <FluentButton aria-label="Close preview"
+                              Appearance="Appearance.Stealth"
+                              Disabled="@_isBulkActionRunning"
+                              OnClick="OnClosed">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Dismiss())" Color="Color.Accent" />
+                </FluentButton>
+            </FluentStack>
+        </DetailToolbarContent>
+        <DetailContent>
+            <div class="dx-unit-details-content">
+                @if (SelectedCount == 0)
+                {
+                    <FluentLabel>Select row(s) to preview data.</FluentLabel>
+                }
+                else if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                {
+                    <DXUnitDetailsView AppKey="@AppKey" Type="@dxQueryResult.TypeName" ID="@selectedPreviewItemID.Value" />
+                }
+                else
+                {
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body"><strong>Selected items</strong></FluentLabel>
+                        <FluentDivider />
+
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
+                            @foreach (var display in SelectedDisplayStrings)
+                            {
+                                <FluentLabel>@display</FluentLabel>
+                            }
+                        </FluentStack>
+                    </FluentStack>
+                }
+            </div>
+        </DetailContent>
+    </DXDataSetBaseView>
+
+    @if (_showDialog)
+    {
+        <DXUnitDialog Type="@dxQueryResult.TypeName" ID="@selectedItemID" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="OnSaved" />
+    }
+
+    @if (_showBulkConfirm)
+    {
+        <div class="dx-overlay-backdrop" style="--dx-overlay-z: 6000;" @onclick="CloseBulkConfirm">
+            <div class="dx-overlay-window dx-overlay-window--md" @onclick:stopPropagation="true">
+                <FluentToolbar Class="dx-overlay-header" Style="width:100%;">
+                    <FluentStack Orientation="Orientation.Horizontal"
+                                Width="100%"
+                                HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                VerticalAlignment="VerticalAlignment.Center">
+                        <FluentLabel Typo="Typography.Subject">@BulkConfirmTitle</FluentLabel>
+                        <FluentButton Appearance="Appearance.Stealth"
+                                      aria-label="Close"
+                                      IconStart="@(new Icons.Regular.Size20.Dismiss())"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="CloseBulkConfirm" />
+                    </FluentStack>
+                </FluentToolbar>
+
+                <div class="dx-overlay-body">
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel>@BulkConfirmMessage</FluentLabel>
+                        @if (!string.IsNullOrWhiteSpace(_bulkActionErrorMessage))
+                        {
+                            <FluentMessageBar Intent="MessageIntent.Error">@_bulkActionErrorMessage</FluentMessageBar>
+                        }
+                    </FluentStack>
+                </div>
+
+                <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8">
+                        <FluentButton Appearance="Appearance.Accent"
+                                      IconStart="@(new Icons.Regular.Size16.Checkmark())"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="ConfirmBulkActionAsync">
+                            Confirm
+                        </FluentButton>
+                        <FluentButton Appearance="Appearance.Neutral"
+                                      IconStart="@(new Icons.Regular.Size16.Dismiss())"
+                                      Disabled="@_isBulkActionRunning"
+                                      OnClick="CloseBulkConfirm">
+                            Cancel
+                        </FluentButton>
+                    </FluentStack>
+                </FluentToolbar>
+            </div>
+        </div>
+    }
+}
+
+@code
+{
+    private RenderFragment<JObject>? RowActionsTemplate => HasRowActions
+        ? item => @<EntityBaseActionsFluentToolbar Actions="@BuildRowActions(item)" />
+        : null;
+
+    private RenderFragment<ColumnBase<JObject>> SelectAllHeaderCellTemplate => _ => @<div @onclick:stopPropagation="true" @onpointerdown:stopPropagation="true">
+        <FluentCheckbox aria-label="Select all rows"
+                        Value="@IsAllRowsSelected"
+                        ValueChanged="@SetSelectAllRows" />
+    </div>;
+
+    private RenderFragment<JObject> SelectRowCellTemplate => item => @<FluentCheckbox Value="@IsSelected(dxQueryResult.GetID(item))"
+                                                                                       ValueChanged="@(v => SetSelected(dxQueryResult.GetID(item), v))" />;
+}

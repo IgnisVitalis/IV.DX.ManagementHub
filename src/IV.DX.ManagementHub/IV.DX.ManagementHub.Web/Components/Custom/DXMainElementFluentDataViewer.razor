@@ -1,0 +1,21 @@
+@using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using Microsoft.FluentUI.AspNetCore.Components
+@using System.Linq
+@using System
+
+@if (Definition == null)
+{
+    <FluentProgressRing />
+}
+else
+{
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Class="stack-stretch">
+        @foreach (var column in Definition.Columns.Where(column => !systemColumns.Contains(column.Name, StringComparer.OrdinalIgnoreCase)))
+        {
+            <div class="dx-viewer-field">
+                <FluentLabel Class="dx-viewer-title">@column.Name</FluentLabel>
+                <DXItemViewer ColumnDefinition="column" DXItem="DXItem" />
+            </div>
+        }
+    </FluentStack>
+}
