@@ -14,9 +14,15 @@ using IV.DX.ManagementHub.ApiService.Services;
 using IV.DX.ManagementHub.Common.Models;
 using IV.DX.ManagementHub.Web.Components;
 using IV.DX.ManagementHub.Web.Services;
+using Microsoft.Extensions.Logging;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Console log panel infrastructure — created before DI so the provider can hold a direct reference
+var consoleLogBroadcaster = new ConsoleLogBroadcaster();
+builder.Services.AddSingleton(consoleLogBroadcaster);
+builder.Logging.AddProvider(new ConsoleLoggerProvider(consoleLogBroadcaster));
 
 // --- DX Core ---
 builder.Services
