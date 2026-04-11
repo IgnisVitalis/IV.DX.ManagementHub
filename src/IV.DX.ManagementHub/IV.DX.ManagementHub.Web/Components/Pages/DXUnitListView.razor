@@ -109,12 +109,12 @@ else
                         {
                             var capturedDef = def;
                             <FluentButton aria-label="@def.ActionDef.Name"
-                                          Appearance="Appearance.Neutral"
+                                          Appearance="@DXActionButtonMapper.ToAppearance(def.Button.Style)"
                                           Disabled="@_isBulkActionRunning"
                                           Title="@def.ActionDef.Description"
                                           OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemID!.Value))">
                                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
-                                    <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Emphasis)" />
+                                    <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Color, def.Button.Style)" />
                                     <span>@def.ActionDef.Name</span>
                                 </FluentStack>
                             </FluentButton>

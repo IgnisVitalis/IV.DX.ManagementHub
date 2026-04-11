@@ -57,22 +57,28 @@ namespace IV.DX.ManagementHub.Web.Models
             _                          => string.Empty
         };
 
-        public static Appearance ToAppearance(DXPActionEmphasisEnum emphasis) => emphasis switch
+        public static Appearance ToAppearance(DXPActionStyleEnum style) => style switch
         {
-            DXPActionEmphasisEnum.Accent  => Appearance.Accent,
-            DXPActionEmphasisEnum.Danger  => Appearance.Neutral,
-            _                             => Appearance.Neutral
+            DXPActionStyleEnum.Filled => Appearance.Accent,
+            DXPActionStyleEnum.Ghost  => Appearance.Stealth,
+            _                         => Appearance.Neutral
         };
 
-        public static Color ToIconColor(DXPActionEmphasisEnum emphasis) => emphasis switch
+        public static Color ToIconColor(DXPActionColorEnum color, DXPActionStyleEnum style)
         {
-            DXPActionEmphasisEnum.Accent   => Color.Fill,    // white/contrast on filled accent background
-            DXPActionEmphasisEnum.Danger   => Color.Error,
-            DXPActionEmphasisEnum.Info     => Color.Info,
-            DXPActionEmphasisEnum.Warning  => Color.Warning,
-            DXPActionEmphasisEnum.Success  => Color.Success,
-            _                              => Color.Fill
-        };
+            if (style == DXPActionStyleEnum.Filled)
+                return Color.Fill;
+
+            return color switch
+            {
+                DXPActionColorEnum.Primary => Color.Accent,
+                DXPActionColorEnum.Danger  => Color.Error,
+                DXPActionColorEnum.Info    => Color.Info,
+                DXPActionColorEnum.Warning => Color.Warning,
+                DXPActionColorEnum.Success => Color.Success,
+                _                          => Color.Fill
+            };
+        }
     }
 
     public static class DXActionButtonRegistry

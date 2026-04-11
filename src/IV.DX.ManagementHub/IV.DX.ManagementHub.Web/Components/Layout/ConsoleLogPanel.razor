@@ -8,11 +8,11 @@
                  VerticalAlignment="VerticalAlignment.Center"
                  Class="console-log__toolbar">
         <FluentSpacer />
-        <div style="width:110px; height:28px; display:flex; align-items:stretch;">
-            <DXPicklistField Title="Log Level"
-                             Value="@_minLevelStr"
-                             ValueChanged="OnLevelChanged"
-                             Options="@_levelOptions" />
+        <div style="width:130px; height:28px; display:flex; align-items:stretch;">
+            <DXPicklistField Title="Filter"
+                             Value="@_filter"
+                             ValueChanged="OnFilterChanged"
+                             Options="@_filterOptions" />
         </div>
         <FluentButton IconOnly="true"
                       Appearance="Appearance.Stealth"
@@ -46,7 +46,7 @@
                             }
                         </div>
                         <span class="console-entry__time">@entry.Timestamp.ToString("HH:mm:ss")</span>
-                        @if (entry.StackTrace != null)
+                        @if (entry.StackTrace != null && ShowStackTrace(entry))
                         {
                             <details class="console-entry__details">
                                 <summary class="console-entry__details-toggle">Stack trace</summary>
@@ -61,21 +61,27 @@
 </div>
 
 @code {
-    private static readonly IReadOnlyList<KeyValuePair<string, string>> _levelOptions =
+    private static readonly IReadOnlyList<KeyValuePair<string, string>> _filterOptions =
     [
-        new("Info",    "Info"),
-        new("Warning", "Warning"),
-        new("Error",   "Error"),
+        new("Info",       "Info"),
+        new("Warning",    "Warning"),
+        new("Error",      "Error"),
+        new("Stacktrace", "Stacktrace"),
     ];
 
-    private string _minLevelStr = "Info";
-
-    private ConsoleLogLevel MinLevel => Enum.Parse<ConsoleLogLevel>(_minLevelStr);
+    private string _filter = "Info";
 
     private bool HasEntries => LogService.Entries.Any();
 
-    private IEnumerable<ConsoleLogEntry> FilteredEntries =>
-        LogService.Entries.Where(e => e.Level >= MinLevel);
+    private IEnumerable<ConsoleLogEntry> FilteredEntries => _filter switch
+    {
+        "Warning"    => LogService.Entries.Where(e => e.Level == ConsoleLogLevel.Warning),
+        "Error"      => LogService.Entries.Where(e => e.Level == ConsoleLogLevel.Error),
+        "Stacktrace" => LogService.Entries.Where(e => e.Level == ConsoleLogLevel.Error && e.StackTrace != null),
+        _            => LogService.Entries.Where(e => e.Level == ConsoleLogLevel.Info),
+    };
+
+    private bool ShowStackTrace(ConsoleLogEntry entry) => _filter == "Stacktrace";
 
     protected override void OnInitialized()
     {
@@ -84,7 +90,7 @@
 
     private void OnChanged() => InvokeAsync(StateHasChanged);
 
-    private void OnLevelChanged(string value) => _minLevelStr = value;
+    private void OnFilterChanged(string value) => _filter = value;
 
     public void Dispose()
     {

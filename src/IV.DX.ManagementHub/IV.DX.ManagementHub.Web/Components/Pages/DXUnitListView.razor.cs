@@ -309,8 +309,8 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                     Key = $"custom_{def.ActionDef.Key}",
                     Label = def.ActionDef.Name,
                     IconKey = DXActionButtonMapper.ToIconKey(def.Button.Icon),
-                    Appearance = DXActionButtonMapper.ToAppearance(def.Button.Emphasis),
-                    IconColor = DXActionButtonMapper.ToIconColor(def.Button.Emphasis),
+                    Appearance = DXActionButtonMapper.ToAppearance(def.Button.Style),
+                    IconColor = DXActionButtonMapper.ToIconColor(def.Button.Color, def.Button.Style),
                     OnClick = EventCallback.Factory.Create(this, () => ExecuteCustomActionAsync(capturedDef, capturedId))
                 });
             }
