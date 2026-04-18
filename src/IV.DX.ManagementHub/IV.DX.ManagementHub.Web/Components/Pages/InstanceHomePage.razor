@@ -1,7 +1,19 @@
 @page "/app/{AppKey}"
-@using IV.DX.ManagementHub.Web.Components.Custom.Base
-@inherits ManagementHubComponentBase
 
-<FluentLabel Typo="Typography.Body" Style="padding:1rem;color:var(--neutral-foreground-hint-rest);">
-    Select an item from the navigation menu.
-</FluentLabel>
+@inject NavigationManager NavigationManager
+
+@code
+{
+    private const string MHInstancesCardViewId = "f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d";
+
+    [Parameter] public string AppKey { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        var url = string.IsNullOrWhiteSpace(AppKey)
+            ? $"/app/dxUnitCardView/{MHInstancesCardViewId}"
+            : $"/app/{AppKey}/dxUnitCardView/{MHInstancesCardViewId}";
+
+        NavigationManager.NavigateTo(url, replace: true);
+    }
+}

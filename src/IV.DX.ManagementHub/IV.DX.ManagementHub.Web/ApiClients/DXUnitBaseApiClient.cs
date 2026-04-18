@@ -7,7 +7,7 @@ using System.Text;
 
 namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 {
-    internal abstract class DXUnitBaseApiClient<T>(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
+    public abstract class DXUnitBaseApiClient<T>(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
         : DXUnitGenericApiClient<T>(clientProvider, JSRuntime)
         where T : DXUnit
     {

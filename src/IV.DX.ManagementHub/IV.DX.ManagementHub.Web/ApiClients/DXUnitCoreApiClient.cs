@@ -158,6 +158,44 @@ namespace IV.DX.ManagementHub.Web.ApiClients
             await JSRuntime.InvokeVoidAsync("downloadJsonFile", $"01_01_0001_UIUX_{typeName}.dx", formatted);
         }
 
+        public async Task<JObject?> GetItemByDefinitionAsync(Guid definitionId, Guid id, CancellationToken cancellationToken = default)
+        {
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.GetAsync(clientProvider.GetByDefinitionItemUri(definitionId, id), cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return null;
+
+            response.EnsureSuccessStatusCode();
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+            return JObject.Parse(str);
+        }
+
+        public async Task DeleteByDefinitionAsync(Guid definitionId, Guid id, CancellationToken cancellationToken = default)
+        {
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.DeleteAsync(clientProvider.GetByDefinitionItemUri(definitionId, id), cancellationToken);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<JObject> GetItemsByDefinitionAsync(Guid definitionId, CancellationToken cancellationToken = default)
+        {
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.GetAsync(clientProvider.GetByDefinitionUri(definitionId), cancellationToken);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            
+                return [];
+
+            response.EnsureSuccessStatusCode();
+
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+            var result = JObject.Parse(str);
+         
+            return result;
+        }
+
         public async Task ExportAsync(string typeName, IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
         {
             var idArray = ids?.Where(x => x != default).Distinct().ToArray() ?? Array.Empty<Guid>();

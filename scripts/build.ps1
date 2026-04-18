@@ -7,6 +7,9 @@ param(
 
     [string]$DxVersion,
     [string]$DxPresentationVersion,
+    [string]$DxWebApiVersion,
+    [string]$DxWebApiAuthVersion,
+    [string]$DxWebApiManagementVersion,
     [switch]$SkipDxSync,
     [switch]$ErrorsOnly
 )
@@ -210,6 +213,9 @@ function Sync-PackageVersion {
 if (-not $SkipDxSync) {
     Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX" -RequestedVersion $DxVersion
     Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.Presentation" -RequestedVersion $DxPresentationVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi" -RequestedVersion $DxWebApiVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi.Auth" -RequestedVersion $DxWebApiAuthVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi.Management" -RequestedVersion $DxWebApiManagementVersion
 }
 
 Write-Host "Building solution: $SolutionPath"

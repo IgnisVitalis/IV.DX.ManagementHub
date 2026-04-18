@@ -116,9 +116,9 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
             if (TryGetNonEmptyString(item, "DisplayString", out var displayString))
                 return displayString;
 
-            if (item.Content.TryGetValue("DisplayValue", out var displayValue) && displayValue != null)
+            if (item.Content.TryGetValue("DXTitleExpression", out var DXTitleExpression) && DXTitleExpression != null)
             {
-                var displayFieldName = displayValue.ToString();
+                var displayFieldName = DXTitleExpression.ToString();
                 if (!string.IsNullOrWhiteSpace(displayFieldName)
                     && item.Content.TryGetValue(displayFieldName, out var displayFieldValue)
                     && displayFieldValue != null)

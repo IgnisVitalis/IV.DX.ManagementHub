@@ -14,6 +14,9 @@ namespace IV.DX.ManagementHub.Web.Services
         string GetSearchUri(string typeName);
         string GetUnitStructureUri(string typeName);
         string GetQueryResultUri(Guid dxQueryID, Guid? dxFilterID = null);
+        string GetByDefinitionUri(Guid definitionId);
+        string GetByDefinitionItemUri(Guid definitionId, Guid id);
+        string GetByDefinitionByIdsUri(Guid definitionId);
     }
 
     internal sealed class DirectInstanceClientProvider(
@@ -49,6 +52,15 @@ namespace IV.DX.ManagementHub.Web.Services
             dxFilterID.HasValue
                 ? $"api/management/query-result/{dxQueryID}/{dxFilterID.Value}"
                 : $"api/management/query-result/{dxQueryID}";
+
+        public string GetByDefinitionUri(Guid definitionId) =>
+            $"api/management/{definitionId}";
+
+        public string GetByDefinitionItemUri(Guid definitionId, Guid id) =>
+            $"api/management/{definitionId}/{id}";
+
+        public string GetByDefinitionByIdsUri(Guid definitionId) =>
+            $"api/management/{definitionId}/by-ids";
 
         private static string BuildCollectionUri(string baseUri, string? filter)
         {
@@ -104,6 +116,15 @@ namespace IV.DX.ManagementHub.Web.Services
             dxFilterID.HasValue
                 ? $"api/DXQueryResult/{dxQueryID}/{dxFilterID.Value}"
                 : $"api/DXQueryResult/{dxQueryID}";
+
+        public string GetByDefinitionUri(Guid definitionId) =>
+            $"api/{definitionId}";
+
+        public string GetByDefinitionItemUri(Guid definitionId, Guid id) =>
+            $"api/{definitionId}/{id}";
+
+        public string GetByDefinitionByIdsUri(Guid definitionId) =>
+            $"api/{definitionId}/by-ids";
 
         private static string BuildCollectionUri(string baseUri, string? filter)
         {

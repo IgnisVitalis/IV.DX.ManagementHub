@@ -15,6 +15,7 @@
           "Name": "MHInstanceUnit",
           "Kind": 2,
           "SupportsOwnership": false,
+          "DXTitleExpression": "Title",
           "DXElements": {
             "DXColumnDefinitionElement": {
               "Meta": {

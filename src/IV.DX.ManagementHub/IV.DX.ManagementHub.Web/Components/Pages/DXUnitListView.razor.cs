@@ -656,7 +656,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         private static string GetDisplayStringFromObject(JObject obj)
         {
-            var candidates = new[] { "DisplayString", "DisplayValue", "Name" };
+            var candidates = new[] { "DisplayString", "DXTitleExpression", "Name" };
 
             foreach (var name in candidates)
             {

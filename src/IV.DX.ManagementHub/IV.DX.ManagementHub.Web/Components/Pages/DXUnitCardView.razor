@@ -1,0 +1,78 @@
+@page "/app/{AppKey}/dxUnitCardView/{DXPComponentID}"
+@page "/app/dxUnitCardView/{DXPComponentID}"
+
+@using IV.DX.Kernel.Helpers.DXObjectHelpers
+@using IV.DX.ManagementHub.Web.ApiClients
+@using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using IV.DX.ManagementHub.Web.Components.Custom
+@using IV.DX.Presentation.Application.Contracts.Models
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Newtonsoft.Json.Linq
+
+@attribute [StreamRendering(true)]
+@attribute [OutputCache(Duration = 5)]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@inherits DXPComponent<DXPCardViewUnit, DXCardViewApiClient>
+
+@if (IsInitialLoading)
+{
+    <FluentProgressRing />
+}
+else if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
+{
+    <FluentMessageBar Intent="MessageIntent.Warning">@LoadErrorMessage</FluentMessageBar>
+}
+else
+{
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8" Width="100%" Style="overflow-x: hidden;">
+
+        @* toolbar *@
+        <FluentStack Orientation="Orientation.Horizontal">
+            @if (ComponentUnit?.IsCreatable == true)
+            {
+                <FluentButton aria-label="Add item" Appearance="Appearance.Stealth"
+                              IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(string.IsNullOrWhiteSpace(_typeName))"
+                              OnClick="@(() => OpenDialog(Guid.Empty))" />
+            }
+        </FluentStack>
+
+        @* cards *@
+        @if (_cardItems.Count == 0)
+        {
+            <FluentLabel>No items.</FluentLabel>
+        }
+        else
+        {
+            <div style="width: 100%;">
+                <FluentGrid Spacing="3">
+                    @foreach (var item in _cardItems)
+                    {
+                        var capturedItem = item;
+                        var title = DXObjectHelper.GetDXTitle(capturedItem)
+                            ?? (DXObjectHelper.TryGetID(capturedItem, out var itemId) ? itemId.ToString() : string.Empty);
+                        var timestamp = capturedItem.Value<DateTime?>("TimeStamp")?.ToString("yyyy-MM-dd") ?? string.Empty;
+
+                        <FluentGridItem xs="12" sm="6" md="4">
+                            <FluentCard Width="100%">
+                         
+                                <FluentLabel Typo="Typography.Subject">@title</FluentLabel>
+                               
+                                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint);">
+                                    @timestamp
+                                </FluentLabel>
+                         
+                            </FluentCard>
+                        </FluentGridItem>
+                    }
+                </FluentGrid>
+            </div>
+        }
+
+    </FluentStack>
+
+    @if (_showDialog)
+    {
+        <DXUnitDialog Type="@_typeName" ID="@_dialogItemId" AppKey="@AppKey" OnClosed="CloseDialog" OnSaved="OnSaved" />
+    }
+}
