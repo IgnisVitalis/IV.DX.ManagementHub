@@ -83,41 +83,7 @@ namespace IV.DX.ManagementHub.Web.ApiClients
             return JsonConvert.DeserializeObject<DXDataBlock<DXUnitRecord>>(str);
         }
 
-        public async Task<JObject> GetDataDefinition(string typeName, CancellationToken cancellationToken = default)
-        {
-            var items = await this.GetItems("DXUnitDefinitionUnit", $"Name = '{typeName}'");
-
-            if (items.Count() == 0)
-            {
-                throw new Exception($"There are no dx unit definition with name '{typeName}'");
-            }
-
-            if (items.Count() > 1)
-            {
-                throw new Exception($"There are more than 1 entry of data definition with name '{typeName}'");
-            }
-
-            return items.Single();
-        }
-
-        public async Task<JObject> GetEntityDataDefinition(string typeName, CancellationToken cancellationToken = default)
-        {
-            var items = await this.GetItems("DXUnitDefinitionUnit", $"Name = '{typeName}'");
-
-            if (items.Count() == 0)
-            {
-                throw new Exception($"There are no dx unit definition with name '{typeName}'");
-            }
-
-            if (items.Count() > 1)
-            {
-                throw new Exception($"There are more than 1 entry of data definition with name '{typeName}'");
-            }
-
-            return items.Single();
-        }
-
-        public async Task<IEnumerable<JObject>> GetItems(string typeName, string? query = default, CancellationToken cancellationToken = default)
+        public async Task<JObject> GetItems(string typeName, string? query = default, CancellationToken cancellationToken = default)
         {
             var request = clientProvider.GetCollectionUri(typeName, query);
             var http = await clientProvider.GetClientAsync(cancellationToken);
@@ -132,9 +98,9 @@ namespace IV.DX.ManagementHub.Web.ApiClients
 
             var str = await response.Content.ReadAsStringAsync(cancellationToken);
 
-            var items = JArray.Parse(str);
+            var items = JObject.Parse(str);
 
-            return items.Select(x => (JObject)x).ToList();
+            return items;
         }
 
         public async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)

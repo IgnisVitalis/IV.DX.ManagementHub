@@ -26,20 +26,26 @@
                 <NavMenu AppKey="@CurrentAppKey" />
             </LeftPanel>
            
-            <div class="body-content">
-                <FluentSplitter Orientation="Orientation.Vertical" Panel1MinSize="20%"
-                                Panel2MinSize="@_bottomPanelMinSize" Panel2Size="@_panel2Size" Collapsed="@_isBottomPanelCollapsed"
-                                BarSize="4" BarHandle="false" OnResized="OnSplitterResized" Class="fill-parent">
-                    <Panel1>
-                        <div class="content">
-                            @Body
-                        </div>
-                    </Panel1>
-                    <Panel2>
-                        <BottomPanel OnClose="CollapseBottomPanel" />
-                    </Panel2>
-                </FluentSplitter>
-            </div>
+            <FluentBodyContent>
+                <div class="body-content">
+                    <FluentSplitter Orientation="Orientation.Vertical" Panel1MinSize="20%"
+                                    Panel2MinSize="@_bottomPanelMinSize" Panel2Size="@_panel2Size"
+                                    Collapsed="@_isBottomPanelCollapsed" BarSize="4" BarHandle="false" OnResized="OnSplitterResized"
+                                    Class="fill-parent" Style="height:100%;">
+                        <Panel1>
+                            <div class="content">
+                                @Body
+                            </div>
+                        </Panel1>
+                        <Panel2>
+                            <BottomPanel OnClose="CollapseBottomPanel" />
+                        </Panel2>
+                    </FluentSplitter>
+                </div>
+            </FluentBodyContent>
+
+
+
         </FluentStack>
     </FluentLayout>
 

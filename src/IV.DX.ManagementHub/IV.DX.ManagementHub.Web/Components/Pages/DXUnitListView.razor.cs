@@ -181,7 +181,9 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                     return;
                 }
 
-                dxUnits = await coreApi.GetItems(dxQueryResult.TypeName);
+                var result = await coreApi.GetItems(dxQueryResult.TypeName);
+
+                dxUnits = (result["Data"]?["Items"] as JArray ?? new JArray()).OfType<JObject>();
                 if (dxUnits is null)
                 {
                     dxUnits = Enumerable.Empty<JObject>();
@@ -284,8 +286,8 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             var result = new List<DXActionButton>();
 
             var ordered = new List<(int Order, string Key)>();
-            if (_dxDataSetView.IsEditable)   ordered.Add((10, DXActionButtonKeys.Edit));
-            if (_dxDataSetView.IsDeletable)  ordered.Add((20, DXActionButtonKeys.Delete));
+            if (_dxDataSetView.IsEditable) ordered.Add((10, DXActionButtonKeys.Edit));
+            if (_dxDataSetView.IsDeletable) ordered.Add((20, DXActionButtonKeys.Delete));
             if (_dxDataSetView.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
 
             result.AddRange(DXActionButtonRegistry.Build(

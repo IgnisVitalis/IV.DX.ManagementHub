@@ -25,7 +25,10 @@ else if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
 }
 else
 {
-    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8" Width="100%" Style="overflow-x: hidden;">
+
+    
+
+    <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="overflow-x: hidden; height: 100%;">
 
         @* toolbar *@
         <FluentStack Orientation="Orientation.Horizontal">
@@ -44,29 +47,29 @@ else
         }
         else
         {
-            <div style="width: 100%;">
-                <FluentGrid Spacing="3">
-                    @foreach (var item in _cardItems)
-                    {
-                        var capturedItem = item;
-                        var title = DXObjectHelper.GetDXTitle(capturedItem)
-                            ?? (DXObjectHelper.TryGetID(capturedItem, out var itemId) ? itemId.ToString() : string.Empty);
-                        var timestamp = capturedItem.Value<DateTime?>("TimeStamp")?.ToString("yyyy-MM-dd") ?? string.Empty;
+            <FluentGrid Spacing="3" AdaptiveRendering="true" Style="width:100%; height: 100%;">
+                @foreach (var item in _cardItems)
+                {
+                    var capturedItem = item;
+                    var title = DXObjectHelper.GetDXTitle(capturedItem)
+                        ?? (DXObjectHelper.TryGetID(capturedItem, out var itemId) ? itemId.ToString() : string.Empty);
+                    var timestamp = capturedItem.Value<DateTime?>("TimeStamp")?.ToString("yyyy-MM-dd") ?? string.Empty;
 
-                        <FluentGridItem xs="12" sm="6" md="4">
-                            <FluentCard Width="100%">
+                    <FluentGridItem xs="12" sm="6" md="4">
+                        <FluentCard Width="100%">
                          
-                                <FluentLabel Typo="Typography.Subject">@title</FluentLabel>
+                            <FluentLabel Typo="Typography.Subject">@title</FluentLabel>
                                
-                                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint);">
-                                    @timestamp
-                                </FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint);">
+                                @timestamp
+                            </FluentLabel>
                          
-                            </FluentCard>
-                        </FluentGridItem>
-                    }
-                </FluentGrid>
-            </div>
+                        </FluentCard>
+                    </FluentGridItem>
+                }
+            </FluentGrid>
+
+         
         }
 
     </FluentStack>

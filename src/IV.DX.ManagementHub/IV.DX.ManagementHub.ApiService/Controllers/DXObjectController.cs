@@ -16,7 +16,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JArray>> GetAllAsync([FromRoute] string typeName, [FromQuery] string? filter = null)
+        public async Task<ActionResult<JObject>> GetAllAsync([FromRoute] string typeName, [FromQuery] string? filter = null)
         {
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
@@ -30,7 +30,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
                 return StatusCode((int)response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync(ct);
-            return JArray.Parse(body);
+            return JObject.Parse(body);
         }
 
         /// <summary>Search using long filter (POST, JSON).</summary>
@@ -38,7 +38,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JArray>> SearchAsync([FromRoute] string typeName, [FromBody] string filter)
+        public async Task<ActionResult<JObject>> SearchAsync([FromRoute] string typeName, [FromBody] string filter)
         {
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
@@ -49,7 +49,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
                 return StatusCode((int)response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync(ct);
-            return JArray.Parse(body);
+            return JObject.Parse(body);
         }
 
         /// <summary>Get object of the specified type by ID.</summary>
@@ -77,10 +77,10 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         [Consumes("application/json")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JArray>> GetByIdsAsync([FromRoute] string typeName, [FromBody] Guid[] ids)
+        public async Task<ActionResult<JObject>> GetByIdsAsync([FromRoute] string typeName, [FromBody] Guid[] ids)
         {
             if (ids is null || ids.Length == 0)
-                return new JArray();
+                return new JObject();
 
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
@@ -91,7 +91,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
                 return StatusCode((int)response.StatusCode);
 
             var body = await response.Content.ReadAsStringAsync(ct);
-            return JArray.Parse(body);
+            return JObject.Parse(body);
         }
 
         /// <summary>Create or update an object of the specified type.</summary>

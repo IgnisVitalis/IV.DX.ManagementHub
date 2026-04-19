@@ -96,7 +96,7 @@ namespace IV.DX.ManagementHub.Web.Models
 
             var jObject = JObject.Parse(str);
 
-            var typeName = jObject.Value<string>("S_Type") ?? string.Empty;
+            var typeName = jObject.SelectToken("Content.Meta.Type")!.Value<string>();
 
             var dataDefToken = jObject["QueryDefinition"] as JArray
                                ?? throw new JsonException("Property 'QueryDefinition' is missing or not an array.");
