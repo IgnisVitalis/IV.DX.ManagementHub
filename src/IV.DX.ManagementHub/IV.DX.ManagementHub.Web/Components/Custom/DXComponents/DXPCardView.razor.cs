@@ -3,9 +3,9 @@ using IV.DX.ManagementHub.Web.Components.Custom.Base;
 using IV.DX.Presentation.Application.Contracts.Models;
 using Newtonsoft.Json.Linq;
 
-namespace IV.DX.ManagementHub.Web.Components.Pages
+namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 {
-    public partial class DXUnitCardView : DXPComponent<DXPCardViewUnit, DXCardViewApiClient>
+    public partial class DXPCardView : DXPComponent<DXPCardViewUnit, DXCardViewApiClient>
     {
         private DXUnitCoreApiClient? _coreApi;
         private string _typeName = string.Empty;

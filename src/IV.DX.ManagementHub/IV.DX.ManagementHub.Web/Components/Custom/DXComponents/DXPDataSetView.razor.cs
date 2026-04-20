@@ -1,5 +1,4 @@
-﻿using IV.DataProvider.WebApp.Services.Web.ApiClients;
-using IV.DataProvider.WebApp.Services.Web.Contracts;
+using IV.DataProvider.WebApp.Services.Web.ApiClients;
 using IV.DX.Application.Contracts.Actions;
 using IV.DX.Kernel.Models;
 using IV.DX.Presentation.Application.Contracts.Models;
@@ -9,47 +8,23 @@ using IV.DX.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using System.Data;
 
-namespace IV.DX.ManagementHub.Web.Components.Pages
+namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 {
-    public partial class DXUnitListView : ManagementHubComponentBase
+    public partial class DXPDataSetView : DXPComponent<DXPDataSetViewUnit, DXPDataSetViewApiClient>
     {
-        [Inject]
-        IApiClientResolver Resolver { get; set; } = default!;
-
         [Inject]
         IDXActionExecutor ActionExecutor { get; set; } = default!;
 
-        DXUnitCoreApiClient coreApi = default!;
-        DXQueryResultApiClient dxQueryApi = default!;
-        DXDataSetViewApiClient dxDataSetViewApiClient = default!;
-        DXPButtonActionUnitApiClient buttonActionApiClient = default!;
-        DXActionDefinitionUnitApiClient actionDefinitionApiClient = default!;
+        DXUnitCoreApiClient? coreApi;
+        DXQueryResultApiClient? dxQueryApi;
+        DXPButtonActionUnitApiClient? buttonActionApiClient;
+        DXActionDefinitionUnitApiClient? actionDefinitionApiClient;
 
         private record CustomButtonDef(int Order, DXPButtonActionUnit Button, DXActionDefinitionUnit ActionDef);
 
-        private Guid _dxDataSetViewID;
-
-        [Parameter, EditorRequired]
-        public string dxDataSetViewID
-        {
-            get
-            {
-                return this._dxDataSetViewID.ToString();
-            }
-            set
-            {
-                this._dxDataSetViewID = Guid.Parse(value);
-            }
-        }
-
-        private DXPDataSetViewUnit? _dxDataSetView;
         private readonly List<CustomButtonDef> _customButtonDefs = new();
         private DXQueryResult dxQueryResult = DXQueryResult.Empty();
-        private IDictionary<string, object> rows;
-        private string? _loadErrorMessage;
 
         private readonly List<Guid> _selectedIds = new();
         private readonly HashSet<Guid> _selectedIdSet = new();
@@ -74,28 +49,13 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                 _ => "Confirm",
             };
 
-        protected override async Task OnParametersSetAsync()
-        {
-            coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
-            dxQueryApi = await Resolver.GetAsync<DXQueryResultApiClient>(base.AppKey);
-            dxDataSetViewApiClient = await Resolver.GetAsync<DXDataSetViewApiClient>(base.AppKey);
-            buttonActionApiClient = await Resolver.GetAsync<DXPButtonActionUnitApiClient>(base.AppKey);
-            actionDefinitionApiClient = await Resolver.GetAsync<DXActionDefinitionUnitApiClient>(base.AppKey);
-
-            await LoadDataAsync(true);
-        }
-
-        private bool _isInitialLoading;
-        private bool _isRefreshing;
-        private bool _isSaving;
         private bool _collapse = true;
         private bool HasCurrentType => !string.IsNullOrWhiteSpace(dxQueryResult?.TypeName);
         private bool HasRowActions =>
-            (_dxDataSetView is { IsEditable: true } or { IsDeletable: true } or { IsExportable: true })
+            (ComponentUnit is { IsEditable: true } or { IsDeletable: true } or { IsExportable: true })
             || _customButtonDefs.Count > 0;
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
-        private DataTable values;
 
         private Guid selectedItemID { get; set; }
         private Guid? selectedPreviewItemID { get; set; }
@@ -146,91 +106,46 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             else
             {
                 foreach (var id in allIds)
-                {
                     AddSelected(id);
-                }
             }
 
             SyncPreviewWithSelection();
             return Task.CompletedTask;
         }
 
-        private bool isEditing = false;
-        private bool showDetails = false;
-        private string editBlockName = string.Empty;
-
-        private async Task LoadDataAsync(bool initial)
+        protected override async Task LoadDataAsync()
         {
-            if (initial) _isInitialLoading = true; else _isRefreshing = true;
+            coreApi ??= await Resolver.GetAsync<DXUnitCoreApiClient>(AppKey);
+            dxQueryApi ??= await Resolver.GetAsync<DXQueryResultApiClient>(AppKey);
+            buttonActionApiClient ??= await Resolver.GetAsync<DXPButtonActionUnitApiClient>(AppKey);
+            actionDefinitionApiClient ??= await Resolver.GetAsync<DXActionDefinitionUnitApiClient>(AppKey);
 
-            try
-            {
-                _dxDataSetView = await dxDataSetViewApiClient.Get(_dxDataSetViewID);
-                if (_dxDataSetView is null)
-                {
-                    SetEmptyState("Data set view not found for the selected instance.");
-                    return;
-                }
+            await LoadCustomButtonDefsAsync();
 
-                await LoadCustomButtonDefsAsync();
+            dxQueryResult = await dxQueryApi.GetAsync(ComponentUnit!.DXQuery, ComponentUnit.DXFilter);
+            if (dxQueryResult is null || string.IsNullOrWhiteSpace(dxQueryResult.TypeName))
+                throw new InvalidOperationException("Query result is empty or invalid for the selected data set.");
 
-                dxQueryResult = await dxQueryApi.GetAsync(_dxDataSetView.DXQuery, _dxDataSetView.DXFilter);
-                if (dxQueryResult is null || string.IsNullOrWhiteSpace(dxQueryResult.TypeName))
-                {
-                    SetEmptyState("Query result is empty or invalid for the selected data set.");
-                    return;
-                }
+            var result = await coreApi.GetItems(dxQueryResult.TypeName);
+            dxUnits = (result["Data"]?["Items"] as JArray ?? new JArray()).OfType<JObject>();
 
-                var result = await coreApi.GetItems(dxQueryResult.TypeName);
-
-                dxUnits = (result["Data"]?["Items"] as JArray ?? new JArray()).OfType<JObject>();
-                if (dxUnits is null)
-                {
-                    dxUnits = Enumerable.Empty<JObject>();
-                }
-
-                values = dxQueryResult.AsDataTable();
-                _loadErrorMessage = null;
-
-                BuildDisplayStringIndex();
-                ClearSelection();
-                SyncPreviewWithSelection();
-            }
-            catch (Exception ex)
-            {
-                SetEmptyState($"Unable to load data set view: {ex.Message}");
-            }
-            finally
-            {
-                _isInitialLoading = false;
-                _isRefreshing = false;
-                StateHasChanged();
-            }
+            BuildDisplayStringIndex();
+            ClearSelection();
+            SyncPreviewWithSelection();
         }
 
         private async Task OnDeleted()
         {
-            await this.LoadDataAsync(false);
-
-            this.OnClosed();
+            await ReloadAsync();
+            OnClosed();
         }
 
         private async Task OpenEditDialog(Guid id)
         {
             if (!HasCurrentType)
-            {
                 return;
-            }
 
-            if (id != default(Guid))
-            {
-                selectedItemID = id;
-            }
-            else
-            {
-                selectedItemID = Guid.NewGuid();
-            }
-
+            selectedItemID = id != default ? id : Guid.NewGuid();
             _showDialog = true;
         }
 
@@ -260,13 +175,9 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         private Task SetSelected(Guid id, bool? selected)
         {
             if (selected == true)
-            {
                 AddSelected(id);
-            }
             else
-            {
                 RemoveSelected(id);
-            }
 
             SyncPreviewWithSelection();
             return Task.CompletedTask;
@@ -280,15 +191,15 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         private IReadOnlyList<DXActionButton> BuildRowActions(JObject item)
         {
             var id = dxQueryResult.GetID(item);
-            if (id == default || !HasCurrentType || _dxDataSetView is null)
+            if (id == default || !HasCurrentType || ComponentUnit is null)
                 return [];
 
             var result = new List<DXActionButton>();
 
             var ordered = new List<(int Order, string Key)>();
-            if (_dxDataSetView.IsEditable) ordered.Add((10, DXActionButtonKeys.Edit));
-            if (_dxDataSetView.IsDeletable) ordered.Add((20, DXActionButtonKeys.Delete));
-            if (_dxDataSetView.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
+            if (ComponentUnit.IsEditable) ordered.Add((10, DXActionButtonKeys.Edit));
+            if (ComponentUnit.IsDeletable) ordered.Add((20, DXActionButtonKeys.Delete));
+            if (ComponentUnit.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
 
             result.AddRange(DXActionButtonRegistry.Build(
                 ordered.OrderBy(x => x.Order).Select(x => x.Key),
@@ -323,17 +234,17 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         private async Task LoadCustomButtonDefsAsync()
         {
             _customButtonDefs.Clear();
-            var elements = _dxDataSetView?.DXPComponentButtonActionElement?.Announced;
+            var elements = ComponentUnit?.DXPComponentButtonActionElement?.Announced;
             if (elements is null || elements.Count == 0)
                 return;
 
             foreach (var element in elements)
             {
-                var buttonUnit = await buttonActionApiClient.Get(element.Action);
+                var buttonUnit = await buttonActionApiClient!.Get(element.Action);
                 if (buttonUnit is null)
                     continue;
 
-                var actionDef = await actionDefinitionApiClient.Get(buttonUnit.ActionDefinition);
+                var actionDef = await actionDefinitionApiClient!.Get(buttonUnit.ActionDefinition);
                 if (actionDef is null)
                     continue;
 
@@ -354,7 +265,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             if (id == default || !HasCurrentType)
                 return;
 
-            await coreApi.ExportAsync(dxQueryResult.TypeName, id);
+            await coreApi!.ExportAsync(dxQueryResult.TypeName, id);
         }
 
         private async Task DeleteSingleAsync(Guid id)
@@ -362,15 +273,9 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             if (id == default || !HasCurrentType)
                 return;
 
-            await coreApi.DeleteAsync(dxQueryResult.TypeName, id);
+            await coreApi!.DeleteAsync(dxQueryResult.TypeName, id);
             await OnDeleted();
         }
-
-        //private async Task<JObject> LoadDetailsAsync(Guid id)
-        //{
-        //    var item = await coreApi.Get(DXUnitTypeName, id);
-        //    return item;
-        //}
 
         private void OnClosed()
         {
@@ -382,54 +287,17 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         bool _showDialog = false;
 
-        private void CloseDialog()
-        {
-            _showDialog = false;
-        }
+        private void CloseDialog() => _showDialog = false;
 
         private async Task OnSaved()
         {
-            await this.LoadDataAsync(false);
-
-            this.CloseDialog();
+            await ReloadAsync();
+            CloseDialog();
         }
 
         Orientation orientation = Orientation.Horizontal;
 
-        private void OnResizedHandler(SplitterResizedEventArgs args)
-        {
-
-        }
-
-        public Guid GetGuid(DataRow row, string columnName)
-        {
-            if (row == null)
-                throw new ArgumentNullException(nameof(row));
-
-            if (!row.Table.Columns.Contains(columnName))
-                throw new ArgumentException($"Column '{columnName}' not found.", nameof(columnName));
-
-            var value = row[columnName];
-
-            if (value == DBNull.Value || value == null)
-                return default(Guid);
-
-            if (value is Guid g)
-                return g;
-
-            if (value is string s && Guid.TryParse(s, out g))
-                return g;
-
-            if (value is byte[] bytes && bytes.Length == 16)
-                return new Guid(bytes);
-
-            throw new InvalidCastException($"Cannot convert value in '{columnName}' to Guid.");
-        }
-
-        public IQueryable<DataRow> AsQueryableRows(DataTable table)
-        {
-            return table?.AsEnumerable()?.AsQueryable() ?? Enumerable.Empty<DataRow>().AsQueryable();
-        }
+        private void OnResizedHandler(SplitterResizedEventArgs args) { }
 
         private void AddSelected(Guid id)
         {
@@ -451,13 +319,9 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         private void ToggleSelected(Guid id)
         {
             if (IsSelected(id))
-            {
                 RemoveSelected(id);
-            }
             else
-            {
                 AddSelected(id);
-            }
         }
 
         private void ClearSelection()
@@ -476,15 +340,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             }
 
             _collapse = false;
-
-            if (SelectedCount == 1)
-            {
-                selectedPreviewItemID = _selectedIds[0];
-            }
-            else
-            {
-                selectedPreviewItemID = null;
-            }
+            selectedPreviewItemID = SelectedCount == 1 ? _selectedIds[0] : null;
         }
 
         private string BulkConfirmMessage
@@ -551,15 +407,13 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                 {
                     case BulkActionKind.Delete:
                         foreach (var id in ids)
-                        {
-                            await coreApi.DeleteAsync(dxQueryResult.TypeName, id);
-                        }
+                            await coreApi!.DeleteAsync(dxQueryResult.TypeName, id);
 
-                        await LoadDataAsync(false);
+                        await ReloadAsync();
                         break;
 
                     case BulkActionKind.Export:
-                        await coreApi.ExportAsync(dxQueryResult.TypeName, ids);
+                        await coreApi!.ExportAsync(dxQueryResult.TypeName, ids);
                         break;
                 }
             }
@@ -578,20 +432,6 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                     SyncPreviewWithSelection();
                 }
             }
-        }
-
-        private void SetEmptyState(string message)
-        {
-            _loadErrorMessage = message;
-            _dxDataSetView = null;
-            _customButtonDefs.Clear();
-            dxQueryResult = DXQueryResult.Empty();
-            dxUnits = Enumerable.Empty<JObject>();
-            values = new DataTable();
-            _showDialog = false;
-            CloseBulkConfirmInternal();
-            ClearSelection();
-            SyncPreviewWithSelection();
         }
 
         private string GetDisplayString(Guid id)

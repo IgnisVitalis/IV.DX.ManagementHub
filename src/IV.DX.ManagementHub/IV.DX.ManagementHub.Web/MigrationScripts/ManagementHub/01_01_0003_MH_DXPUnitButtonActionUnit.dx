@@ -2,7 +2,7 @@
   {
     "Meta": {
       "Kind": "DXUnit",
-      "Type": "DXPButtonActionUnit",
+      "Type": "DXPUnitButtonActionUnit",
       "Op": "Patch",
       "IsMulti": true,
       "IsRequired": false

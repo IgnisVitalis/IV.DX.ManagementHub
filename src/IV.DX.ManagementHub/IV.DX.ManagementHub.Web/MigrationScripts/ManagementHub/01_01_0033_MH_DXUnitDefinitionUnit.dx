@@ -14,8 +14,8 @@
           "TimeStamp": "2026-03-21T00:00:00",
           "Key": "Own",
           "Title": "Own",
-          "BaseUrl": "http://fsfsdfsd",
-          "ServiceKey": "3er3ferfr43424gger"
+          "BaseUrl": "https://localhost:7097/",
+          "ServiceKey": "mh-local-service-key"
         }
       ]
     }

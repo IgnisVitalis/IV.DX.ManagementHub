@@ -1,8 +1,9 @@
-﻿@page "/app/{AppKey}/dxUnitSetView/{dxDataSetViewID}"
-@page "/app/dxUnitSetView/{dxDataSetViewID}"
+@page "/app/{AppKey}/dxUnitSetView/{DXPComponentID}"
+@page "/app/dxUnitSetView/{DXPComponentID}"
 
 @using System.Linq
 @using IV.DX.Kernel.Models;
+@using IV.DX.Presentation.Application.Contracts.Models
 @using IV.DX.Presentation.Application.Contracts.Models.Enums
 @using IV.DX.ManagementHub.Web.Models
 @using IV.DataProvider.WebApp.Services.Web.ApiClients
@@ -18,21 +19,20 @@
 @attribute [OutputCache(Duration = 5)]
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
-@inherits ManagementHubComponentBase
+@inherits DXPComponent<DXPDataSetViewUnit, DXPDataSetViewApiClient>
 
-@if (_isInitialLoading)
+@if (IsInitialLoading)
 {
     <FluentProgressRing />
 }
+else if (!string.IsNullOrWhiteSpace(LoadErrorMessage))
+{
+    <FluentMessageBar Intent="MessageIntent.Warning">
+        @LoadErrorMessage
+    </FluentMessageBar>
+}
 else
 {
-    @if (!string.IsNullOrWhiteSpace(_loadErrorMessage))
-    {
-        <FluentMessageBar Intent="MessageIntent.Warning">
-            @_loadErrorMessage
-        </FluentMessageBar>
-    }
-
     <DXDataSetBaseView TItem="Newtonsoft.Json.Linq.JObject"
                        Items="@dxQueryResult.AsQueryable()"
                        Collapsed="@_collapse"
@@ -47,7 +47,7 @@ else
                        RowActionsAlign="Align.End"
                        RowActionsTitle="">
         <ToolbarContent>
-            @if (_dxDataSetView?.IsCreatable == true)
+            @if (ComponentUnit?.IsCreatable == true)
             {
                 <FluentButton aria-label="Add item" Appearance="Appearance.Stealth" IconEnd="@(new Icons.Regular.Size16.AddCircle())" Disabled="@(!HasCurrentType)" OnClick="@(() => OpenEditDialog(default(Guid)))" />
             }
@@ -69,7 +69,7 @@ else
                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
                     @if (SelectedCount == 1 && selectedPreviewItemID is not null)
                     {
-                        @if (_dxDataSetView?.IsEditable == true)
+                        @if (ComponentUnit?.IsEditable == true)
                         {
                             <FluentButton aria-label="Edit"
                                           Appearance="Appearance.Neutral"
@@ -81,7 +81,7 @@ else
                                 </FluentStack>
                             </FluentButton>
                         }
-                        @if (_dxDataSetView?.IsDeletable == true)
+                        @if (ComponentUnit?.IsDeletable == true)
                         {
                             <FluentButton aria-label="Delete"
                                           Appearance="Appearance.Neutral"
@@ -93,7 +93,7 @@ else
                                 </FluentStack>
                             </FluentButton>
                         }
-                        @if (_dxDataSetView?.IsExportable == true)
+                        @if (ComponentUnit?.IsExportable == true)
                         {
                             <FluentButton aria-label="Export"
                                           Appearance="Appearance.Neutral"
@@ -122,7 +122,7 @@ else
                     }
                     else if (SelectedCount > 1)
                     {
-                        @if (_dxDataSetView?.IsDeletable == true)
+                        @if (ComponentUnit?.IsDeletable == true)
                         {
                             <FluentButton aria-label="Delete selected"
                                           Appearance="Appearance.Neutral"
@@ -134,7 +134,7 @@ else
                                 </FluentStack>
                             </FluentButton>
                         }
-                        @if (_dxDataSetView?.IsExportable == true)
+                        @if (ComponentUnit?.IsExportable == true)
                         {
                             <FluentButton aria-label="Export selected"
                                           Appearance="Appearance.Neutral"

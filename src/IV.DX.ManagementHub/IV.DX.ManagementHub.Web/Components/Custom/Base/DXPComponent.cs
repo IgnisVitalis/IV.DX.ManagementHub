@@ -25,6 +25,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.Base
 
         protected TUnit? ComponentUnit { get; private set; }
         protected bool IsInitialLoading { get; private set; }
+        protected bool IsRefreshing { get; private set; }
         protected string? LoadErrorMessage { get; private set; }
 
         protected override async Task OnParametersSetAsync()
@@ -59,6 +60,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.Base
 
         protected async Task ReloadAsync()
         {
+            IsRefreshing = true;
             LoadErrorMessage = null;
             try
             {
@@ -68,7 +70,11 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.Base
             {
                 LoadErrorMessage = ex.Message;
             }
-            StateHasChanged();
+            finally
+            {
+                IsRefreshing = false;
+                StateHasChanged();
+            }
         }
     }
 }

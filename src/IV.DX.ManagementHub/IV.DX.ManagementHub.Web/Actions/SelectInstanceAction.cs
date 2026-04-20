@@ -1,13 +1,12 @@
 using IV.DataProvider.WebApp.Services.Web.Contracts;
 using IV.DX.Application.Contracts.Actions;
 using IV.DX.Kernel.Attributes;
-using IV.DX.Kernel.Models;
 using Microsoft.AspNetCore.Components;
 
 namespace IV.DX.ManagementHub.Web.Actions
 {
     [DXAction("IV.DX.ManagementHub", "Select")]
-    public class SelectInstanceAction : DXActionBase
+    public class SelectInstanceAction : DXUnitActionBase
     {
         private readonly IApiClientResolver _resolver;
         private readonly NavigationManager _navigation;
@@ -18,13 +17,11 @@ namespace IV.DX.ManagementHub.Web.Actions
             _navigation = navigation;
         }
 
-        [DXActionParameter("InstanceId", DXActionParameterDirectionEnum.In)]
-        public Guid InstanceId { get; set; }
-
-        public override async Task<DXActionResult> ExecuteAsync(CancellationToken ct)
+        protected override async Task<DXActionResult> ExecuteAsync(
+            Guid unitId, string unitType, DXActionParameters parameters, CancellationToken ct)
         {
             var instances = await _resolver.GetInstancesAsync(ct);
-            var instance = instances.FirstOrDefault(i => i.ID == InstanceId);
+            var instance = instances.FirstOrDefault(i => i.ID == unitId);
 
             if (instance is null)
                 return DXActionResult.Fail("Instance not found.");
