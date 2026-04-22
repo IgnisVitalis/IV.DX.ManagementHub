@@ -11,7 +11,7 @@
             {
                 <DXNavMenuNode Node="root"
                                ExpandedState="new Dictionary<Guid, bool>()"
-                               DataSetViewHrefFactory="@(viewId => $"/app/{AppKey}/dxUnitSetView/{viewId}")"
+                               ComponentHrefFactory="@((type, id) => GetComponentHref(type, id))"
                                @key="root.Id" />
             }
         }
