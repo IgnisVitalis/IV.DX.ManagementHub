@@ -2,7 +2,7 @@
   {
     "Meta": {
       "Kind": "DXUnit",
-      "Type": "DXPUnitButtonActionUnit",
+      "Type": "DXPClickActionUnit",
       "Op": "Patch",
       "IsMulti": true,
       "IsRequired": false
@@ -13,9 +13,6 @@
           "ID": "7a8b9c0d-1e2f-4a3b-5c4d-6e7f8a9b0c1d",
           "TimeStamp": "2026-03-28T00:00:00Z",
           "ActionDefinition": "6979d5cf-0e1a-40b8-8399-0482c88b44a4",
-          "Icon": 10,
-          "Color": 3,
-          "Style": 0,
           "RequiresConfirmation": false
         }
       ]

@@ -1,7 +1,7 @@
 [
   "ManagementHub/01_01_0001_MH_MHInstanceUnit.dx",
   "ManagementHub/01_01_0002_MH_DXActionDefinitionUnit.dx",
-  "ManagementHub/01_01_0003_MH_DXPUnitButtonActionUnit.dx",
+  "ManagementHub/01_01_0003_MH_DXPClickActionUnit.dx",
   "ManagementHub/01_01_0011_MH_DXPCardViewUnit.dx",
   "ManagementHub/01_01_0020_MH_DXRoleUnit.dx",
   "ManagementHub/01_01_0021_MH_DXTenantUnit.dx",

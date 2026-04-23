@@ -19,28 +19,7 @@
           "IsExportable": 1,
           "DXUnitDefinition": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
           "DXFilter": null,
-          "DXElements": {
-            "DXPComponentButtonActionElement": {
-              "Meta": {
-                "Kind": "DXElement",
-                "Type": "DXPComponentButtonActionElement",
-                "Op": "Sync",
-                "IsMulti": true,
-                "IsRequired": false
-              },
-              "Data": {
-                "Items": [
-                  {
-                    "DXUnitID": "f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d",
-                    "ID": "2c7f499e-4c9f-44a0-b536-aa0553ee04da",
-                    "TimeStamp": "2026-04-09T14:10:29.756474Z",
-                    "Order": 10,
-                    "Action": "7a8b9c0d-1e2f-4a3b-5c4d-6e7f8a9b0c1d"
-                  }
-                ]
-              }
-            }
-          }
+          "DXPClickAction": "7a8b9c0d-1e2f-4a3b-5c4d-6e7f8a9b0c1d"
         }
       ]
     }
