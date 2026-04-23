@@ -13,6 +13,12 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         [Parameter, EditorRequired] public string Type { get; set; } = default!;
         [Parameter, EditorRequired] public Guid ID { get; set; }
 
+        [Parameter] public bool IsEditable { get; set; }
+        [Parameter] public bool IsDeletable { get; set; }
+        [Parameter] public bool IsExportable { get; set; }
+        [Parameter] public EventCallback OnChanged { get; set; }
+        [Parameter] public RenderFragment? AdditionalActions { get; set; }
+
         [Inject] IApiClientResolver Resolver { get; set; } = default!;
 
         private DXModelDefinition _dxUnitDefinitionStructure = default!;

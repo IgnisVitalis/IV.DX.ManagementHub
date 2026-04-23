@@ -1,6 +1,7 @@
 @using IV.DX.Kernel.Enums;
 @using IV.DX.ManagementHub.Web.Components.Custom
 @using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 @using Microsoft.FluentUI.AspNetCore.Components
 
 @inherits ManagementHubComponentBase
@@ -12,6 +13,21 @@
 else
 {
     <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height:0; min-width:0;" Class="stack-stretch">
+
+        @if (IsEditable || IsDeletable || IsExportable)
+        {
+            <DXPActionButtons AppKey="@AppKey"
+                              TypeName="@Type"
+                              SelectedIds="@(new[] { ID })"
+                              IsEditable="@IsEditable"
+                              IsDeletable="@IsDeletable"
+                              IsExportable="@IsExportable"
+                              ShowLabels="true"
+                              OnChanged="OnChanged">
+                @AdditionalActions
+            </DXPActionButtons>
+        }
+
         <FluentAccordion ActiveId="@dxModel.MainItem.ID.ToString()" Style="width:100%; min-width:0;">
             <FluentAccordionItem Expanded="true" Heading="@dxModel.Type">
                 <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent" Slot="start" />

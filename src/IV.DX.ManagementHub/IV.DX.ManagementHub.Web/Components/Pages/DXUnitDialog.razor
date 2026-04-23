@@ -3,207 +3,175 @@
 @using IV.DX.Kernel.Enums;
 @using IV.DX.ManagementHub.Web.Components.Custom
 @using IV.DX.ManagementHub.Web.Components.Custom.Base
+@using IV.DX.ManagementHub.Web.Models
 
-@* <div class="dialog-backdrop" @onclick="CloseDialog"> *@
+@if (!_isLoaded)
+{
+    <FluentDialogBody>
+        <FluentProgressRing />
+    </FluentDialogBody>
+}
+else
+{
+    <FluentDialogHeader ShowDismiss="true">
+        <FluentLabel Typo="Typography.Subject" Class="dialog-title">@dxModel?.Type</FluentLabel>
+    </FluentDialogHeader>
 
-<div class="dx-overlay-backdrop">
-    <div class="dx-overlay-window dx-overlay-window--dialog" @onclick:stopPropagation="true">
-        @if (_isLoaded)
-        {
-            <FluentToolbar Class="dx-overlay-header" Style="width:100%;">
-                <FluentStack Orientation="Orientation.Horizontal"
-                            Width="100%"
-                            HorizontalAlignment="HorizontalAlignment.SpaceBetween"
-                            VerticalAlignment="VerticalAlignment.Center">
-                    <FluentLabel Typo="Typography.Subject" Class="dialog-title">@this.dxModel?.Type</FluentLabel>
+    <FluentDialogBody Style="max-height: calc(85vh - 130px); overflow-y: auto;">
+        <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height: 0;">
+            @if (isAccordion)
+            {
+                <FluentAccordion ActiveId="@dxModel.MainItem.ID.ToString()" Style="width:100%">
+                    <FluentAccordionItem Expanded="true" Heading="@dxModel.Type">
+                        <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent" Slot="start" />
+                        <FluentCard Class="unclip">
+                            <DXMainElementFluentDataEditor @key="@dxModel.Type" Parent="@dxModel" MainItem="@GetDXMainElement()"
+                                                           Definition="@GetDXMainElementStructure()" />
+                        </FluentCard>
+                    </FluentAccordionItem>
 
-                    <FluentButton Appearance="Appearance.Stealth"
-                                 IconStart="@(new Icons.Regular.Size20.Dismiss())"
-                                 OnClick="CancelAsync" />
-                </FluentStack>
-            </FluentToolbar>
-
-            <div class="dx-overlay-body">
-                <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height: 0;">
-                    @if (isAccordion)
+                    @foreach (var singleItemMandatory in _dxUnitDefinitionStructure.RequiredSingleElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
                     {
-                        <FluentAccordion ActiveId="@this.dxModel.MainItem.ID.ToString()" Style="width:100%">
-                            <FluentAccordionItem Expanded="true" Heading="@this.dxModel.Type">
-                                <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent"
-                                    Slot="start" />
-                                <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataEditor @key="@this.dxModel.Type"
-                                        Parent="@dxModel" MainItem="@GetDXMainElement()"
-                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataEditor>
-                                </FluentCard>
-                            </FluentAccordionItem>
-
-                            @foreach (var singleItemMandatory in this._dxUnitDefinitionStructure.RequiredSingleElements.Where(x
-                                                => x.Columns.Count() > 0).ToList())
-                            {
-                                @*  if (IsDXModelContainsSingleElement(singleItemMandatory))
-                            { *@
-                                <FluentAccordionItem Expanded="true" Heading="@singleItemMandatory.Name">
-                                    <FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal1())" Color="@Color.Accent"
-                                        Slot="start" />
-                                    <FluentCard Class="unclip">
-                                        <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
-                                            DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
-                                            Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)">
-                                        </DXSingleElementFluentDataEditor>
-                                    </FluentCard>
-                                </FluentAccordionItem>
-                                @* }
-                            else
-                            {
-                                <FluentLabel>need to add</FluentLabel>
-                            } *@
-                            }
-                            @foreach (var multiItemMandatory in this._dxUnitDefinitionStructure.RequiredMultiElements.Where(x =>
-                                                x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentAccordionItem Expanded="true" Heading="@multiItemMandatory.Name">
-                                    <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Accent" Slot="start" />
-                                    <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey"
-                                            Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
-                                            Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)">
-                                        </DXMultiElementsFluentDataEditor>
-                                    </FluentCard>
-                                </FluentAccordionItem>
-                            }
-                            @foreach (var singleItemOptional in this._dxUnitDefinitionStructure.OptionalSingleElements.Where(x
-                                                => x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentAccordionItem Heading="@singleItemOptional.Name">
-                                    <FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal1())" Color="@Color.Neutral"
-                                        Slot="start" />
-                                    <FluentCard Class="unclip">
-                                        @if (IsDXModelContainsSingleElement(singleItemOptional))
-                                        {
-                                            <FluentStack Orientation="Orientation.Vertical" Gap="12px"
-                                                HorizontalAlignment="HorizontalAlignment.Start">
-                                                <FluentButton OnClick="@(() => DeleteSingleElement(singleItemOptional))">
-                                                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
-                                                </FluentButton>
-                                                <DXSingleElementFluentDataEditor @key="singleItemOptional.Name" Parent="@dxModel"
-                                                    DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
-                                                    Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)">
-                                                </DXSingleElementFluentDataEditor>
-                                            </FluentStack>
-                                        }
-                                        else
-                                        {
-                                            <FluentButton OnClick="@(() => CreateSingleElement(singleItemOptional))">
-                                                <FluentIcon Value="@(new Icons.Regular.Size16.AddCircle())" Color="Color.Accent" />
-                                            </FluentButton>
-                                        }
-                                    </FluentCard>
-                                </FluentAccordionItem>
-                            }
-                            @foreach (var multiItemOptional in this._dxUnitDefinitionStructure.OptionalMultiElements.Where(x =>
-                                                x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentAccordionItem Heading="@multiItemOptional.Name">
-                                    <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Neutral" Slot="start" />
-                                    <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey"
-                                            Parent="@dxModel" DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
-                                            Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)">
-                                        </DXMultiElementsFluentDataEditor>
-                                    </FluentCard>
-                                </FluentAccordionItem>
-                            }
-                        </FluentAccordion>
+                        <FluentAccordionItem Expanded="true" Heading="@singleItemMandatory.Name">
+                            <FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal1())" Color="@Color.Accent" Slot="start" />
+                            <FluentCard Class="unclip">
+                                <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
+                                                                 DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
+                                                                 Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)" />
+                            </FluentCard>
+                        </FluentAccordionItem>
                     }
-                    else
-                    {
-                        <FluentTabs Width="100%">
-                            <FluentTab Label="@this.dxModel.Type"
-                                Id="@this.dxModel.Type">
-                                <FluentCard Class="unclip">
-                                    <DXMainElementFluentDataEditor @key="@this.dxModel.Type"
-                                        Parent="@dxModel" MainItem="@GetDXMainElement()"
-                                        Definition="@GetDXMainElementStructure()"></DXMainElementFluentDataEditor>
-                                </FluentCard>
-                            </FluentTab>
 
-                            @foreach (var singleItemMandatory in this._dxUnitDefinitionStructure.RequiredSingleElements.Where(x
-                                                => x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentTab Label="@singleItemMandatory.Name" Id="@singleItemMandatory.Name">
-                                    <FluentCard Class="unclip">
-                                        <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
-                                            DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
-                                            Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)">
-                                        </DXSingleElementFluentDataEditor>
-                                    </FluentCard>
-                                </FluentTab>
-                            }
-                            @foreach (var multiItemMandatory in this._dxUnitDefinitionStructure.RequiredMultiElements.Where(x =>
-                                                x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentTab Label="@multiItemMandatory.Name" Id="@multiItemMandatory.Name">
-                                    <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey" Parent="@dxModel"
-                                            DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
-                                            Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)">
-                                        </DXMultiElementsFluentDataEditor>
-                                    </FluentCard>
-                                </FluentTab>
-                            }
-                            @foreach (var singleItemOptional in this._dxUnitDefinitionStructure.OptionalSingleElements.Where(x
-                                                => x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentTab Label="@singleItemOptional.Name" Id="@singleItemOptional.Name">
-                                    <FluentCard Class="unclip">
+                    @foreach (var multiItemMandatory in _dxUnitDefinitionStructure.RequiredMultiElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentAccordionItem Expanded="true" Heading="@multiItemMandatory.Name">
+                            <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Accent" Slot="start" />
+                            <FluentCard Class="unclip">
+                                <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey" Parent="@dxModel"
+                                                                 DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
+                                                                 Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)" />
+                            </FluentCard>
+                        </FluentAccordionItem>
+                    }
+
+                    @foreach (var singleItemOptional in _dxUnitDefinitionStructure.OptionalSingleElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentAccordionItem Heading="@singleItemOptional.Name">
+                            <FluentIcon Value="@(new Icons.Regular.Size20.LineHorizontal1())" Color="@Color.Neutral" Slot="start" />
+                            <FluentCard Class="unclip">
+                                @if (IsDXModelContainsSingleElement(singleItemOptional))
+                                {
+                                    <FluentStack Orientation="Orientation.Vertical" Gap="12px"
+                                                 HorizontalAlignment="HorizontalAlignment.Start">
+                                        <FluentButton OnClick="@(() => DeleteSingleElement(singleItemOptional))">
+                                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                                        </FluentButton>
                                         <DXSingleElementFluentDataEditor @key="singleItemOptional.Name" Parent="@dxModel"
-                                            DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
-                                            Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)">
-                                        </DXSingleElementFluentDataEditor>
-                                    </FluentCard>
-                                </FluentTab>
-                            }
-                            @foreach (var multiItemOptional in this._dxUnitDefinitionStructure.OptionalMultiElements.Where(x =>
-                                                x.Columns.Count() > 0).ToList())
-                            {
-                                <FluentTab Label="@multiItemOptional.Name" Id="@multiItemOptional.Name">
-                                    <FluentCard Class="unclip">
-                                        <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey" Parent="@dxModel"
-                                            DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
-                                            Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)">
-                                        </DXMultiElementsFluentDataEditor>
-                                    </FluentCard>
-                                </FluentTab>
-                            }
-                        </FluentTabs>
+                                                                         DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
+                                                                         Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)" />
+                                    </FluentStack>
+                                }
+                                else
+                                {
+                                    <FluentButton OnClick="@(() => CreateSingleElement(singleItemOptional))">
+                                        <FluentIcon Value="@(new Icons.Regular.Size16.AddCircle())" Color="Color.Accent" />
+                                    </FluentButton>
+                                }
+                            </FluentCard>
+                        </FluentAccordionItem>
                     }
 
-                    <FluentDivider></FluentDivider>
+                    @foreach (var multiItemOptional in _dxUnitDefinitionStructure.OptionalMultiElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentAccordionItem Heading="@multiItemOptional.Name">
+                            <FluentIcon Value="@(new Icons.Regular.Size20.List())" Color="@Color.Neutral" Slot="start" />
+                            <FluentCard Class="unclip">
+                                <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey" Parent="@dxModel"
+                                                                 DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
+                                                                 Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)" />
+                            </FluentCard>
+                        </FluentAccordionItem>
+                    }
+                </FluentAccordion>
+            }
+            else
+            {
+                <FluentTabs Width="100%">
+                    <FluentTab Label="@dxModel.Type" Id="@dxModel.Type">
+                        <FluentCard Class="unclip">
+                            <DXMainElementFluentDataEditor @key="@dxModel.Type" Parent="@dxModel" MainItem="@GetDXMainElement()"
+                                                           Definition="@GetDXMainElementStructure()" />
+                        </FluentCard>
+                    </FluentTab>
 
+                    @foreach (var singleItemMandatory in _dxUnitDefinitionStructure.RequiredSingleElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentTab Label="@singleItemMandatory.Name" Id="@singleItemMandatory.Name">
+                            <FluentCard Class="unclip">
+                                <DXSingleElementFluentDataEditor @key="singleItemMandatory.Name" Parent="@dxModel"
+                                                                 DXSingleElement="@GetDXSingleElement(singleItemMandatory.Name)"
+                                                                 Definition="@GetMandatoryDXSingleElementStructure(singleItemMandatory.Name)" />
+                            </FluentCard>
+                        </FluentTab>
+                    }
 
-                </FluentStack>
-            </div>
+                    @foreach (var multiItemMandatory in _dxUnitDefinitionStructure.RequiredMultiElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentTab Label="@multiItemMandatory.Name" Id="@multiItemMandatory.Name">
+                            <FluentCard Class="unclip">
+                                <DXMultiElementsFluentDataEditor @key="multiItemMandatory.Name" AppKey="@AppKey" Parent="@dxModel"
+                                                                 DXMultiElement="@GetDXMultiElement(multiItemMandatory.Name)"
+                                                                 Definition="@GetMandatoryDXMultiElementStructure(multiItemMandatory.Name)" />
+                            </FluentCard>
+                        </FluentTab>
+                    }
 
-            <FluentToolbar Class="dx-overlay-footer" Style="width:100%;">
-                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Width="100%">
-                    <FluentButton Appearance="Appearance.Accent"
-                                 OnClick="SaveAsync"
-                                 IconStart="@(new Icons.Regular.Size24.Save())">Save</FluentButton>
-                    <FluentButton Appearance="Appearance.Neutral"
-                                 OnClick="CancelAsync"
-                                 IconStart="@(new Icons.Regular.Size24.DismissSquare())">Cancel</FluentButton>
-                </FluentStack>
-            </FluentToolbar>
+                    @foreach (var singleItemOptional in _dxUnitDefinitionStructure.OptionalSingleElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentTab Label="@singleItemOptional.Name" Id="@singleItemOptional.Name">
+                            <FluentCard Class="unclip">
+                                <DXSingleElementFluentDataEditor @key="singleItemOptional.Name" Parent="@dxModel"
+                                                                 DXSingleElement="@GetDXSingleElement(singleItemOptional.Name)"
+                                                                 Definition="@GetOptionalDXSingleElementStructure(singleItemOptional.Name)" />
+                            </FluentCard>
+                        </FluentTab>
+                    }
 
-        }
-        else
-        {
-            <FluentProgressRing />
-        }
-    </div>
-</div>
+                    @foreach (var multiItemOptional in _dxUnitDefinitionStructure.OptionalMultiElements.Where(x =>
+                                                                                                                x.Columns.Count() > 0).ToList())
+                    {
+                        <FluentTab Label="@multiItemOptional.Name" Id="@multiItemOptional.Name">
+                            <FluentCard Class="unclip">
+                                <DXMultiElementsFluentDataEditor @key="multiItemOptional.Name" AppKey="@AppKey" Parent="@dxModel"
+                                                                 DXMultiElement="@GetDXMultiElement(multiItemOptional.Name)"
+                                                                 Definition="@GetOptionalDXMultiElementStructure(multiItemOptional.Name)" />
+                            </FluentCard>
+                        </FluentTab>
+                    }
+                </FluentTabs>
+            }
 
+            <FluentDivider />
+        </FluentStack>
+    </FluentDialogBody>
 
-@* </div> *@
-
+    <FluentDialogFooter>
+        <FluentButton OnClick="SaveAsync" Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size16.Save())" l>
+             Save            
+        </FluentButton>
+        <FluentButton Appearance="Appearance.Neutral" OnClick="CancelAsync">
+            <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6"
+                         VerticalAlignment="VerticalAlignment.Center">
+                <FluentIcon Value="@(new Icons.Regular.Size16.Dismiss())" Color="Color.Neutral" />
+                <FluentLabel>Cancel</FluentLabel>
+            </FluentStack>
+        </FluentButton>
+    </FluentDialogFooter>
+}

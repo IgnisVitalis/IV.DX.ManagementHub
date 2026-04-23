@@ -1,0 +1,55 @@
+@using IV.DataProvider.WebApp.Services.Web.Contracts
+@using IV.DX.ManagementHub.Web.ApiClients
+@using IV.DX.ManagementHub.Web.Components.Custom
+
+<FluentStack Orientation="Orientation.Horizontal" Width="100%" HorizontalAlignment="@HorizontalAlignment">
+    @if (IsEditable && SelectedIds.Count == 1)
+    {
+        <FluentButton aria-label="Edit" Appearance="Appearance.Neutral" Disabled="@_isRunning" OnClick="OpenEditDialog">
+            @if (ShowLabels)
+            {
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+                    <span>Edit</span>
+                </FluentStack>
+            }
+            else
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size16.Edit())" Color="Color.Accent" />
+            }
+        </FluentButton>
+    }
+    @if (IsDeletable && SelectedIds.Count >= 1)
+    {
+        <FluentButton aria-label="Delete" Appearance="Appearance.Neutral" Disabled="@_isRunning" OnClick="RequestDelete">
+            @if (ShowLabels)
+            {
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+                    <span>Delete</span>
+                </FluentStack>
+            }
+            else
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" Color="Color.Error" />
+            }
+        </FluentButton>
+    }
+    @if (IsExportable && SelectedIds.Count >= 1)
+    {
+        <FluentButton aria-label="Export" Appearance="Appearance.Neutral" Disabled="@_isRunning" OnClick="ExportAsync">
+            @if (ShowLabels)
+            {
+                <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
+                    <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+                    <span>Export</span>
+                </FluentStack>
+            }
+            else
+            {
+                <FluentIcon Value="@(new Icons.Regular.Size16.ArrowExportUp())" Color="Color.Info" />
+            }
+        </FluentButton>
+    }
+    @ChildContent
+</FluentStack>

@@ -5,163 +5,117 @@ using IV.DX.ManagementHub.Web.Components.Custom.Base;
 using IV.DX.ManagementHub.Web.Models;
 using IV.DX.ManagementHub.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 namespace IV.DX.ManagementHub.Web.Components.Pages
 {
-    public partial class DXUnitDialog : ManagementHubComponentBase
+    public partial class DXUnitDialog : ManagementHubComponentBase, IDialogContentComponent<DXUnitDialogInput>
     {
-        [Parameter] public string Type { get; set; } = default!;
-        [Parameter] public Guid ID { get; set; } = default!;
-        [Parameter] public EventCallback OnClosed { get; set; }
-        [Parameter] public EventCallback OnSaved { get; set; }
+        public static DialogParameters DefaultParameters => new()
+        {
+            Width = "min(90vw, 900px)",
+            Modal = true
+        };
 
-        DXModelDefinition _dxUnitDefinitionStructure = default!;
+        [CascadingParameter] public FluentDialog Dialog { get; set; } = default!;
+        [Parameter] public DXUnitDialogInput Content { get; set; } = default!;
 
-        DXUnitRecordModel dxModel = default!;
+        [Inject] IApiClientResolver Resolver { get; set; } = default!;
 
-        bool isAccordion = true;
-
-        DXUnitCoreApiClient _coreApi = default!;
-        DXUnitStructureApiClient _dxUnitStructureApiCLient = default!;
-
-        [Inject]
-        IApiClientResolver Resolver { get; set; } = default!;
-
-        bool _isLoaded = false;
+        private DXModelDefinition _dxUnitDefinitionStructure = default!;
+        private DXUnitRecordModel dxModel = default!;
+        private bool isAccordion = true;
+        private DXUnitCoreApiClient _coreApi = default!;
+        private DXUnitStructureApiClient _dxUnitStructureApiCLient = default!;
+        private bool _isLoaded;
 
         protected override async Task OnInitializedAsync()
         {
-            this._coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(base.AppKey);
-            this._dxUnitStructureApiCLient = await this.Resolver.GetAsync<DXUnitStructureApiClient>(base.AppKey);
+            AppKey = Content.AppKey;
 
-            this._dxUnitDefinitionStructure = await this._dxUnitStructureApiCLient.GetAsync(Type);
+            _coreApi = await Resolver.GetAsync<DXUnitCoreApiClient>(Content.AppKey);
+            _dxUnitStructureApiCLient = await Resolver.GetAsync<DXUnitStructureApiClient>(Content.AppKey);
 
-            await LoadDXUnit(this.Type, this.ID, this._dxUnitDefinitionStructure);
+            _dxUnitDefinitionStructure = await _dxUnitStructureApiCLient.GetAsync(Content.Type);
+            await LoadDXUnit(Content.Type, Content.ID, _dxUnitDefinitionStructure);
 
             _isLoaded = true;
         }
 
-        private DXRecordItem GetDXMainElement()
-        {
-            return dxModel.MainItem;
-        }
+        private DXRecordItem GetDXMainElement() => dxModel.MainItem;
 
-        private DXElementDefinition GetDXMainElementStructure()
-        {
-            return _dxUnitDefinitionStructure.MainSingleElement;
-        }
+        private DXElementDefinition GetDXMainElementStructure() => _dxUnitDefinitionStructure.MainSingleElement;
 
         private DXRecordSingleElement GetDXSingleElement(string dxElementName)
         {
             var singleElement = dxModel.GetSingleElement(dxElementName);
-
             return singleElement ?? throw new InvalidOperationException($"Single element '{dxElementName}' not found.");
         }
 
         private DXRecordMultiElement GetDXMultiElement(string dxElementName)
         {
             var multiElement = dxModel.GetMultiElement(dxElementName);
-
             return multiElement ?? throw new InvalidOperationException($"Multi element '{dxElementName}' not found.");
         }
 
         private DXElementDefinition GetMandatoryDXSingleElementStructure(string dxElementName)
-        {
-            var singleItemsDataGridDefinition = this._dxUnitDefinitionStructure.RequiredSingleElements.Single(x => x.Name.Equals(dxElementName));
-
-            return singleItemsDataGridDefinition;
-        }
+            => _dxUnitDefinitionStructure.RequiredSingleElements.Single(x => x.Name.Equals(dxElementName));
 
         private DXElementDefinition GetOptionalDXSingleElementStructure(string dxElementName)
-        {
-            var singleItemsDataGridDefinition = this._dxUnitDefinitionStructure.OptionalSingleElements.Single(x => x.Name.Equals(dxElementName));
-
-            return singleItemsDataGridDefinition;
-        }
+            => _dxUnitDefinitionStructure.OptionalSingleElements.Single(x => x.Name.Equals(dxElementName));
 
         private DXElementDefinition GetMandatoryDXMultiElementStructure(string dxElementName)
-        {
-            var multiItemsDataGridDefinition = this._dxUnitDefinitionStructure.RequiredMultiElements.Single(x => x.Name.Equals(dxElementName));
-
-            return multiItemsDataGridDefinition;
-        }
+            => _dxUnitDefinitionStructure.RequiredMultiElements.Single(x => x.Name.Equals(dxElementName));
 
         private DXElementDefinition GetOptionalDXMultiElementStructure(string dxElementName)
-        {
-            var multiItemsDataGridDefinition = this._dxUnitDefinitionStructure.OptionalMultiElements.Single(x => x.Name.Equals(dxElementName));
-
-            return multiItemsDataGridDefinition;
-        }
+            => _dxUnitDefinitionStructure.OptionalMultiElements.Single(x => x.Name.Equals(dxElementName));
 
         private async Task LoadDXUnit(string type, Guid id, DXModelDefinition structure)
         {
-            var content = await this._coreApi.GetRecord(this.Type, this.ID);
-
+            var content = await _coreApi.GetRecord(type, id);
             if (content == null)
             {
                 dxModel = DXRecordModelFactory.GetDefault(structure);
                 return;
             }
-
             dxModel = DXRecordModelFactory.FromBlock(content, structure);
         }
 
         private async Task SaveAsync()
         {
             var block = DXRecordModelFactory.ToBlock(dxModel, _dxUnitDefinitionStructure);
-
-            await this._coreApi.SaveRecordAsync(block);
-
-            if (OnSaved.HasDelegate)
-                await OnSaved.InvokeAsync();
+            await _coreApi.SaveRecordAsync(block);
+            await Dialog.CloseAsync();
         }
+
+        private async Task CancelAsync() => await Dialog.CancelAsync();
 
         private bool IsDXModelContainsSingleElement(DXElementDefinition dxElementDefinition)
-        {
-            var existingSingleElement = this.dxModel.GetSingleElement(dxElementDefinition.Name);
-
-            return existingSingleElement?.Item != null;
-        }
+            => dxModel.GetSingleElement(dxElementDefinition.Name)?.Item != null;
 
         private bool IsDXModelContainsMultiElement(DXElementDefinition dxElementDefinition)
-        {
-            return this.dxModel.GetMultiElement(dxElementDefinition.Name) != null;
-        }
-
-        private async Task CancelAsync()
-        {
-            if (OnClosed.HasDelegate)
-                await OnClosed.InvokeAsync();
-        }
+            => dxModel.GetMultiElement(dxElementDefinition.Name) != null;
 
         private void CreateSingleElement(DXElementDefinition dxElementDefinition)
         {
             var newSingleItem = GetNewDXItem(dxElementDefinition, dxModel.MainItem.ID);
-
-            var existing = this.dxModel.GetSingleElement(dxElementDefinition.Name);
+            var existing = dxModel.GetSingleElement(dxElementDefinition.Name);
             if (existing == null)
-            {
-                this.dxModel.SetSingleElement(new DXRecordSingleElement(dxElementDefinition.Name, newSingleItem));
-            }
+                dxModel.SetSingleElement(new DXRecordSingleElement(dxElementDefinition.Name, newSingleItem));
             else
-            {
                 existing.Item = newSingleItem;
-            }
         }
 
         private void DeleteSingleElement(DXElementDefinition dxElementDefinition)
         {
-            var existing = this.dxModel.GetSingleElement(dxElementDefinition.Name);
+            var existing = dxModel.GetSingleElement(dxElementDefinition.Name);
             if (existing != null)
-            {
                 existing.Item = null;
-            }
         }
 
         private DXRecordItem GetNewDXItem(DXElementDefinition item, Guid dxUnitId)
         {
             var elementID = Guid.NewGuid();
-
             var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var column in item.Columns)
@@ -177,4 +131,3 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
         }
     }
 }
-

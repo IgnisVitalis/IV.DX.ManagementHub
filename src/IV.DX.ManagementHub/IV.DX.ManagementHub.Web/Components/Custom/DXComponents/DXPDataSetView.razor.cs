@@ -4,6 +4,7 @@ using IV.DX.Kernel.Models;
 using IV.DX.Presentation.Application.Contracts.Models;
 using IV.DX.ManagementHub.Web.ApiClients;
 using IV.DX.ManagementHub.Web.Components.Custom.Base;
+using IV.DX.ManagementHub.Web.Components.Pages;
 using IV.DX.ManagementHub.Web.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FluentUI.AspNetCore.Components;
@@ -13,8 +14,8 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 {
     public partial class DXPDataSetView : DXPComponent<DXPDataSetViewUnit, DXPDataSetViewApiClient>
     {
-        [Inject]
-        IDXActionExecutor ActionExecutor { get; set; } = default!;
+        [Inject] IDXActionExecutor ActionExecutor { get; set; } = default!;
+        [Inject] IDialogService DialogService { get; set; } = default!;
 
         DXUnitCoreApiClient? coreApi;
         DXQueryResultApiClient? dxQueryApi;
@@ -30,25 +31,6 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
         private readonly HashSet<Guid> _selectedIdSet = new();
         private readonly Dictionary<Guid, string> _displayStringById = new();
 
-        private enum BulkActionKind
-        {
-            Export,
-            Delete,
-        }
-
-        private BulkActionKind? _pendingBulkAction;
-        private bool _showBulkConfirm;
-        private bool _isBulkActionRunning;
-        private string? _bulkActionErrorMessage;
-
-        private string BulkConfirmTitle =>
-            _pendingBulkAction switch
-            {
-                BulkActionKind.Delete => "Delete items",
-                BulkActionKind.Export => "Export items",
-                _ => "Confirm",
-            };
-
         private bool _collapse = true;
         private bool HasCurrentType => !string.IsNullOrWhiteSpace(dxQueryResult?.TypeName);
         private bool HasRowActions =>
@@ -57,7 +39,6 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
 
-        private Guid selectedItemID { get; set; }
         private Guid? selectedPreviewItemID { get; set; }
 
         private IReadOnlyList<Guid> AllRowIds
@@ -134,19 +115,21 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
             SyncPreviewWithSelection();
         }
 
-        private async Task OnDeleted()
+        private async Task OnActionChanged()
         {
             await ReloadAsync();
-            OnClosed();
+            ClearSelection();
+            SyncPreviewWithSelection();
         }
 
-        private async Task OpenEditDialog(Guid id)
+        private async Task OpenCreateDialogAsync()
         {
-            if (!HasCurrentType)
-                return;
-
-            selectedItemID = id != default ? id : Guid.NewGuid();
-            _showDialog = true;
+            if (!HasCurrentType) return;
+            var input = new DXUnitDialogInput(AppKey, dxQueryResult.TypeName, Guid.NewGuid());
+            var dialog = await DialogService.ShowDialogAsync<DXUnitDialog>(input, DXUnitDialog.DefaultParameters);
+            var result = await dialog.Result;
+            if (!result.Cancelled)
+                await OnActionChanged();
         }
 
         private Task OnRowClicked(Guid id)
@@ -188,49 +171,6 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
         private IEnumerable<string> SelectedDisplayStrings =>
             _selectedIds.Select(id => GetDisplayString(id));
 
-        private IReadOnlyList<DXActionButton> BuildRowActions(JObject item)
-        {
-            var id = dxQueryResult.GetID(item);
-            if (id == default || !HasCurrentType || ComponentUnit is null)
-                return [];
-
-            var result = new List<DXActionButton>();
-
-            var ordered = new List<(int Order, string Key)>();
-            if (ComponentUnit.IsEditable) ordered.Add((10, DXActionButtonKeys.Edit));
-            if (ComponentUnit.IsDeletable) ordered.Add((20, DXActionButtonKeys.Delete));
-            if (ComponentUnit.IsExportable) ordered.Add((30, DXActionButtonKeys.Export));
-
-            result.AddRange(DXActionButtonRegistry.Build(
-                ordered.OrderBy(x => x.Order).Select(x => x.Key),
-                new DXActionButtonContext
-                {
-                    EntityID = id,
-                    TypeName = dxQueryResult.TypeName,
-                    AppKey = AppKey,
-                    OnEdit = EventCallback.Factory.Create(this, () => OpenEditDialog(id)),
-                    OnExport = EventCallback.Factory.Create(this, () => ExportSingleAsync(id)),
-                    OnDelete = EventCallback.Factory.Create(this, () => DeleteSingleAsync(id))
-                }));
-
-            foreach (var def in _customButtonDefs)
-            {
-                var capturedDef = def;
-                var capturedId = id;
-                result.Add(new DXActionButton
-                {
-                    Key = $"custom_{def.ActionDef.Key}",
-                    Label = def.ActionDef.Name,
-                    IconKey = DXActionButtonMapper.ToIconKey(def.Button.Icon),
-                    Appearance = DXActionButtonMapper.ToAppearance(def.Button.Style),
-                    IconColor = DXActionButtonMapper.ToIconColor(def.Button.Color, def.Button.Style),
-                    OnClick = EventCallback.Factory.Create(this, () => ExecuteCustomActionAsync(capturedDef, capturedId))
-                });
-            }
-
-            return result;
-        }
-
         private async Task LoadCustomButtonDefsAsync()
         {
             _customButtonDefs.Clear();
@@ -260,39 +200,11 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
             await ActionExecutor.ExecuteAsync(def.ActionDef.Module, def.ActionDef.Key, parameters);
         }
 
-        private async Task ExportSingleAsync(Guid id)
-        {
-            if (id == default || !HasCurrentType)
-                return;
-
-            await coreApi!.ExportAsync(dxQueryResult.TypeName, id);
-        }
-
-        private async Task DeleteSingleAsync(Guid id)
-        {
-            if (id == default || !HasCurrentType)
-                return;
-
-            await coreApi!.DeleteAsync(dxQueryResult.TypeName, id);
-            await OnDeleted();
-        }
-
         private void OnClosed()
         {
-            CloseBulkConfirmInternal();
             ClearSelection();
             selectedPreviewItemID = null;
             _collapse = true;
-        }
-
-        bool _showDialog = false;
-
-        private void CloseDialog() => _showDialog = false;
-
-        private async Task OnSaved()
-        {
-            await ReloadAsync();
-            CloseDialog();
         }
 
         Orientation orientation = Orientation.Horizontal;
@@ -341,97 +253,6 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
             _collapse = false;
             selectedPreviewItemID = SelectedCount == 1 ? _selectedIds[0] : null;
-        }
-
-        private string BulkConfirmMessage
-        {
-            get
-            {
-                var count = SelectedCount;
-                var itemWord = count == 1 ? "item" : "items";
-
-                return _pendingBulkAction switch
-                {
-                    BulkActionKind.Delete => $"Delete {count} selected {itemWord}?",
-                    BulkActionKind.Export => $"Export {count} selected {itemWord}?",
-                    _ => $"Confirm action for {count} selected {itemWord}?",
-                };
-            }
-        }
-
-        private void RequestBulkAction(BulkActionKind kind)
-        {
-            if (SelectedCount <= 0)
-                return;
-
-            _pendingBulkAction = kind;
-            _showBulkConfirm = true;
-        }
-
-        private void CloseBulkConfirm()
-        {
-            if (_isBulkActionRunning)
-                return;
-
-            CloseBulkConfirmInternal();
-        }
-
-        private void CloseBulkConfirmInternal()
-        {
-            _showBulkConfirm = false;
-            _pendingBulkAction = null;
-        }
-
-        private async Task ConfirmBulkActionAsync()
-        {
-            if (_pendingBulkAction is null || !HasCurrentType)
-            {
-                CloseBulkConfirm();
-                return;
-            }
-
-            var ids = _selectedIds.ToArray();
-            if (ids.Length == 0)
-            {
-                CloseBulkConfirm();
-                return;
-            }
-
-            var action = _pendingBulkAction.Value;
-            _isBulkActionRunning = true;
-            _bulkActionErrorMessage = null;
-
-            try
-            {
-                switch (action)
-                {
-                    case BulkActionKind.Delete:
-                        foreach (var id in ids)
-                            await coreApi!.DeleteAsync(dxQueryResult.TypeName, id);
-
-                        await ReloadAsync();
-                        break;
-
-                    case BulkActionKind.Export:
-                        await coreApi!.ExportAsync(dxQueryResult.TypeName, ids);
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                _bulkActionErrorMessage = ex.Message;
-            }
-            finally
-            {
-                _isBulkActionRunning = false;
-                CloseBulkConfirmInternal();
-
-                if (action == BulkActionKind.Delete)
-                {
-                    ClearSelection();
-                    SyncPreviewWithSelection();
-                }
-            }
         }
 
         private string GetDisplayString(Guid id)
