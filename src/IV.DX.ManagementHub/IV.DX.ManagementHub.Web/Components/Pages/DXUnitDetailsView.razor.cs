@@ -11,7 +11,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
     public partial class DXUnitDetailsView : ManagementHubComponentBase
     {
         [Parameter, EditorRequired] public string Type { get; set; } = default!;
-        [Parameter, EditorRequired] public Guid ID { get; set; }
+        [Parameter, EditorRequired] public Guid Id { get; set; }
 
         [Parameter] public bool IsEditable { get; set; }
         [Parameter] public bool IsDeletable { get; set; }
@@ -34,13 +34,13 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         protected override async Task OnParametersSetAsync()
         {
-            if (string.IsNullOrWhiteSpace(Type) || ID == default)
+            if (string.IsNullOrWhiteSpace(Type) || Id == default)
             {
                 _isLoaded = false;
                 return;
             }
 
-            if (_isLoaded && string.Equals(_loadedType, Type, StringComparison.Ordinal) && _loadedId == ID)
+            if (_isLoaded && string.Equals(_loadedType, Type, StringComparison.Ordinal) && _loadedId == Id)
                 return;
 
             _isLoaded = false;
@@ -49,10 +49,10 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             _dxUnitStructureApiClient = await Resolver.GetAsync<DXUnitStructureApiClient>(base.AppKey);
 
             _dxUnitDefinitionStructure = await _dxUnitStructureApiClient.GetAsync(Type);
-            await LoadDXUnit(Type, ID, _dxUnitDefinitionStructure);
+            await LoadDXUnit(Type, Id, _dxUnitDefinitionStructure);
 
             _loadedType = Type;
-            _loadedId = ID;
+            _loadedId = Id;
             _isLoaded = true;
         }
 

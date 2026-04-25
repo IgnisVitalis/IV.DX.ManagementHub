@@ -11,7 +11,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
         private DXUnitCoreApiClient? _coreApiClient;
         private IReadOnlyList<DXActionButton> _resolvedActions = [];
 
-        [Parameter] public Guid EntityID { get; set; }
+        [Parameter] public Guid EntityId { get; set; }
         [Parameter] public string TypeName { get; set; } = string.Empty;
         [Parameter] public IReadOnlyList<DXActionButton>? Actions { get; set; }
 
@@ -38,7 +38,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
                 DXActionButtonRegistry.DefaultActionKeys,
                 new DXActionButtonContext
                 {
-                    EntityID = EntityID,
+                    EntityId = EntityId,
                     TypeName = TypeName,
                     AppKey = AppKey,
                     OnEdit = EventCallback.Factory.Create(this, EditAsync),
@@ -63,7 +63,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
             if (_coreApiClient is null)
                 return;
 
-            await _coreApiClient.DeleteAsync(TypeName, EntityID);
+            await _coreApiClient.DeleteAsync(TypeName, EntityId);
 
             if (OnDeleted.HasDelegate)
                 await OnDeleted.InvokeAsync();
@@ -74,7 +74,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
             if (_coreApiClient is null)
                 return;
 
-            await _coreApiClient.ExportAsync(TypeName, EntityID);
+            await _coreApiClient.ExportAsync(TypeName, EntityId);
 
             if (OnExported.HasDelegate)
                 await OnExported.InvokeAsync();

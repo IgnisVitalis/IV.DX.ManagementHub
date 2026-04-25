@@ -116,7 +116,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
             _blobProgressPercent = 0;
             _blobProgressTitle = null;
 
-            _blobInputId = $"blob_{ColumnDefinition.Name}_{DXItem.ID}_{Guid.NewGuid():N}";
+            _blobInputId = $"blob_{ColumnDefinition.Name}_{DXItem.Id}_{Guid.NewGuid():N}";
 
             StateHasChanged();
         }

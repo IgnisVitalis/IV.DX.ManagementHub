@@ -15,7 +15,7 @@
 {
     // ---- BOOL ----
     case DXColumnTypeEnum.Bool:
-        <FluentSwitch @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentSwitch @key="@(ColumnDefinition.Name + DXItem.Id)"
                       Label="@BoolLabel"
                       Value="@(base.GetBool(DXItem.Content, ColumnDefinition))"
                       ValueChanged="@(v => base.SetBool(DXItem.Content, ColumnDefinition, v))" />
@@ -24,7 +24,7 @@
     // ---- SENSITIVE STRING (MASKED) ----
     case DXColumnTypeEnum.HashedString:
     case DXColumnTypeEnum.EncryptedString:
-        <FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentTextField @key="@(ColumnDefinition.Name + DXItem.Id)"
                          Value="@(base.GetStringN(DXItem.Content, ColumnDefinition) ?? string.Empty)"
                          ValueChanged="@(v => base.SetStringN(DXItem.Content, ColumnDefinition, v))"
                          Placeholder="******"
@@ -34,7 +34,7 @@
     // ---- STRING / TEXT ----
     case DXColumnTypeEnum.String:
     case DXColumnTypeEnum.Text:
-        <FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentTextField @key="@(ColumnDefinition.Name + DXItem.Id)"
                          Value="@(base.GetStringN(DXItem.Content, ColumnDefinition) ?? string.Empty)"
                          ValueChanged="@(v => base.SetStringN(DXItem.Content, ColumnDefinition, v))"
                          Style="width:100%;" />
@@ -42,7 +42,7 @@
 
     // ---- DATETIME? ----
     case DXColumnTypeEnum.DateTime:
-        <FluentDatePicker @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentDatePicker @key="@(ColumnDefinition.Name + DXItem.Id)"
                           Value="@(base.GetDateTime(DXItem.Content, ColumnDefinition))"
                           ValueChanged="@(v => base.SetDateTime(DXItem.Content, ColumnDefinition, v))"
                           Style="width:100%;" />
@@ -60,7 +60,7 @@
         }
         else
         {
-            <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+            <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.Id)"
                                TValue="long?"
                                Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
                                ValueChanged="@(EventCallback.Factory.Create<long?>(this, v => base.SetLongN(DXItem.Content, ColumnDefinition, v)))"
@@ -72,7 +72,7 @@
     // ---- SHORT/LONG -> long? ----
     case DXColumnTypeEnum.Short:
     case DXColumnTypeEnum.Long:
-        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.Id)"
                            TValue="long?"
                            Value="@(base.GetLongN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetLongN(DXItem.Content, ColumnDefinition, v))"
@@ -82,7 +82,7 @@
 
     // ---- FLOAT -> double? ----
     case DXColumnTypeEnum.Float:
-        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.Id)"
                            TValue="double?"
                            Value="@(base.GetDoubleN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetDoubleN(DXItem.Content, ColumnDefinition, v))"
@@ -93,7 +93,7 @@
     // ---- DECIMAL/CURRENCY -> decimal? ----
     case DXColumnTypeEnum.Decimal:
     case DXColumnTypeEnum.Currency:
-        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.ID)"
+        <FluentNumberField @key="@(ColumnDefinition.Name + DXItem.Id)"
                            TValue="decimal?"
                            Value="@(base.GetDecimalN(DXItem.Content, ColumnDefinition))"
                            ValueChanged="@(v => base.SetDecimalN(DXItem.Content, ColumnDefinition, v))"
@@ -113,7 +113,7 @@
         }
         else
         {
-            <FluentTextField @key="@(ColumnDefinition.Name + DXItem.ID)"
+            <FluentTextField @key="@(ColumnDefinition.Name + DXItem.Id)"
                              Value="@(base.GetGuidString(DXItem.Content, ColumnDefinition))"
                              ValueChanged="@(v => base.SetGuidString(DXItem.Content, ColumnDefinition, v))"
                              Style="width:100%;" />

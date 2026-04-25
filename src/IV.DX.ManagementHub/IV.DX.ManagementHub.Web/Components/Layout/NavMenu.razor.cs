@@ -44,15 +44,15 @@ namespace IV.DX.ManagementHub.Web.Components.Layout
 
                 var items = result.Content.Select(row => new DXPNavItem
                 {
-                    ID = result.GetID(row),
+                    Id = result.GetId(row),
                     Name = row["Name"]?.Value<string>() ?? string.Empty,
-                    ParentID = ParseOptionalGuid(row, "ParentID"),
+                    ParentId = ParseOptionalGuid(row, "ParentId"),
                     Order = row["Order"]?.Value<int>() ?? 0,
                     ComponentType = ParseOptionalGuid(row, "ComponentType"),
-                    ComponentID = ParseOptionalGuid(row, "ComponentID")
+                    ComponentId = ParseOptionalGuid(row, "ComponentId")
                 });
 
-                roots = BiTreeBuilder.BuildForest(items, i => i.ID, i => i.ParentID, i => i.Order);
+                roots = BiTreeBuilder.BuildForest(items, i => i.Id, i => i.ParentId, i => i.Order);
             }
             catch (Exception ex)
             {

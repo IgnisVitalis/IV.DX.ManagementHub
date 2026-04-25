@@ -21,7 +21,7 @@ namespace IV.DX.ManagementHub.Web.Actions
             Guid unitId, string unitType, DXActionParameters parameters, CancellationToken ct)
         {
             var instances = await _resolver.GetInstancesAsync(ct);
-            var instance = instances.FirstOrDefault(i => i.ID == unitId);
+            var instance = instances.FirstOrDefault(i => i.Id == unitId);
 
             if (instance is null)
                 return DXActionResult.Fail("Instance not found.");

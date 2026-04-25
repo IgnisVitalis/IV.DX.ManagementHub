@@ -10,7 +10,7 @@
     "Data": {
       "Items": [
         {
-          "ID": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+          "Id": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
           "TimeStamp": "2026-03-21T00:00:00",
           "Name": "MHInstanceUnit",
           "Kind": 2,
@@ -28,9 +28,9 @@
               "Data": {
                 "Items": [
                   {
-                    "ID": "e1a2b3c4-5d6e-4f7a-8b9c-0d1e2f3a4b5c",
+                    "Id": "e1a2b3c4-5d6e-4f7a-8b9c-0d1e2f3a4b5c",
                     "TimeStamp": "2026-03-21T00:00:00",
-                    "DXUnitID": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+                    "DXUnitId": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
                     "ColumnType": 3,
                     "Name": "Key",
                     "Length": 100,
@@ -38,9 +38,9 @@
                     "DefaultValue": null
                   },
                   {
-                    "ID": "f2b3c4d5-6e7f-4a8b-9c0d-1e2f3a4b5c6d",
+                    "Id": "f2b3c4d5-6e7f-4a8b-9c0d-1e2f3a4b5c6d",
                     "TimeStamp": "2026-03-21T00:00:00",
-                    "DXUnitID": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+                    "DXUnitId": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
                     "ColumnType": 3,
                     "Name": "Title",
                     "Length": 200,
@@ -48,9 +48,9 @@
                     "DefaultValue": null
                   },
                   {
-                    "ID": "a3c4d5e6-7f8a-4b9c-0d1e-2f3a4b5c6d7e",
+                    "Id": "a3c4d5e6-7f8a-4b9c-0d1e-2f3a4b5c6d7e",
                     "TimeStamp": "2026-03-21T00:00:00",
-                    "DXUnitID": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+                    "DXUnitId": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
                     "ColumnType": 3,
                     "Name": "BaseUrl",
                     "Length": 500,
@@ -58,9 +58,9 @@
                     "DefaultValue": null
                   },
                   {
-                    "ID": "b4d5e6f7-8a9b-4c0d-1e2f-3a4b5c6d7e8f",
+                    "Id": "b4d5e6f7-8a9b-4c0d-1e2f-3a4b5c6d7e8f",
                     "TimeStamp": "2026-03-21T00:00:00",
-                    "DXUnitID": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
+                    "DXUnitId": "c5e6f7a8-9b0c-4d1e-2f3a-4b5c6d7e8f9a",
                     "ColumnType": 15,
                     "Name": "ServiceKey",
                     "Length": 1000,

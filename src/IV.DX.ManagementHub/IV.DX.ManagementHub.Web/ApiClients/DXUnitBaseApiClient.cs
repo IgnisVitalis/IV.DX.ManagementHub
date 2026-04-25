@@ -64,7 +64,7 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
 
         public virtual async Task DeleteAsync(T item, CancellationToken cancellationToken = default)
         {
-            var id = item.ID;
+            var id = item.Id;
 
             var http = await ClientProvider.GetClientAsync(cancellationToken);
             await http.DeleteAsync(ClientProvider.GetDeleteUri(typeName, id), cancellationToken);

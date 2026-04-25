@@ -18,7 +18,7 @@ else
         {
             <DXPActionButtons AppKey="@AppKey"
                               TypeName="@Type"
-                              SelectedIds="@(new[] { ID })"
+                              SelectedIds="@(new[] { Id })"
                               IsEditable="@IsEditable"
                               IsDeletable="@IsDeletable"
                               IsExportable="@IsExportable"
@@ -28,7 +28,7 @@ else
             </DXPActionButtons>
         }
 
-        <FluentAccordion ActiveId="@dxModel.MainItem.ID.ToString()" Style="width:100%; min-width:0;">
+        <FluentAccordion ActiveId="@dxModel.MainItem.Id.ToString()" Style="width:100%; min-width:0;">
             <FluentAccordionItem Expanded="true" Heading="@dxModel.Type">
                 <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent" Slot="start" />
                 <FluentCard Class="unclip">

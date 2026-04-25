@@ -103,10 +103,10 @@ namespace IV.DX.ManagementHub.Web.ApiClients
             return items;
         }
 
-        public async Task DeleteAsync(string typeName, Guid itemID, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(string typeName, Guid itemId, CancellationToken cancellationToken = default)
         {
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var result = await http.DeleteAsync(clientProvider.GetDeleteUri(typeName, itemID), cancellationToken);
+            var result = await http.DeleteAsync(clientProvider.GetDeleteUri(typeName, itemId), cancellationToken);
             result.EnsureSuccessStatusCode();
         }
 

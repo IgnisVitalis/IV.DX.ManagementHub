@@ -1,5 +1,5 @@
-@page "/app/{AppKey}/dxUnitCardView/{DXPComponentID}"
-@page "/app/dxUnitCardView/{DXPComponentID}"
+@page "/app/{AppKey}/dxUnitCardView/{DXPComponentId}"
+@page "/app/dxUnitCardView/{DXPComponentId}"
 
 @using IV.DX.Kernel.Helpers.DXObjectHelpers
 @using IV.DX.ManagementHub.Web.ApiClients
@@ -48,7 +48,7 @@ else
                 @foreach (var item in _cardItems)
                 {
                     var capturedItem = item;
-                    DXObjectHelper.TryGetID(capturedItem, out var capturedItemId);
+                    DXObjectHelper.TryGetId(capturedItem, out var capturedItemId);
                     var title = DXObjectHelper.GetDXTitle(capturedItem)
                         ?? (capturedItemId != default ? capturedItemId.ToString() : string.Empty);
 

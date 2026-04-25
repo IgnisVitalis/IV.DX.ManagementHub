@@ -1,6 +1,6 @@
 namespace IV.DX.ManagementHub.Web.Models
 {
-    public record DXUnitDialogInput(string AppKey, string Type, Guid ID);
+    public record DXUnitDialogInput(string AppKey, string Type, Guid Id);
 
     public class DXDeleteConfirmInput
     {

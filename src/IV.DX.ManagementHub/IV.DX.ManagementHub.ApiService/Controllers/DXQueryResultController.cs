@@ -10,19 +10,19 @@ namespace IV.DX.ManagementHub.ApiService.Controllers
     [Route("api/DXQueryResult")]
     public class DXQueryResultController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
     {
-        /// <summary>Get DX query result by query ID.</summary>
-        [HttpGet("{dxQueryID:guid}/{dxFilterID:guid?}")]
+        /// <summary>Get DX query result by query Id.</summary>
+        [HttpGet("{dxQueryId:guid}/{dxFilterId:guid?}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryID, [FromRoute] Guid? dxFilterID)
+        public async Task<ActionResult<JObject>> Get([FromRoute] Guid dxQueryId, [FromRoute] Guid? dxFilterId)
         {
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
 
-            var url = dxFilterID.HasValue
-                ? $"api/management/query-result/{dxQueryID}/{dxFilterID.Value}"
-                : $"api/management/query-result/{dxQueryID}";
+            var url = dxFilterId.HasValue
+                ? $"api/management/query-result/{dxQueryId}/{dxFilterId.Value}"
+                : $"api/management/query-result/{dxQueryId}";
             using var response = await client.GetAsync(url, ct);
 
             if (response.StatusCode == HttpStatusCode.NotFound)

@@ -2,11 +2,11 @@ namespace IV.DX.ManagementHub.Web.Models
 {
     public sealed class DXPNavItem
     {
-        public Guid ID { get; init; }
+        public Guid Id { get; init; }
         public string Name { get; init; } = string.Empty;
-        public Guid? ParentID { get; init; }
+        public Guid? ParentId { get; init; }
         public int Order { get; init; }
         public Guid? ComponentType { get; init; }
-        public Guid? ComponentID { get; init; }
+        public Guid? ComponentId { get; init; }
     }
 }

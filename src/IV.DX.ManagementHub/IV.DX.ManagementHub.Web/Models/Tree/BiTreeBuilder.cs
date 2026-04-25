@@ -19,7 +19,7 @@
             {
                 var id = idSelector(item);
                 if (nodes.ContainsKey(id))
-                    throw new InvalidOperationException($"Duplicate ID detected: {id}");
+                    throw new InvalidOperationException($"Duplicate Id detected: {id}");
 
                 nodes[id] = new BiTreeNode<T>(
                     item,

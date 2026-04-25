@@ -1,5 +1,5 @@
-@page "/app/{AppKey}/dxUnitSetView/{DXPComponentID}"
-@page "/app/dxUnitSetView/{DXPComponentID}"
+@page "/app/{AppKey}/dxUnitSetView/{DXPComponentId}"
+@page "/app/dxUnitSetView/{DXPComponentId}"
 
 @using System.Linq
 @using IV.DX.Kernel.Models;
@@ -67,7 +67,7 @@ else
                          HorizontalAlignment="HorizontalAlignment.SpaceBetween"
                          VerticalAlignment="VerticalAlignment.Center">
                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="4">
-                    @if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                    @if (SelectedCount == 1 && selectedPreviewItemId is not null)
                     {
                         @foreach (var def in _customButtonDefs)
                         {
@@ -75,7 +75,7 @@ else
                             <FluentButton aria-label="@def.ActionDef.Name"
                                           Appearance="@DXActionButtonMapper.ToAppearance(def.Button.Style)"
                                           Title="@def.ActionDef.Description"
-                                          OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemID!.Value))">
+                                          OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemId!.Value))">
                                 <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
                                     <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Color, def.Button.Style)" />
                                     <span>@def.ActionDef.Name</span>
@@ -98,11 +98,11 @@ else
                 {
                     <FluentLabel>Select row(s) to preview data.</FluentLabel>
                 }
-                else if (SelectedCount == 1 && selectedPreviewItemID is not null)
+                else if (SelectedCount == 1 && selectedPreviewItemId is not null)
                 {
                     <DXUnitDetailsView AppKey="@AppKey"
                                        Type="@dxQueryResult.TypeName"
-                                       ID="@selectedPreviewItemID.Value"
+                                       Id="@selectedPreviewItemId.Value"
                                        IsEditable="@(ComponentUnit?.IsEditable == true)"
                                        IsDeletable="@(ComponentUnit?.IsDeletable == true)"
                                        IsExportable="@(ComponentUnit?.IsExportable == true)"
@@ -114,7 +114,7 @@ else
                                 <FluentButton aria-label="@def.ActionDef.Name"
                                               Appearance="@DXActionButtonMapper.ToAppearance(def.Button.Style)"
                                               Title="@def.ActionDef.Description"
-                                              OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemID!.Value))">
+                                              OnClick="@(() => ExecuteCustomActionAsync(capturedDef, selectedPreviewItemId!.Value))">
                                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="6" VerticalAlignment="VerticalAlignment.Center">
                                         <FluentIcon Value="@DXPActionIconHelper.GetIcon(def.Button.Icon)" Color="@DXActionButtonMapper.ToIconColor(def.Button.Color, def.Button.Style)" />
                                         <span>@def.ActionDef.Name</span>
@@ -158,13 +158,13 @@ else
     private RenderFragment<JObject>? RowActionsTemplate => HasRowActions
         ? item => @<DXPActionButtons AppKey="@AppKey"
                                       TypeName="@dxQueryResult.TypeName"
-                                      SelectedIds="@(new[] { dxQueryResult.GetID(item) })"
+                                      SelectedIds="@(new[] { dxQueryResult.GetId(item) })"
                                       IsEditable="@(ComponentUnit?.IsEditable == true)"
                                       IsDeletable="@(ComponentUnit?.IsDeletable == true)"
                                       IsExportable="@(ComponentUnit?.IsExportable == true)"
                                       HorizontalAlignment="HorizontalAlignment.Right"
                                       OnChanged="OnActionChanged">
-                      @RowCustomButtonsFor(dxQueryResult.GetID(item))
+                      @RowCustomButtonsFor(dxQueryResult.GetId(item))
                   </DXPActionButtons>
         : null;
 
@@ -194,6 +194,6 @@ else
                         ValueChanged="@SetSelectAllRows" />
     </div>;
 
-    private RenderFragment<JObject> SelectRowCellTemplate => item => @<FluentCheckbox Value="@IsSelected(dxQueryResult.GetID(item))"
-                                                                                       ValueChanged="@(v => SetSelected(dxQueryResult.GetID(item), v))" />;
+    private RenderFragment<JObject> SelectRowCellTemplate => item => @<FluentCheckbox Value="@IsSelected(dxQueryResult.GetId(item))"
+                                                                                       ValueChanged="@(v => SetSelected(dxQueryResult.GetId(item), v))" />;
 }

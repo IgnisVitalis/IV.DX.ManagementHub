@@ -52,7 +52,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JObject.Parse(body);
         }
 
-        /// <summary>Get object of the specified type by ID.</summary>
+        /// <summary>Get object of the specified type by Id.</summary>
         [HttpGet("{id:guid}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -113,7 +113,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JObject.Parse(responseBody);
         }
 
-        /// <summary>Remove an object of the specified type by ID.</summary>
+        /// <summary>Remove an object of the specified type by Id.</summary>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteAsync([FromRoute] string typeName, [FromRoute] Guid id)

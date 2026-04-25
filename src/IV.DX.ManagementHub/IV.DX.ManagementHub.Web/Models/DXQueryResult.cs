@@ -19,7 +19,7 @@ namespace IV.DX.ManagementHub.Web.Models
             {
                 if (this._columns == null)
                 {
-                    this._columns = this.QueryDefinition.OrderBy(x => x.Order).Where(x => x.Name != "ID").Select(x => x.Name);
+                    this._columns = this.QueryDefinition.OrderBy(x => x.Order).Where(x => x.Name != "Id").Select(x => x.Name);
                 }
 
                 return this._columns;
@@ -37,17 +37,17 @@ namespace IV.DX.ManagementHub.Web.Models
         }
 
 
-        public Guid GetID(JObject jObject)
+        public Guid GetId(JObject jObject)
         {
             if (jObject == null)
                 throw new ArgumentNullException(nameof(jObject));
 
-            if (!jObject.ContainsKey("ID"))
-                throw new ArgumentException($"Property 'ID' not found.", nameof(jObject));
+            if (!jObject.ContainsKey("Id"))
+                throw new ArgumentException($"Property 'Id' not found.", nameof(jObject));
 
-            var token = jObject["ID"];
+            var token = jObject["Id"];
             if (token == null || token.Type == JTokenType.Null)
-                throw new ArgumentException("Property 'ID' is null.", nameof(jObject));
+                throw new ArgumentException("Property 'Id' is null.", nameof(jObject));
 
             Guid id;
             if (token.Type == JTokenType.Guid)
@@ -58,18 +58,18 @@ namespace IV.DX.ManagementHub.Web.Models
             {
                 var value = token.Value<string>();
                 if (!Guid.TryParse(value, out id))
-                    throw new ArgumentException($"Property 'ID' {value} couldn't be parsed.", nameof(jObject));
+                    throw new ArgumentException($"Property 'Id' {value} couldn't be parsed.", nameof(jObject));
             }
             else
             {
                 // Fallback for numeric/other types that can be converted to string
                 var value = token.ToString();
                 if (!Guid.TryParse(value, out id))
-                    throw new ArgumentException($"Property 'ID' {value} couldn't be parsed.", nameof(jObject));
+                    throw new ArgumentException($"Property 'Id' {value} couldn't be parsed.", nameof(jObject));
             }
 
             if (id == default(Guid))
-                throw new ArgumentException($"Property 'ID' has default value.", nameof(jObject));
+                throw new ArgumentException($"Property 'Id' has default value.", nameof(jObject));
 
             return id;
         }
@@ -134,7 +134,7 @@ namespace IV.DX.ManagementHub.Web.Models
         {
             var row = new JObject
             {
-                ["ID"] = JToken.FromObject(record.ID),
+                ["Id"] = JToken.FromObject(record.Id),
                 ["TimeStamp"] = JToken.FromObject(record.TimeStamp)
             };
 

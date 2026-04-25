@@ -13,7 +13,7 @@ namespace IV.DX.ManagementHub.Web.Services
         string GetByIdsUri(string typeName);
         string GetSearchUri(string typeName);
         string GetUnitStructureUri(string typeName);
-        string GetQueryResultUri(Guid dxQueryID, Guid? dxFilterID = null);
+        string GetQueryResultUri(Guid dxQueryId, Guid? dxFilterId = null);
         string GetByDefinitionUri(Guid definitionId);
         string GetByDefinitionItemUri(Guid definitionId, Guid id);
         string GetByDefinitionByIdsUri(Guid definitionId);
@@ -48,10 +48,10 @@ namespace IV.DX.ManagementHub.Web.Services
         public string GetUnitStructureUri(string typeName) =>
             $"api/management/unit-structure/{typeName}";
 
-        public string GetQueryResultUri(Guid dxQueryID, Guid? dxFilterID = null) =>
-            dxFilterID.HasValue
-                ? $"api/management/query-result/{dxQueryID}/{dxFilterID.Value}"
-                : $"api/management/query-result/{dxQueryID}";
+        public string GetQueryResultUri(Guid dxQueryId, Guid? dxFilterId = null) =>
+            dxFilterId.HasValue
+                ? $"api/management/query-result/{dxQueryId}/{dxFilterId.Value}"
+                : $"api/management/query-result/{dxQueryId}";
 
         public string GetByDefinitionUri(Guid definitionId) =>
             $"api/management/{definitionId}";
@@ -112,10 +112,10 @@ namespace IV.DX.ManagementHub.Web.Services
         public string GetUnitStructureUri(string typeName) =>
             $"api/DXUnitStructure/{typeName}";
 
-        public string GetQueryResultUri(Guid dxQueryID, Guid? dxFilterID = null) =>
-            dxFilterID.HasValue
-                ? $"api/DXQueryResult/{dxQueryID}/{dxFilterID.Value}"
-                : $"api/DXQueryResult/{dxQueryID}";
+        public string GetQueryResultUri(Guid dxQueryId, Guid? dxFilterId = null) =>
+            dxFilterId.HasValue
+                ? $"api/DXQueryResult/{dxQueryId}/{dxFilterId.Value}"
+                : $"api/DXQueryResult/{dxQueryId}";
 
         public string GetByDefinitionUri(Guid definitionId) =>
             $"api/{definitionId}";

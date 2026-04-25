@@ -14,7 +14,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
         [Parameter, EditorRequired] public DXRecordMultiElement DXMultiElement { get; set; } = default!;
         [Parameter, EditorRequired] public DXUnitRecordModel Parent { get; set; } = default!;
 
-        private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
+        private readonly string[] systemColumns = new[] { "Id", "DXUnitId", "TimeStamp" };
 
         private DXEnumApiClient _dxEnumApiClient = default!;
 
@@ -31,7 +31,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
                 enumDefinitions = await _dxEnumApiClient.GetItemsAsync();
 
                 var columnDefinitionEnumType = Definition.Columns.Single(x => x.Name.Equals("EnumType"));
-                columnDefinitionEnumType.RelationValues = enumDefinitions.ToDictionary(x => x.ID, x => x.Name);
+                columnDefinitionEnumType.RelationValues = enumDefinitions.ToDictionary(x => x.Id, x => x.Name);
             }
         }
 
@@ -65,7 +65,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
                 if (columnDefinition.Name.Equals("EnumType"))
                 {
                     var columnDefinitionEnumType = columnDefinition.DeepClone();
-                    columnDefinitionEnumType.RelationValues = enumDefinitions.ToDictionary(x => x.ID, x => x.Name);
+                    columnDefinitionEnumType.RelationValues = enumDefinitions.ToDictionary(x => x.Id, x => x.Name);
                     return columnDefinitionEnumType;
                 }
                 else if (columnDefinition.Name.Equals("EnumKey"))
@@ -79,14 +79,14 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
                         ? (Guid)enumValue
                         : Guid.Parse(enumValue.ToString()!);
 
-                    var selectedEnumTypeDefinition = enumDefinitions.SingleOrDefault(x => x.ID == enumTypeAsGuid);
+                    var selectedEnumTypeDefinition = enumDefinitions.SingleOrDefault(x => x.Id == enumTypeAsGuid);
 
                     if (selectedEnumTypeDefinition != null)
                     {
                         customColumnDefintion.RelationValues =
                             selectedEnumTypeDefinition.DXColumnDefinitionElement.Announced
                             .Where(x => x.ColumnType == IV.DX.Kernel.Enums.DXColumnTypeEnum.Int)
-                            .ToDictionary(x => x.ID, x => x.Name);
+                            .ToDictionary(x => x.Id, x => x.Name);
 
                         return customColumnDefintion;
                     }

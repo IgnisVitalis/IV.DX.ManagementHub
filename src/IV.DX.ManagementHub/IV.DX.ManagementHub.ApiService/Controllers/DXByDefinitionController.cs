@@ -12,7 +12,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
     [Route("api/{definitionId:guid}")]
     public class DXByDefinitionController(InstanceApiClientFactory clientFactory) : DXApiControllerBase
     {
-        /// <summary>Get all items by unit definition ID.</summary>
+        /// <summary>Get all items by unit definition Id.</summary>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -33,7 +33,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JObject.Parse(body);
         }
 
-        /// <summary>Get item by unit definition ID and item ID.</summary>
+        /// <summary>Get item by unit definition Id and item Id.</summary>
         [HttpGet("{id:guid}")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -53,7 +53,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JObject.Parse(body);
         }
 
-        /// <summary>Get items by unit definition ID and multiple item IDs.</summary>
+        /// <summary>Get items by unit definition Id and multiple item IDs.</summary>
         [HttpPost("by-ids")]
         [Consumes("application/json")]
         [Produces("application/json")]
@@ -75,7 +75,7 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JArray.Parse(body);
         }
 
-        /// <summary>Delete item by unit definition ID and item ID.</summary>
+        /// <summary>Delete item by unit definition Id and item Id.</summary>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteAsync([FromRoute] Guid definitionId, [FromRoute] Guid id)

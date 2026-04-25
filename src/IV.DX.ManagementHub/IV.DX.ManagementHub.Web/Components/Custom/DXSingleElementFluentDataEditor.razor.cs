@@ -10,7 +10,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom
         [Parameter, EditorRequired] public DXRecordSingleElement DXSingleElement { get; set; } = default!;
         [Parameter, EditorRequired] public DXUnitRecordModel Parent { get; set; } = default!;
 
-        private readonly string[] systemColumns = new[] { "ID", "DXUnitID", "TimeStamp" };
+        private readonly string[] systemColumns = new[] { "Id", "DXUnitId", "TimeStamp" };
 
         private DXRecordItem DXItem
         {

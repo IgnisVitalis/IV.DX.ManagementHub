@@ -21,7 +21,7 @@ else
         <FluentStack Orientation="Orientation.Vertical" Width="100%" Style="min-height: 0;">
             @if (isAccordion)
             {
-                <FluentAccordion ActiveId="@dxModel.MainItem.ID.ToString()" Style="width:100%">
+                <FluentAccordion ActiveId="@dxModel.MainItem.Id.ToString()" Style="width:100%">
                     <FluentAccordionItem Expanded="true" Heading="@dxModel.Type">
                         <FluentIcon Value="@(new Icons.Regular.Size20.BuildingBank())" Color="@Color.Accent" Slot="start" />
                         <FluentCard Class="unclip">

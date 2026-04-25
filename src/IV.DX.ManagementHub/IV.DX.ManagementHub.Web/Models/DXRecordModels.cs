@@ -42,8 +42,8 @@ namespace IV.DX.ManagementHub.Web.Models
     public sealed class DXRecordItem
     {
         public string Type { get; }
-        public Guid ID { get; set; }
-        public Guid DXUnitID { get; set; }
+        public Guid Id { get; set; }
+        public Guid DXUnitId { get; set; }
         public DateTime TimeStamp { get; set; }
         public IDictionary<string, object?> Content { get; }
 
@@ -55,8 +55,8 @@ namespace IV.DX.ManagementHub.Web.Models
             IDictionary<string, object?> content)
         {
             Type = type;
-            ID = id;
-            DXUnitID = dxUnitId;
+            Id = id;
+            DXUnitId = dxUnitId;
             TimeStamp = timeStamp;
             Content = content;
         }
@@ -95,10 +95,10 @@ namespace IV.DX.ManagementHub.Web.Models
             Deleted = new List<DXRecordItem>(deleted ?? Enumerable.Empty<DXRecordItem>());
             _trackOriginal = trackOriginal;
             _originalIds = trackOriginal
-                ? new HashSet<Guid>(Announced.Select(x => x.ID))
+                ? new HashSet<Guid>(Announced.Select(x => x.Id))
                 : new HashSet<Guid>();
             _originalItems = trackOriginal
-                ? Announced.ToDictionary(x => x.ID, x => OriginalItem.From(x))
+                ? Announced.ToDictionary(x => x.Id, x => OriginalItem.From(x))
                 : new Dictionary<Guid, OriginalItem>();
         }
 
@@ -109,9 +109,9 @@ namespace IV.DX.ManagementHub.Web.Models
 
         public void Remove(DXRecordItem item)
         {
-            if (_originalIds.Contains(item.ID))
+            if (_originalIds.Contains(item.Id))
             {
-                if (!Deleted.Any(x => x.ID == item.ID))
+                if (!Deleted.Any(x => x.Id == item.Id))
                     Deleted.Add(item);
             }
 
@@ -132,7 +132,7 @@ namespace IV.DX.ManagementHub.Web.Models
             if (!_trackOriginal)
                 return true;
 
-            if (!_originalItems.TryGetValue(item.ID, out var original))
+            if (!_originalItems.TryGetValue(item.Id, out var original))
                 return true;
 
             return !original.EqualsItem(item);
@@ -140,13 +140,13 @@ namespace IV.DX.ManagementHub.Web.Models
 
         private sealed class OriginalItem
         {
-            public Guid DXUnitID { get; }
+            public Guid DXUnitId { get; }
             public DateTime TimeStamp { get; }
             public IDictionary<string, object?> Content { get; }
 
             private OriginalItem(Guid dxUnitId, DateTime timeStamp, IDictionary<string, object?> content)
             {
-                DXUnitID = dxUnitId;
+                DXUnitId = dxUnitId;
                 TimeStamp = timeStamp;
                 Content = content;
             }
@@ -154,14 +154,14 @@ namespace IV.DX.ManagementHub.Web.Models
             public static OriginalItem From(DXRecordItem item)
             {
                 return new OriginalItem(
-                    item.DXUnitID,
+                    item.DXUnitId,
                     item.TimeStamp,
                     CopyContent(item.Content));
             }
 
             public bool EqualsItem(DXRecordItem item)
             {
-                if (item.DXUnitID != DXUnitID)
+                if (item.DXUnitId != DXUnitId)
                     return false;
 
                 if (item.TimeStamp != TimeStamp)

@@ -4,9 +4,9 @@ using Microsoft.JSInterop;
 
 internal class DXQueryResultApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
 {
-    public virtual async Task<DXQueryResult> GetAsync(Guid dxQueryID, Guid? dxFilterID, CancellationToken ct = default)
+    public virtual async Task<DXQueryResult> GetAsync(Guid dxQueryId, Guid? dxFilterId, CancellationToken ct = default)
     {
-        var requestUri = clientProvider.GetQueryResultUri(dxQueryID, dxFilterID);
+        var requestUri = clientProvider.GetQueryResultUri(dxQueryId, dxFilterId);
         var http = await clientProvider.GetClientAsync(ct);
         var result = await http.GetAsync(requestUri, ct);
 

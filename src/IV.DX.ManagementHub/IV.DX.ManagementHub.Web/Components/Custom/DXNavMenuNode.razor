@@ -25,7 +25,7 @@
         </ChildContent>
     </FluentNavGroup>
 }
-else if (ComponentHrefFactory(Item.ComponentType, Item.ComponentID) is string href)
+else if (ComponentHrefFactory(Item.ComponentType, Item.ComponentId) is string href)
 {
     <FluentNavLink Href="@href" Match="NavLinkMatch.Prefix">
         @Item.Name
@@ -53,7 +53,7 @@ else
     {
         IsExpanded = true;
 
-        if (ComponentHrefFactory(Item.ComponentType, Item.ComponentID) is string href)
+        if (ComponentHrefFactory(Item.ComponentType, Item.ComponentId) is string href)
             Nav.NavigateTo(href);
     }
 }

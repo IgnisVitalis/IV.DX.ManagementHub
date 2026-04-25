@@ -47,7 +47,7 @@
                 foreach (var node in root.DepthFirst())
                 {
                     if (!dict.TryAdd(node.Id, node))
-                        throw new InvalidOperationException($"Duplicate node ID in forest: {node.Id}");
+                        throw new InvalidOperationException($"Duplicate node Id in forest: {node.Id}");
                 }
             }
 

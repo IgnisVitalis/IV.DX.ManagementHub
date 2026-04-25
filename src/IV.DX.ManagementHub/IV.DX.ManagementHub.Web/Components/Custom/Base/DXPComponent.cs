@@ -14,13 +14,13 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.Base
 
         protected TClient ApiClient { get; private set; } = default!;
 
-        protected Guid _dxpComponentID;
+        protected Guid _dxpComponentId;
 
         [Parameter, EditorRequired]
-        public string DXPComponentID
+        public string DXPComponentId
         {
-            get => _dxpComponentID.ToString();
-            set => _dxpComponentID = Guid.Parse(value);
+            get => _dxpComponentId.ToString();
+            set => _dxpComponentId = Guid.Parse(value);
         }
 
         protected TUnit? ComponentUnit { get; private set; }
@@ -37,7 +37,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.Base
 
             try
             {
-                ComponentUnit = await ApiClient.Get(_dxpComponentID);
+                ComponentUnit = await ApiClient.Get(_dxpComponentId);
                 if (ComponentUnit is null)
                 {
                     LoadErrorMessage = "Component definition not found.";

@@ -37,7 +37,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
             _dxUnitStructureApiCLient = await Resolver.GetAsync<DXUnitStructureApiClient>(Content.AppKey);
 
             _dxUnitDefinitionStructure = await _dxUnitStructureApiCLient.GetAsync(Content.Type);
-            await LoadDXUnit(Content.Type, Content.ID, _dxUnitDefinitionStructure);
+            await LoadDXUnit(Content.Type, Content.Id, _dxUnitDefinitionStructure);
 
             _isLoaded = true;
         }
@@ -98,7 +98,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         private void CreateSingleElement(DXElementDefinition dxElementDefinition)
         {
-            var newSingleItem = GetNewDXItem(dxElementDefinition, dxModel.MainItem.ID);
+            var newSingleItem = GetNewDXItem(dxElementDefinition, dxModel.MainItem.Id);
             var existing = dxModel.GetSingleElement(dxElementDefinition.Name);
             if (existing == null)
                 dxModel.SetSingleElement(new DXRecordSingleElement(dxElementDefinition.Name, newSingleItem));
@@ -115,7 +115,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         private DXRecordItem GetNewDXItem(DXElementDefinition item, Guid dxUnitId)
         {
-            var elementID = Guid.NewGuid();
+            var elementId = Guid.NewGuid();
             var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var column in item.Columns)
@@ -127,7 +127,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                 }
             }
 
-            return new DXRecordItem(item.Name, elementID, dxUnitId, DateTime.UtcNow, dict);
+            return new DXRecordItem(item.Name, elementId, dxUnitId, DateTime.UtcNow, dict);
         }
     }
 }

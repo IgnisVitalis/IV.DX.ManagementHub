@@ -10,7 +10,7 @@
     "Data": {
       "Items": [
         {
-          "ID": "f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d",
+          "Id": "f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d",
           "TimeStamp": "2026-03-19T00:00:00",
           "Name": "Instances",
           "IsCreatable": 1,

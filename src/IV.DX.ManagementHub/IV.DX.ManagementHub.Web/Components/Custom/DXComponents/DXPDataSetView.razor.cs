@@ -39,7 +39,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
         private IEnumerable<JObject> dxUnits = new List<JObject>();
 
-        private Guid? selectedPreviewItemID { get; set; }
+        private Guid? selectedPreviewItemId { get; set; }
 
         private IReadOnlyList<Guid> AllRowIds
         {
@@ -49,7 +49,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
                     return Array.Empty<Guid>();
 
                 return dxQueryResult.Content
-                    .Select(dxQueryResult.GetID)
+                    .Select(dxQueryResult.GetId)
                     .Where(id => id != default)
                     .Distinct()
                     .ToArray();
@@ -141,13 +141,13 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
         private Task OnDataRowClicked(JObject row)
         {
-            var id = dxQueryResult.GetID(row);
+            var id = dxQueryResult.GetId(row);
             return OnRowClicked(id);
         }
 
         private string? GetDataRowStyle(JObject row)
         {
-            var id = dxQueryResult.GetID(row);
+            var id = dxQueryResult.GetId(row);
             return IsSelected(id)
                 ? "background-color: var(--neutral-fill-secondary-rest);"
                 : null;
@@ -203,7 +203,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
         private void OnClosed()
         {
             ClearSelection();
-            selectedPreviewItemID = null;
+            selectedPreviewItemId = null;
             _collapse = true;
         }
 
@@ -246,13 +246,13 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
         {
             if (SelectedCount <= 0)
             {
-                selectedPreviewItemID = null;
+                selectedPreviewItemId = null;
                 _collapse = true;
                 return;
             }
 
             _collapse = false;
-            selectedPreviewItemID = SelectedCount == 1 ? _selectedIds[0] : null;
+            selectedPreviewItemId = SelectedCount == 1 ? _selectedIds[0] : null;
         }
 
         private string GetDisplayString(Guid id)
@@ -301,7 +301,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
             if (obj is null)
                 return false;
 
-            var token = obj.GetValue("ID", StringComparison.OrdinalIgnoreCase);
+            var token = obj.GetValue("Id", StringComparison.OrdinalIgnoreCase);
             if (token is null || token.Type == JTokenType.Null)
                 return false;
 

@@ -18,7 +18,7 @@ namespace IV.DX.ManagementHub.Web.Models
 
     public sealed class DXActionButtonContext
     {
-        public Guid EntityID { get; init; }
+        public Guid EntityId { get; init; }
         public string TypeName { get; init; } = string.Empty;
         public string AppKey { get; init; } = string.Empty;
         public EventCallback OnEdit { get; init; }

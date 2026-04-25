@@ -9,8 +9,8 @@ namespace IV.DX.ManagementHub.Web.Services
     {
         private static readonly HashSet<string> SystemColumns = new(StringComparer.OrdinalIgnoreCase)
         {
-            "ID",
-            "DXUnitID",
+            "Id",
+            "DXUnitId",
             "TimeStamp"
         };
 
@@ -59,7 +59,7 @@ namespace IV.DX.ManagementHub.Web.Services
             }
 
             var typeName = block.Meta?.Type ?? definition.Name;
-            var unitId = record.ID;
+            var unitId = record.Id;
             var timeStamp = record.TimeStamp;
 
             var mainContent = ToObjectDictionary(record.Fields);
@@ -91,7 +91,7 @@ namespace IV.DX.ManagementHub.Web.Services
         {
             var record = new DXUnitRecord
             {
-                ID = model.MainItem.ID,
+                Id = model.MainItem.Id,
                 TimeStamp = model.MainItem.TimeStamp,
                 Fields = ToJTokenDictionary(model.MainItem.Content)
             };
@@ -266,8 +266,8 @@ namespace IV.DX.ManagementHub.Web.Services
             return records.Select(r =>
             {
                 var content = ToObjectDictionary(r.Fields);
-                var dxUnitId = r.DXUnitID == Guid.Empty ? unitId : r.DXUnitID;
-                return new DXRecordItem(elementName, r.ID, dxUnitId, r.TimeStamp == default ? timeStamp : r.TimeStamp, content);
+                var dxUnitId = r.DXUnitId == Guid.Empty ? unitId : r.DXUnitId;
+                return new DXRecordItem(elementName, r.Id, dxUnitId, r.TimeStamp == default ? timeStamp : r.TimeStamp, content);
             }).ToList();
         }
 
@@ -280,13 +280,13 @@ namespace IV.DX.ManagementHub.Web.Services
             {
                 var content = ToObjectDictionary(r.Fields);
                 var dxUnitId = unitId;
-                if (r.Fields != null && r.Fields.TryGetValue("DXUnitID", out var token) && token != null)
+                if (r.Fields != null && r.Fields.TryGetValue("DXUnitId", out var token) && token != null)
                 {
                     var parsed = token.ToObject<Guid?>();
                     if (parsed.HasValue) dxUnitId = parsed.Value;
                 }
 
-                return new DXRecordItem(elementName, r.ID, dxUnitId, timeStamp, content);
+                return new DXRecordItem(elementName, r.Id, dxUnitId, timeStamp, content);
             }).ToList();
         }
 
@@ -294,9 +294,9 @@ namespace IV.DX.ManagementHub.Web.Services
         {
             return new DXElementRecord
             {
-                ID = item.ID,
+                Id = item.Id,
                 TimeStamp = item.TimeStamp,
-                DXUnitID = item.DXUnitID,
+                DXUnitId = item.DXUnitId,
                 Fields = ToJTokenDictionary(item.Content)
             };
         }
@@ -305,12 +305,12 @@ namespace IV.DX.ManagementHub.Web.Services
         {
             var fields = new Dictionary<string, JToken>(StringComparer.OrdinalIgnoreCase)
             {
-                ["DXUnitID"] = JToken.FromObject(item.DXUnitID)
+                ["DXUnitId"] = JToken.FromObject(item.DXUnitId)
             };
 
             return new DXDeleteRef
             {
-                ID = item.ID,
+                Id = item.Id,
                 Fields = fields
             };
         }
