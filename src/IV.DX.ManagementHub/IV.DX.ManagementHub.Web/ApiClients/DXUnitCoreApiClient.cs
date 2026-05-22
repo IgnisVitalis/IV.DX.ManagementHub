@@ -9,23 +9,29 @@ namespace IV.DX.ManagementHub.Web.ApiClients
 {
     public sealed class DXUnitCoreApiClient(IInstanceClientProvider clientProvider, IJSRuntime JSRuntime)
     {
-        public async Task<JObject> SaveAsync(JObject jObject, CancellationToken cancellationToken = default)
+        public async Task<Guid> CreateAsync(JObject jObject, CancellationToken cancellationToken = default)
         {
             string typeName = jObject.Value<string>("S_Type");
-
             var content = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
-
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.PostAsync(clientProvider.GetSaveUri(typeName), content, cancellationToken);
-
+            var response = await http.PostAsync(clientProvider.GetCreateUri(typeName), content, cancellationToken);
+            response.EnsureSuccessStatusCode();
             var str = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            var result = JObject.Parse(str);
-
-            return result;
+            return JObject.Parse(str)["id"]!.ToObject<Guid>();
         }
 
-        public async Task<DXDataBlock<DXUnitRecord>?> SaveRecordAsync(DXDataBlock<DXUnitRecord> block, CancellationToken cancellationToken = default)
+        public async Task UpdateAsync(JObject jObject, CancellationToken cancellationToken = default)
+        {
+            string typeName = jObject.Value<string>("S_Type");
+            var idToken = jObject["Data"]?["Items"]?[0]?["Id"] ?? jObject["Id"];
+            Guid.TryParse(idToken?.ToString(), out var id);
+            var content = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.PutAsync(clientProvider.GetUpdateUri(typeName, id), content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<Guid> CreateRecordAsync(DXDataBlock<DXUnitRecord> block, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(block);
 
@@ -35,16 +41,27 @@ namespace IV.DX.ManagementHub.Web.ApiClients
 
             var json = JsonConvert.SerializeObject(block);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-
             var http = await clientProvider.GetClientAsync(cancellationToken);
-            var response = await http.PostAsync(clientProvider.GetSaveUri(typeName), content, cancellationToken);
+            var response = await http.PostAsync(clientProvider.GetCreateUri(typeName), content, cancellationToken);
             response.EnsureSuccessStatusCode();
-
             var str = await response.Content.ReadAsStringAsync(cancellationToken);
-            if (string.IsNullOrWhiteSpace(str))
-                return null;
+            return JObject.Parse(str)["id"]!.ToObject<Guid>();
+        }
 
-            return JsonConvert.DeserializeObject<DXDataBlock<DXUnitRecord>>(str);
+        public async Task UpdateRecordAsync(DXDataBlock<DXUnitRecord> block, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(block);
+
+            var typeName = block.Meta?.Type;
+            if (string.IsNullOrWhiteSpace(typeName))
+                throw new InvalidOperationException("DXDataBlock.Meta.Type is required.");
+
+            var id = block.Data?.Items?[0]?.Id ?? Guid.Empty;
+            var json = JsonConvert.SerializeObject(block);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var http = await clientProvider.GetClientAsync(cancellationToken);
+            var response = await http.PutAsync(clientProvider.GetUpdateUri(typeName, id), content, cancellationToken);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<JObject> Get(string typeName, Guid id, CancellationToken cancellationToken = default)

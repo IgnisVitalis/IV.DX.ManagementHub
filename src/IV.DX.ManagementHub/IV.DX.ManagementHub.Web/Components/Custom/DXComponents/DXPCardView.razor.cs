@@ -60,7 +60,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
         private async Task OpenCreateDialog()
         {
-            var input = new DXUnitDialogInput(AppKey, _typeName, Guid.NewGuid());
+            var input = new DXUnitDialogInput(AppKey, _typeName, Guid.Empty, IsNew: true);
             var dialog = await DialogService.ShowDialogAsync<DXUnitDialog>(input, DXUnitDialog.DefaultParameters);
             var result = await dialog.Result;
             if (!result.Cancelled)

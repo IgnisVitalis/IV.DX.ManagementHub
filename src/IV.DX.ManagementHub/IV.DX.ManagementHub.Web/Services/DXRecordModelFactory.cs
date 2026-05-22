@@ -16,18 +16,17 @@ namespace IV.DX.ManagementHub.Web.Services
 
         public static DXUnitRecordModel GetDefault(DXModelDefinition definition)
         {
-            var unitId = Guid.NewGuid();
             var timeStamp = DateTime.UtcNow;
 
             var mainContent = BuildContent(definition.MainSingleElement);
-            var mainItem = new DXRecordItem(definition.Name, unitId, unitId, timeStamp, mainContent);
+            var mainItem = new DXRecordItem(definition.Name, timeStamp, mainContent);
 
             var singleElements = new Dictionary<string, DXRecordSingleElement>(StringComparer.OrdinalIgnoreCase);
             var multiElements = new Dictionary<string, DXRecordMultiElement>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var item in definition.RequiredSingleElements)
             {
-                var elementItem = BuildElementItem(item, unitId, timeStamp);
+                var elementItem = BuildElementItem(item, timeStamp);
                 singleElements[item.Name] = new DXRecordSingleElement(item.Name, elementItem);
             }
 
@@ -38,7 +37,7 @@ namespace IV.DX.ManagementHub.Web.Services
 
             foreach (var item in definition.RequiredMultiElements)
             {
-                var elementItem = BuildElementItem(item, unitId, timeStamp);
+                var elementItem = BuildElementItem(item, timeStamp);
                 multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem }, trackOriginal: false);
             }
 
@@ -81,7 +80,7 @@ namespace IV.DX.ManagementHub.Web.Services
                 }
             }
 
-            EnsureRequired(definition, unitId, timeStamp, singleElements, multiElements);
+            EnsureRequired(definition, timeStamp, singleElements, multiElements);
 
             var mainItem = new DXRecordItem(typeName, unitId, unitId, timeStamp, mainContent);
             return new DXUnitRecordModel(typeName, mainItem, singleElements, multiElements);
@@ -103,7 +102,7 @@ namespace IV.DX.ManagementHub.Web.Services
                 if (single.Item == null)
                     continue;
 
-                var elementRecord = ToElementRecord(single.Item);
+                var elementRecord = ToElementRecord(single.Item, record.Id);
                 elements[single.Name] = new DXDataBlock<DXElementRecord>
                 {
                     Meta = new DXMeta
@@ -126,7 +125,7 @@ namespace IV.DX.ManagementHub.Web.Services
                 var announced = FilterSystemColumnDefinitions(multi.Name, multi.GetItems());
                 var deleted = FilterSystemColumnDefinitions(multi.Name, multi.Deleted);
 
-                var upserts = announced.Select(ToElementRecord).ToList();
+                var upserts = announced.Select(item => ToElementRecord(item, record.Id)).ToList();
                 var deletes = deleted.Select(ToDeleteRef).ToList();
 
                 if (upserts.Count == 0 && deletes.Count == 0)
@@ -219,7 +218,6 @@ namespace IV.DX.ManagementHub.Web.Services
 
         private static void EnsureRequired(
             DXModelDefinition definition,
-            Guid unitId,
             DateTime timeStamp,
             IDictionary<string, DXRecordSingleElement> singleElements,
             IDictionary<string, DXRecordMultiElement> multiElements)
@@ -227,34 +225,25 @@ namespace IV.DX.ManagementHub.Web.Services
             foreach (var item in definition.RequiredSingleElements)
             {
                 if (!singleElements.ContainsKey(item.Name))
-                {
-                    singleElements[item.Name] = new DXRecordSingleElement(item.Name, BuildElementItem(item, unitId, timeStamp));
-                }
+                    singleElements[item.Name] = new DXRecordSingleElement(item.Name, BuildElementItem(item, timeStamp));
             }
 
             foreach (var item in definition.RequiredMultiElements)
             {
                 if (!multiElements.ContainsKey(item.Name))
-                {
-                    var elementItem = BuildElementItem(item, unitId, timeStamp);
-                    multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { elementItem }, trackOriginal: false);
-                }
+                    multiElements[item.Name] = new DXRecordMultiElement(item.Name, new[] { BuildElementItem(item, timeStamp) }, trackOriginal: false);
             }
 
             foreach (var item in definition.OptionalSingleElements)
             {
                 if (!singleElements.ContainsKey(item.Name))
-                {
                     singleElements[item.Name] = new DXRecordSingleElement(item.Name, null);
-                }
             }
 
             foreach (var item in definition.OptionalMultiElements)
             {
                 if (!multiElements.ContainsKey(item.Name))
-                {
                     multiElements[item.Name] = new DXRecordMultiElement(item.Name, trackOriginal: false);
-                }
             }
         }
 
@@ -290,13 +279,13 @@ namespace IV.DX.ManagementHub.Web.Services
             }).ToList();
         }
 
-        private static DXElementRecord ToElementRecord(DXRecordItem item)
+        private static DXElementRecord ToElementRecord(DXRecordItem item, Guid dxUnitId)
         {
             return new DXElementRecord
             {
                 Id = item.Id,
                 TimeStamp = item.TimeStamp,
-                DXUnitId = item.DXUnitId,
+                DXUnitId = dxUnitId,
                 Fields = ToJTokenDictionary(item.Content)
             };
         }
@@ -354,10 +343,10 @@ namespace IV.DX.ManagementHub.Web.Services
             return token.ToObject<object>();
         }
 
-        private static DXRecordItem BuildElementItem(DXElementDefinition definition, Guid unitId, DateTime timeStamp)
+        private static DXRecordItem BuildElementItem(DXElementDefinition definition, DateTime timeStamp)
         {
             var content = BuildContent(definition);
-            return new DXRecordItem(definition.Name, Guid.NewGuid(), unitId, timeStamp, content);
+            return new DXRecordItem(definition.Name, timeStamp, content);
         }
 
         private static Dictionary<string, object?> BuildContent(DXElementDefinition definition)

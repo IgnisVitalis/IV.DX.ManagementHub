@@ -28,7 +28,7 @@ namespace IV.DX.ManagementHub.Web.Components.Custom.DXComponents
 
         private async Task OpenEditDialog()
         {
-            var input = new DXUnitDialogInput(AppKey, TypeName, SelectedIds[0]);
+            var input = new DXUnitDialogInput(AppKey, TypeName, SelectedIds[0], IsNew: false);
             var dialog = await DialogService.ShowDialogAsync<DXUnitDialog>(input, DXUnitDialog.DefaultParameters);
             var result = await dialog.Result;
             if (!result.Cancelled)

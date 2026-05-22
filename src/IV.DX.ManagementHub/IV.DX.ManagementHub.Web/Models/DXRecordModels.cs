@@ -47,6 +47,9 @@ namespace IV.DX.ManagementHub.Web.Models
         public DateTime TimeStamp { get; set; }
         public IDictionary<string, object?> Content { get; }
 
+        public DXRecordItem(string type, DateTime timeStamp, IDictionary<string, object?> content)
+            : this(type, Guid.Empty, Guid.Empty, timeStamp, content) { }
+
         public DXRecordItem(
             string type,
             Guid id,

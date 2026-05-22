@@ -46,20 +46,24 @@ namespace IV.DataProvider.WebApp.Services.Web.ApiClients
             return item;
         }
 
-        public virtual async Task<T> SaveAsync(T block, CancellationToken cancellationToken = default)
+        public virtual async Task<Guid> CreateAsync(T block, CancellationToken cancellationToken = default)
         {
             var serializedBlock = block.ToJObject().ToString();
-
             var content = new StringContent(serializedBlock, Encoding.UTF8, "application/json");
-
             var http = await ClientProvider.GetClientAsync(cancellationToken);
-            var result = await http.PostAsync(ClientProvider.GetSaveUri(typeName), content, cancellationToken);
+            var response = await http.PostAsync(ClientProvider.GetCreateUri(typeName), content, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var str = await response.Content.ReadAsStringAsync(cancellationToken);
+            return JObject.Parse(str)["id"]!.ToObject<Guid>();
+        }
 
-            var str = await result.Content.ReadAsStringAsync(cancellationToken);
-
-            var item = DXUnit.Parse<T>(str);
-
-            return item;
+        public virtual async Task UpdateAsync(T block, CancellationToken cancellationToken = default)
+        {
+            var serializedBlock = block.ToJObject().ToString();
+            var content = new StringContent(serializedBlock, Encoding.UTF8, "application/json");
+            var http = await ClientProvider.GetClientAsync(cancellationToken);
+            var response = await http.PutAsync(ClientProvider.GetUpdateUri(typeName, block.Id), content, cancellationToken);
+            response.EnsureSuccessStatusCode();
         }
 
         public virtual async Task DeleteAsync(T item, CancellationToken cancellationToken = default)

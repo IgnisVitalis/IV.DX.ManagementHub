@@ -72,19 +72,25 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         private async Task LoadDXUnit(string type, Guid id, DXModelDefinition structure)
         {
-            var content = await _coreApi.GetRecord(type, id);
-            if (content == null)
+            if (Content.IsNew)
             {
                 dxModel = DXRecordModelFactory.GetDefault(structure);
                 return;
             }
-            dxModel = DXRecordModelFactory.FromBlock(content, structure);
+
+            var content = await _coreApi.GetRecord(type, id);
+            dxModel = content == null
+                ? DXRecordModelFactory.GetDefault(structure)
+                : DXRecordModelFactory.FromBlock(content, structure);
         }
 
         private async Task SaveAsync()
         {
             var block = DXRecordModelFactory.ToBlock(dxModel, _dxUnitDefinitionStructure);
-            await _coreApi.SaveRecordAsync(block);
+            if (Content.IsNew)
+                await _coreApi.CreateRecordAsync(block);
+            else
+                await _coreApi.UpdateRecordAsync(block);
             await Dialog.CloseAsync();
         }
 
@@ -98,7 +104,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
 
         private void CreateSingleElement(DXElementDefinition dxElementDefinition)
         {
-            var newSingleItem = GetNewDXItem(dxElementDefinition, dxModel.MainItem.Id);
+            var newSingleItem = GetNewDXItem(dxElementDefinition);
             var existing = dxModel.GetSingleElement(dxElementDefinition.Name);
             if (existing == null)
                 dxModel.SetSingleElement(new DXRecordSingleElement(dxElementDefinition.Name, newSingleItem));
@@ -113,9 +119,8 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                 existing.Item = null;
         }
 
-        private DXRecordItem GetNewDXItem(DXElementDefinition item, Guid dxUnitId)
+        private static DXRecordItem GetNewDXItem(DXElementDefinition item)
         {
-            var elementId = Guid.NewGuid();
             var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var column in item.Columns)
@@ -127,7 +132,7 @@ namespace IV.DX.ManagementHub.Web.Components.Pages
                 }
             }
 
-            return new DXRecordItem(item.Name, elementId, dxUnitId, DateTime.UtcNow, dict);
+            return new DXRecordItem(item.Name, DateTime.UtcNow, dict);
         }
     }
 }

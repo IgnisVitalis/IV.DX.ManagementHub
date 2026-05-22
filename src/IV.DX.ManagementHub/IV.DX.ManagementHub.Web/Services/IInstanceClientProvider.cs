@@ -8,7 +8,8 @@ namespace IV.DX.ManagementHub.Web.Services
         Task<HttpClient> GetClientAsync(CancellationToken ct = default);
         string GetCollectionUri(string typeName, string? filter = null);
         string GetItemUri(string typeName, Guid id);
-        string GetSaveUri(string typeName);
+        string GetCreateUri(string typeName);
+        string GetUpdateUri(string typeName, Guid id);
         string GetDeleteUri(string typeName, Guid id);
         string GetByIdsUri(string typeName);
         string GetSearchUri(string typeName);
@@ -33,8 +34,11 @@ namespace IV.DX.ManagementHub.Web.Services
         public string GetItemUri(string typeName, Guid id) =>
             $"api/management/{typeName}/{id}";
 
-        public string GetSaveUri(string typeName) =>
+        public string GetCreateUri(string typeName) =>
             $"api/management/{typeName}";
+
+        public string GetUpdateUri(string typeName, Guid id) =>
+            $"api/management/{typeName}/{id}";
 
         public string GetDeleteUri(string typeName, Guid id) =>
             $"api/management/{typeName}/{id}";
@@ -97,8 +101,11 @@ namespace IV.DX.ManagementHub.Web.Services
         public string GetItemUri(string typeName, Guid id) =>
             $"api/{typeName}/{id}";
 
-        public string GetSaveUri(string typeName) =>
+        public string GetCreateUri(string typeName) =>
             $"api/{typeName}";
+
+        public string GetUpdateUri(string typeName, Guid id) =>
+            $"api/{typeName}/{id}";
 
         public string GetDeleteUri(string typeName, Guid id) =>
             $"api/{typeName}/{id}";
