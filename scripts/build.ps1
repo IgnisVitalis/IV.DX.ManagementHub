@@ -16,7 +16,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$repoRoot  = Resolve-Path (Join-Path $PSScriptRoot "..")
+$LocalFeed = Join-Path $env:USERPROFILE ".nuget\local-feed"
 Set-Location $repoRoot
 
 function Invoke-DotNet {
@@ -76,6 +77,7 @@ function Get-LatestLocalPackageVersion {
         }
     }
 
+    $sourcePaths += $LocalFeed
     if ($env:USERPROFILE) {
         $sourcePaths += (Join-Path $env:USERPROFILE ".nuget\packages\$packageFolderName")
     }
@@ -140,7 +142,7 @@ function Get-PackageVersionInfos {
             continue
         }
 
-        $projectRelativeToRepo = [IO.Path]::GetRelativePath($repoRoot, $projectFullPath)
+        $projectRelativeToRepo = $projectFullPath.Substring($repoRoot.ToString().Length).TrimStart([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
         $versionInfos += [PSCustomObject]@{
             RelativePath = $projectRelativeToRepo
             Version      = $match.Groups[1].Value
@@ -220,6 +222,14 @@ if (-not $SkipDxSync) {
 
 Write-Host "Building solution: $SolutionPath"
 Write-Host "Configuration: $Configuration"
+
+if (Test-Path $LocalFeed) {
+    $registeredSources = dotnet nuget list source 2>$null
+    if (-not ($registeredSources | Select-String -SimpleMatch $LocalFeed -Quiet)) {
+        Write-Host "Registering local NuGet feed: $LocalFeed"
+        dotnet nuget add source $LocalFeed --name "local-feed"
+    }
+}
 
 Invoke-DotNet -Args @("restore", $SolutionPath) -ErrorContext "Restore failed."
 

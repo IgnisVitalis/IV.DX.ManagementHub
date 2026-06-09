@@ -8,8 +8,8 @@
     <ItemGroup>
         <ProjectReference Include="..\IV.DX.ManagementHub.Common\IV.DX.ManagementHub.Common.csproj" />
         <ProjectReference Include="..\IV.DX.ManagementHub.ApiService\IV.DX.ManagementHub.ApiService.csproj" />
-        <PackageReference Include="IV.DX" Version="0.103.20" />
-        <PackageReference Include="IV.DX.Presentation" Version="0.1.38" />
+        <PackageReference Include="IV.DX" Version="0.103.23" />
+        <PackageReference Include="IV.DX.Presentation" Version="0.1.40" />
         <PackageReference Include="IV.DX.WebApi" Version="0.1.12" />
         <PackageReference Include="IV.DX.WebApi.Auth" Version="0.1.12" />
         <PackageReference Include="IV.DX.WebApi.Management" Version="0.1.15" />
