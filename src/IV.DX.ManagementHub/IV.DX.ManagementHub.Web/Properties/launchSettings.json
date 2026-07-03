@@ -8,7 +8,7 @@
       "applicationUrl": "http://localhost:5286",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Secrets__DatabaseConnectionString": "Host=localhost;Database=IV.DX.ManagementHub;Username=postgres;Password=root",
+        "Secrets__DatabaseConnectionString": "Host=localhost;Port=5432;Database=IV.DX.ManagementHub;Username=postgres;Password=postgres",
         "Secrets__DatabaseType": "PostgreSQL",
         "Secrets__EncryptionKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
         "Secrets__JwtSigningKey": "placeholder-replace-with-min-32-char-signing-key!!",
@@ -22,7 +22,7 @@
       "applicationUrl": "https://localhost:7097;http://localhost:5286",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Secrets__DatabaseConnectionString": "Host=localhost;Database=IV.DX.ManagementHub;Username=postgres;Password=root",
+        "Secrets__DatabaseConnectionString": "Host=localhost;Port=5432;Database=IV.DX.ManagementHub;Username=postgres;Password=postgres",
         "Secrets__DatabaseType": "PostgreSQL",
         "Secrets__EncryptionKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
         "Secrets__JwtSigningKey": "placeholder-replace-with-min-32-char-signing-key!!",

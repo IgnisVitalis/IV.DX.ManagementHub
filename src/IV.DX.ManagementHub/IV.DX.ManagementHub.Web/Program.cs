@@ -68,6 +68,22 @@ builder.Services.AddOutputCache();
 
 // --- MH services ---
 builder.Services.AddHttpClient();
+
+// In Development, the ASP.NET Core dev certificate isn't in the OpenSSL trust
+// store on Linux, so server-side self-calls to https://localhost fail the TLS
+// handshake. Accept the untrusted cert for loopback only; remote instances are
+// still fully validated.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHttpClient(string.Empty)
+        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (request, _, _, errors) =>
+                errors == System.Net.Security.SslPolicyErrors.None ||
+                request.RequestUri?.IsLoopback == true,
+        });
+}
+
 builder.Services.AddSingleton<InstanceApiClientFactory>();
 
 builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();

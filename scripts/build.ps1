@@ -17,7 +17,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot  = Resolve-Path (Join-Path $PSScriptRoot "..")
-$LocalFeed = Join-Path $env:USERPROFILE ".nuget\local-feed"
+$LocalFeed = Join-Path $HOME ".nuget" "local-feed"
 Set-Location $repoRoot
 
 function Invoke-DotNet {
@@ -78,9 +78,7 @@ function Get-LatestLocalPackageVersion {
     }
 
     $sourcePaths += $LocalFeed
-    if ($env:USERPROFILE) {
-        $sourcePaths += (Join-Path $env:USERPROFILE ".nuget\packages\$packageFolderName")
-    }
+    $sourcePaths += (Join-Path $HOME ".nuget" "packages" $packageFolderName)
 
     $sourcePaths = $sourcePaths |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
