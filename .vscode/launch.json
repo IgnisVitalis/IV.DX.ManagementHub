@@ -16,7 +16,8 @@
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "stopAtEntry": false
+      "stopAtEntry": false,
+      "postDebugTask": "kill-port-7097"
     },
     {
       "name": "Web (Debug)",

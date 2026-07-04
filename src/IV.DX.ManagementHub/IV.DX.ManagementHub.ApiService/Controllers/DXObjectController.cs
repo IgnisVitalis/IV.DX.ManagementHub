@@ -113,6 +113,25 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
             return JObject.Parse(responseBody);
         }
 
+        /// <summary>Update an existing object of the specified type by Id.</summary>
+        [HttpPut("{id:guid}")]
+        [Consumes("application/json")]
+        [Produces("application/json")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<JObject>> UpdateAsync([FromRoute] string typeName, [FromRoute] Guid id, [FromBody] JObject body)
+        {
+            var ct = HttpContext.RequestAborted;
+            var client = await clientFactory.CreateFromContextAsync(ct);
+
+            using var content = new StringContent(body.ToString(Formatting.None), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync($"api/management/{typeName}", content, ct);
+            if (!response.IsSuccessStatusCode)
+                return StatusCode((int)response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync(ct);
+            return JObject.Parse(responseBody);
+        }
+
         /// <summary>Remove an object of the specified type by Id.</summary>
         [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

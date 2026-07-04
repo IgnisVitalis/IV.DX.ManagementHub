@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find /c/IV/Git/IV.DX -name \"*.cs\" -type f -exec grep -l \"AddDX\\\\|AddDx\" {})"
+      "Bash(find /c/IV/Git/IV.DX -name \"*.cs\" -type f -exec grep -l \"AddDX\\\\|AddDx\" {})",
+      "Bash(dotnet build *)",
+      "Read(//home/iv/.claude/projects/-home-iv-Git-IgnisVitalis-DX-IV-DX-ManagementHub/memory/**)",
+      "Bash(ls MEMORY.md)",
+      "Bash(curl -sk -o /tmp/tok.json -w \"HTTP %{http_code}\\\\n\" -X POST https://localhost:7097/api/service-auth/token -H \"Content-Type: application/json\" -d '{\"ServiceKey\":\"mh-local-service-key\"}')",
+      "Read(//tmp/**)",
+      "Bash(curl -sk -o /tmp/cv.json -w \"HTTP %{http_code}\\\\n\" \"https://localhost:7097/api/DXPCardViewUnit/f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d\" -H \"X-MH-Instance: Own\")"
     ]
   }
 }

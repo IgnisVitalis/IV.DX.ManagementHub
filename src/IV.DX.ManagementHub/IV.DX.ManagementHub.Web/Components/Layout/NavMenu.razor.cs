@@ -16,7 +16,7 @@ namespace IV.DX.ManagementHub.Web.Components.Layout
         [Inject] IJSRuntime JSRuntime { get; set; } = default!;
         [Inject] ILogger<NavMenu> Logger { get; set; } = default!;
 
-        private static readonly Guid _navItemsQueryId = new("622f1a24-64d4-4fb2-919c-3c631bcc3189");
+        private static readonly Guid _navItemsQueryId = new("018fa54b-7fce-73b1-95d1-9c09aa4cc871");
         private static readonly Guid _cardViewDefinitionId = new("91ef7b1b-811f-4b84-804c-baacbf4424ac");
         private static readonly Guid _dataSetViewDefinitionId = new("a8e5858b-fe0e-4de3-a750-073568417fc0");
 
