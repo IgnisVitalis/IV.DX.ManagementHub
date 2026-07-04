@@ -322,7 +322,30 @@ fluent-card.unclip {
     margin: 0 auto;
 }
 
+/* ---------------------------------------------------------------------------
+   Empty / loading state of the dataset grid (DXDataSetBaseView .dx-dataset-grid).
 
+   FluentDataGrid puts an inline `style="height: 100%"` on its <table>, so when
+   there are no rows the empty table fills the whole scroll panel (~530px).
+   Chrome hands that surplus height to the placeholder body cell, so the header
+   stays 44px tall at the top; Firefox instead splits the surplus between <thead>
+   and <tbody>, growing the header row to ~half the panel and floating the "Name"
+   header (vertical-align: middle) into its centre — which is the broken look.
+
+   A stylesheet `height` can't beat an inline style, so `!important` is required
+   to drop the empty table back to its content height. With no surplus there is
+   nothing for any engine to distribute, so the header + message sit at the top
+   identically in every browser. `:has()` limits this to the empty/loading
+   placeholder, leaving grids that actually have rows untouched. */
+.dx-dataset-grid:has(.empty-content-cell),
+.dx-dataset-grid:has(.loading-content-cell) {
+    height: auto !important;
+}
+
+.dx-dataset-grid .empty-content-cell,
+.dx-dataset-grid .loading-content-cell {
+    padding-block: 1.25rem;
+}
 
 .dialog-title {
     font-size: 1.1rem;

@@ -7,7 +7,20 @@
       "Bash(ls MEMORY.md)",
       "Bash(curl -sk -o /tmp/tok.json -w \"HTTP %{http_code}\\\\n\" -X POST https://localhost:7097/api/service-auth/token -H \"Content-Type: application/json\" -d '{\"ServiceKey\":\"mh-local-service-key\"}')",
       "Read(//tmp/**)",
-      "Bash(curl -sk -o /tmp/cv.json -w \"HTTP %{http_code}\\\\n\" \"https://localhost:7097/api/DXPCardViewUnit/f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d\" -H \"X-MH-Instance: Own\")"
+      "Bash(curl -sk -o /tmp/cv.json -w \"HTTP %{http_code}\\\\n\" \"https://localhost:7097/api/DXPCardViewUnit/f0b1c2d3-4e5f-4a6b-7c8d-9e0f1a2b3c4d\" -H \"X-MH-Instance: Own\")",
+      "Bash(PKG=/home/iv/.nuget/packages/microsoft.fluentui.aspnetcore.components/4.12.1 *)",
+      "Read(//home/iv/.nuget/packages/microsoft.fluentui.aspnetcore.components/4.12.1/staticwebassets/**)",
+      "Bash(grep -o '\\\\.[a-z-]*data-grid[^,{]*{[^}]*}' /home/iv/.nuget/packages/microsoft.fluentui.aspnetcore.components/4.12.1/staticwebassets/Microsoft.FluentUI.AspNetCore.Components.b6pgxrrsua.bundle.scp.css)",
+      "Bash(python3 - /home/iv/.nuget/packages/microsoft.fluentui.aspnetcore.components/4.12.1/staticwebassets/Microsoft.FluentUI.AspNetCore.Components.b6pgxrrsua.bundle.scp.css)",
+      "Bash(ps -eo pid,ppid,etimes,cmd)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(rm -rf ffprof2)",
+      "Bash(mkdir -p ffprof2)",
+      "Bash(cat)",
+      "Bash(python3 -c \"import websockets; print\\('websockets', websockets.__version__\\)\")",
+      "Bash(python3 -c \"import websocket; print\\('websocket-client ok'\\)\")",
+      "Bash(curl -skI --max-time 8 \"https://localhost:7097/app.5mirpwxgle.css\")",
+      "Bash(curl -sk --max-time 8 \"https://localhost:7097/app.5mirpwxgle.css\")"
     ]
   }
 }
