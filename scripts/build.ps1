@@ -58,7 +58,7 @@ function Get-HighestSemVer {
     return ($parsedVersions | Sort-Object Parsed -Descending | Select-Object -First 1).Raw
 }
 
-function Get-LatestLocalPackageVersion {
+function Get-LocalPackageVersions {
     param([Parameter(Mandatory = $true)][string]$PackageId)
 
     $packageFolderName = $PackageId.ToLowerInvariant()
@@ -107,7 +107,27 @@ function Get-LatestLocalPackageVersion {
         }
     }
 
-    return Get-HighestSemVer -Versions $versions
+    return $versions | Select-Object -Unique
+}
+
+function Get-LatestLocalFamilyVersion {
+    param([Parameter(Mandatory = $true)][string[]]$PackageIds)
+
+    # Only versions published for every package in the family qualify — packages that
+    # ship in lockstep are only valid against the exact version they were built with.
+    $commonVersions = $null
+    foreach ($packageId in $PackageIds) {
+        $available = @(Get-LocalPackageVersions -PackageId $packageId)
+
+        if ($null -eq $commonVersions) {
+            $commonVersions = $available
+        }
+        else {
+            $commonVersions = @($commonVersions | Where-Object { $available -contains $_ })
+        }
+    }
+
+    return Get-HighestSemVer -Versions $commonVersions
 }
 
 function Get-PackageVersionInfos {
@@ -142,6 +162,7 @@ function Get-PackageVersionInfos {
 
         $projectRelativeToRepo = $projectFullPath.Substring($repoRoot.ToString().Length).TrimStart([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
         $versionInfos += [PSCustomObject]@{
+            PackageId    = $PackageId
             RelativePath = $projectRelativeToRepo
             Version      = $match.Groups[1].Value
         }
@@ -153,18 +174,24 @@ function Get-PackageVersionInfos {
 function Sync-PackageVersion {
     param(
         [Parameter(Mandatory = $true)][string]$SolutionPath,
-        [Parameter(Mandatory = $true)][string]$PackageId,
+        [Parameter(Mandatory = $true)][string[]]$PackageIds,
         [string]$RequestedVersion
     )
 
-    $versionInfos = @(Get-PackageVersionInfos -SolutionPath $SolutionPath -PackageId $PackageId)
+    $familyName = $PackageIds -join ', '
+
+    $versionInfos = @()
+    foreach ($packageId in $PackageIds) {
+        $versionInfos += @(Get-PackageVersionInfos -SolutionPath $SolutionPath -PackageId $packageId)
+    }
+
     if ($versionInfos.Count -eq 0) {
-        Write-Host "No $PackageId PackageReference entries found for sync."
+        Write-Host "No $familyName PackageReference entries found for sync."
         return
     }
 
     $currentProjectVersion = Get-HighestSemVer -Versions ($versionInfos | ForEach-Object { $_.Version })
-    $latestLocalVersion = Get-LatestLocalPackageVersion -PackageId $PackageId
+    $latestLocalVersion = Get-LatestLocalFamilyVersion -PackageIds $PackageIds
 
     $targetVersion = $RequestedVersion
     if ([string]::IsNullOrWhiteSpace($targetVersion)) {
@@ -183,18 +210,18 @@ function Sync-PackageVersion {
     }
 
     if ([string]::IsNullOrWhiteSpace($targetVersion)) {
-        throw "Unable to detect target $PackageId version."
+        throw "Unable to detect target $familyName version."
     }
 
-    Write-Host "Syncing $PackageId version to '$targetVersion'..."
+    Write-Host "Syncing $familyName version to '$targetVersion'..."
 
-    $escapedId = [regex]::Escape($PackageId)
     foreach ($info in $versionInfos) {
         if ($info.Version -eq $targetVersion) {
-            Write-Host "$PackageId already up to date in $($info.RelativePath)"
+            Write-Host "$($info.PackageId) already up to date in $($info.RelativePath)"
             continue
         }
 
+        $escapedId = [regex]::Escape($info.PackageId)
         $projectFullPath = Join-Path $repoRoot $info.RelativePath
         $content = Get-Content -Raw -LiteralPath $projectFullPath
         $updatedContent = [regex]::Replace(
@@ -206,16 +233,19 @@ function Sync-PackageVersion {
             })
 
         Set-Content -LiteralPath $projectFullPath -Value $updatedContent -NoNewline
-        Write-Host "Updated $PackageId in $($info.RelativePath): $($info.Version) -> $targetVersion"
+        Write-Host "Updated $($info.PackageId) in $($info.RelativePath): $($info.Version) -> $targetVersion"
     }
 }
 
 if (-not $SkipDxSync) {
-    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX" -RequestedVersion $DxVersion
-    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.Presentation" -RequestedVersion $DxPresentationVersion
-    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi" -RequestedVersion $DxWebApiVersion
-    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi.Auth" -RequestedVersion $DxWebApiAuthVersion
-    Sync-PackageVersion -SolutionPath $SolutionPath -PackageId "IV.DX.WebApi.Management" -RequestedVersion $DxWebApiManagementVersion
+    # IV.DX and its database provider packages ship in lockstep: the provider SPI is
+    # internal, so a provider is only valid against the exact core version it was
+    # built with. They are synced together to one version.
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageIds @("IV.DX", "IV.DX.PostgreSQL") -RequestedVersion $DxVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageIds "IV.DX.Presentation" -RequestedVersion $DxPresentationVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageIds "IV.DX.WebApi" -RequestedVersion $DxWebApiVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageIds "IV.DX.WebApi.Auth" -RequestedVersion $DxWebApiAuthVersion
+    Sync-PackageVersion -SolutionPath $SolutionPath -PackageIds "IV.DX.WebApi.Management" -RequestedVersion $DxWebApiManagementVersion
 }
 
 Write-Host "Building solution: $SolutionPath"

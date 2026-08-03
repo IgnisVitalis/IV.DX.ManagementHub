@@ -4,6 +4,7 @@ using IV.DataProvider.WebApp.Services.Web.Services;
 using IV.DX.Application.Contracts.Abstractions;
 using IV.DX.Hosting;
 using IV.DX.Kernel.Models;
+using IV.DX.PostgreSQL;
 using IV.DX.Presentation.Hosting;
 using IV.DX.WebApi.Auth.DependencyInjection;
 using IV.DX.WebApi.DependencyInjection;
@@ -27,6 +28,7 @@ builder.Logging.AddProvider(new ConsoleLoggerProvider(consoleLogBroadcaster));
 // --- DX Core ---
 builder.Services
     .AddDX(builder.Configuration)
+    .UsePostgreSQL()
     .AddSecurity()
     .AddActions(typeof(Program).Assembly)
     .RegisterHostedService();
