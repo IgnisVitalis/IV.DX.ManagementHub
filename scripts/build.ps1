@@ -16,8 +16,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+. "$PSScriptRoot/nuget-feed.ps1"
+
 $repoRoot  = Resolve-Path (Join-Path $PSScriptRoot "..")
-$LocalFeed = Join-Path $HOME ".nuget" "local-feed"
+$LocalFeed = $LocalFeedPath
 Set-Location $repoRoot
 
 function Invoke-DotNet {
@@ -31,103 +33,6 @@ function Invoke-DotNet {
     if ($LASTEXITCODE -ne 0) {
         throw "$ErrorContext Exit code: $LASTEXITCODE"
     }
-}
-
-function Get-HighestSemVer {
-    param([string[]]$Versions)
-
-    $parsedVersions = @()
-    foreach ($candidate in $Versions) {
-        if ([string]::IsNullOrWhiteSpace($candidate)) {
-            continue
-        }
-
-        $version = $null
-        if ([version]::TryParse($candidate, [ref]$version)) {
-            $parsedVersions += [PSCustomObject]@{
-                Raw    = $candidate
-                Parsed = $version
-            }
-        }
-    }
-
-    if ($parsedVersions.Count -eq 0) {
-        return $null
-    }
-
-    return ($parsedVersions | Sort-Object Parsed -Descending | Select-Object -First 1).Raw
-}
-
-function Get-LocalPackageVersions {
-    param([Parameter(Mandatory = $true)][string]$PackageId)
-
-    $packageFolderName = $PackageId.ToLowerInvariant()
-    $nupkgPattern = '^' + [regex]::Escape($PackageId) + '\.(?<Version>\d+\.\d+\.\d+)\.nupkg$'
-
-    $sourcePaths = @()
-    $sourceLines = dotnet nuget list source 2>$null
-
-    for ($index = 0; $index -lt $sourceLines.Count; $index++) {
-        $line = $sourceLines[$index].Trim()
-        if ($line -match '^\d+\.\s+.+\[(Enabled|Disabled)\]$' -and ($index + 1) -lt $sourceLines.Count) {
-            $value = $sourceLines[$index + 1].Trim()
-            if ($value -and -not ($value -match '^(https?|ftp)://')) {
-                $sourcePaths += $value
-            }
-        }
-    }
-
-    $sourcePaths += $LocalFeed
-    $sourcePaths += (Join-Path $HOME ".nuget" "packages" $packageFolderName)
-
-    $sourcePaths = $sourcePaths |
-        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-        Select-Object -Unique
-
-    $versions = @()
-    foreach ($path in $sourcePaths) {
-        if (-not (Test-Path -LiteralPath $path)) {
-            continue
-        }
-
-        $nupkgFiles = Get-ChildItem -Path $path -Recurse -File -Filter "$PackageId*.nupkg" -ErrorAction SilentlyContinue
-        foreach ($file in $nupkgFiles) {
-            if ($file.Name -match $nupkgPattern) {
-                $versions += $Matches.Version
-            }
-        }
-
-        if ((Split-Path -Leaf $path).ToLowerInvariant() -eq $packageFolderName) {
-            $versionFolders = Get-ChildItem -LiteralPath $path -Directory -ErrorAction SilentlyContinue
-            foreach ($folder in $versionFolders) {
-                if ($folder.Name -match '^\d+\.\d+\.\d+$') {
-                    $versions += $folder.Name
-                }
-            }
-        }
-    }
-
-    return $versions | Select-Object -Unique
-}
-
-function Get-LatestLocalFamilyVersion {
-    param([Parameter(Mandatory = $true)][string[]]$PackageIds)
-
-    # Only versions published for every package in the family qualify — packages that
-    # ship in lockstep are only valid against the exact version they were built with.
-    $commonVersions = $null
-    foreach ($packageId in $PackageIds) {
-        $available = @(Get-LocalPackageVersions -PackageId $packageId)
-
-        if ($null -eq $commonVersions) {
-            $commonVersions = $available
-        }
-        else {
-            $commonVersions = @($commonVersions | Where-Object { $available -contains $_ })
-        }
-    }
-
-    return Get-HighestSemVer -Versions $commonVersions
 }
 
 function Get-PackageVersionInfos {
@@ -191,26 +96,35 @@ function Sync-PackageVersion {
     }
 
     $currentProjectVersion = Get-HighestSemVer -Versions ($versionInfos | ForEach-Object { $_.Version })
-    $latestLocalVersion = Get-LatestLocalFamilyVersion -PackageIds $PackageIds
+
+    # GitHub Packages is the primary source; local packages count only while a
+    # version has not been published there yet.
+    $latestFeedVersion = Get-LatestFeedVersion -PackageIds $PackageIds
 
     $targetVersion = $RequestedVersion
     if ([string]::IsNullOrWhiteSpace($targetVersion)) {
         $targetVersion = $currentProjectVersion
-        if (-not [string]::IsNullOrWhiteSpace($latestLocalVersion)) {
+        if (-not [string]::IsNullOrWhiteSpace($latestFeedVersion)) {
             $currentParsed = $null
-            $localParsed = $null
+            $feedParsed = $null
 
             $currentParsedOk = [version]::TryParse($currentProjectVersion, [ref]$currentParsed)
-            $localParsedOk = [version]::TryParse($latestLocalVersion, [ref]$localParsed)
+            $feedParsedOk = [version]::TryParse($latestFeedVersion, [ref]$feedParsed)
 
-            if ($localParsedOk -and (($currentParsedOk -and $localParsed -gt $currentParsed) -or -not $currentParsedOk)) {
-                $targetVersion = $latestLocalVersion
+            # Never downgrade a reference automatically: the code may already
+            # depend on API added after the published version.
+            if ($feedParsedOk -and (($currentParsedOk -and $feedParsed -gt $currentParsed) -or -not $currentParsedOk)) {
+                $targetVersion = $latestFeedVersion
             }
         }
     }
 
     if ([string]::IsNullOrWhiteSpace($targetVersion)) {
         throw "Unable to detect target $familyName version."
+    }
+
+    if ((Get-LastFeedVersionSource) -eq "github" -and $targetVersion -ne $latestFeedVersion) {
+        Write-Warning "$familyName $targetVersion is not published on GitHub Packages (newest published: $latestFeedVersion) - CI can only restore published versions."
     }
 
     Write-Host "Syncing $familyName version to '$targetVersion'..."
@@ -250,6 +164,8 @@ if (-not $SkipDxSync) {
 
 Write-Host "Building solution: $SolutionPath"
 Write-Host "Configuration: $Configuration"
+
+Register-GitHubPackagesSource | Out-Null
 
 if (Test-Path $LocalFeed) {
     $registeredSources = dotnet nuget list source 2>$null

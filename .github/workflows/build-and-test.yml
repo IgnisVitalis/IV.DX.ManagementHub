@@ -1,0 +1,82 @@
+name: build-and-test
+
+# This repository is an application, not a package producer: it builds and tests,
+# and never packs or pushes anything. It consumes the whole IV.DX family from
+# GitHub Packages, so the feed is configured before restore - the same first steps
+# as the publish-nuget workflows in IV.DX, IV.DX.Presentation and IV.DX.WebApi.
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: 'Build configuration'
+        required: false
+        default: 'Release'
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      SOLUTION_PATH: src/IV.DX.ManagementHub/IV.DX.ManagementHub.sln
+      CONFIGURATION: ${{ github.event.inputs.configuration || 'Release' }}
+      GPR_SOURCE: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+
+      # IV.DX, IV.DX.PostgreSQL, IV.DX.Presentation and the IV.DX.WebApi packages are
+      # published from other repositories, so the built-in GITHUB_TOKEN can read them
+      # only once this repository has been granted access on each package. A PAT with
+      # read:packages stored as the GH_PACKAGES_TOKEN secret removes that grant.
+      NUGET_READ_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN || secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # global.json pins the SDK with rollForward: latestPatch, so the exact
+          # feature band matters - installing "9.0.x" could land outside it.
+          global-json-file: global.json
+
+      - name: Add GitHub Packages source
+        run: |
+          # Before restore: every IV.DX package comes from this feed.
+          # local-feed is a developer path that does not exist on the runner.
+          dotnet nuget remove source local-feed --configfile NuGet.Config || true
+          dotnet nuget remove source github --configfile NuGet.Config || true
+          dotnet nuget add source "$GPR_SOURCE" \
+            --name "github" \
+            --username "${{ github.repository_owner }}" \
+            --password "$NUGET_READ_TOKEN" \
+            --store-password-in-clear-text \
+            --configfile NuGet.Config
+
+      - name: Restore (solution)
+        run: dotnet restore "$SOLUTION_PATH"
+
+      - name: Build (solution)
+        run: dotnet build "$SOLUTION_PATH" -c "$CONFIGURATION" --no-restore
+
+      - name: Test
+        shell: bash
+        run: |
+          # The solution has no test projects yet; `dotnet test` on a solution
+          # without any is a no-op, so this step keeps working as they are added.
+          dotnet test "$SOLUTION_PATH" -c "$CONFIGURATION" --no-build \
+            --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/**'
+          if-no-files-found: ignore
