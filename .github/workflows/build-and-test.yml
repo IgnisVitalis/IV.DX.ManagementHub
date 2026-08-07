@@ -5,14 +5,12 @@ name: build-and-test
 # GitHub Packages, so the feed is configured before restore - the same first steps
 # as the publish-nuget workflows in IV.DX, IV.DX.Presentation and IV.DX.WebApi.
 #
-# Triggers match those workflows too: tagging or releasing validates the app against
+# Triggers match those workflows too: publishing a release validates the app against
 # the IV.DX versions it pins. Add a `push: branches:` block to also build every commit.
 on:
-  push:
-    tags:
-      - 'v*'
-  # Creating a release from a tag that already exists fires 'release' but no tag
-  # push, so releasing from the Releases UI needs this trigger as well.
+  # Publishing the release is the single trigger. A tag push alone deliberately does
+  # not start a run: tagging and then releasing would otherwise produce two identical
+  # runs of the same version.
   release:
     types: [published]
   workflow_dispatch:
