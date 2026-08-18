@@ -1,0 +1,95 @@
+<h2 mat-dialog-title>{{ isNew ? 'Новый ' + data.typeName : data.typeName }}</h2>
+
+@if (isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+<mat-dialog-content>
+  @if (loadError(); as error) {
+    <p class="unit-edit__error">Не удалось загрузить элемент: {{ error }}</p>
+  } @else {
+    @for (field of fields(); track field.column.name) {
+      <mh-unit-field
+        [field]="field"
+        [value]="valueOf(field)"
+        (valueChange)="set(field, $event)"
+        [invalid]="missing().has(field.column.name)"
+      />
+    }
+
+    @for (element of elements(); track element.name) {
+      <section class="unit-edit__collection">
+        <mat-divider />
+
+        <header class="unit-edit__collection-header">
+          <span class="unit-edit__collection-name">{{ element.name }}</span>
+
+          @if (editingRow(element) === null) {
+            <button matIconButton type="button" aria-label="Добавить" (click)="addRow(element)">
+              <mat-icon>add</mat-icon>
+            </button>
+          }
+        </header>
+
+        @if (editingRow(element); as row) {
+          <div class="unit-edit__row-form">
+            @for (field of fieldsOf(element); track field.column.name) {
+              <mh-unit-field
+                [field]="field"
+                [value]="rowValueOf(row, field)"
+                (valueChange)="setRowValue(element, row, field, $event)"
+              />
+            }
+
+            <div class="unit-edit__row-actions">
+              <button matButton (click)="removeRow(element, row); closeRow()">
+                Удалить строку
+              </button>
+              <button matButton="filled" (click)="closeRow()">Готово</button>
+            </div>
+          </div>
+        } @else {
+          <mat-list>
+            @for (row of visibleRowsOf(element); track row.id) {
+              <mat-list-item>
+                <span matListItemTitle>{{ labelOf(element, row) }}</span>
+
+                <span matListItemMeta class="unit-edit__row-buttons">
+                  <button
+                    matIconButton
+                    type="button"
+                    aria-label="Изменить строку"
+                    (click)="openRow(element, row)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    matIconButton
+                    type="button"
+                    aria-label="Удалить строку"
+                    (click)="removeRow(element, row)"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </span>
+              </mat-list-item>
+            } @empty {
+              <p class="unit-edit__empty">Нет записей</p>
+            }
+          </mat-list>
+        }
+      </section>
+    }
+  }
+
+  @if (saveError(); as error) {
+    <p class="unit-edit__error">Не удалось сохранить: {{ error }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close [disabled]="isSaving()">Отмена</button>
+  <button matButton="filled" [disabled]="!canSave()" (click)="save()">
+    {{ isNew ? 'Создать' : 'Сохранить' }}
+  </button>
+</mat-dialog-actions>

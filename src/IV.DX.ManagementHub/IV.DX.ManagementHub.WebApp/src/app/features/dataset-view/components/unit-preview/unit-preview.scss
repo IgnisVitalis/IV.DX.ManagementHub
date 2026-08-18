@@ -1,0 +1,77 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background-color: var(--mat-sys-surface);
+}
+
+.unit-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.25rem 0.25rem 1rem;
+}
+
+.unit-preview__type {
+  font: var(--mat-sys-title-small);
+  overflow-wrap: anywhere;
+}
+
+.unit-preview__actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.unit-preview__error {
+  color: var(--mat-sys-error);
+}
+
+.unit-preview__groups {
+  overflow: auto;
+  min-height: 0;
+}
+
+// Label above value: the panel is narrow, and two columns would truncate both.
+.unit-preview__fields {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem 0;
+
+  dt {
+    font: var(--mat-sys-label-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  dd {
+    margin: 0 0 0.5rem;
+    font: var(--mat-sys-body-medium);
+    overflow-wrap: anywhere;
+  }
+}
+
+// A collection can be wider than the panel; it scrolls in its own box so the
+// panel itself never scrolls sideways.
+.unit-preview__scroll {
+  overflow-x: auto;
+
+  table {
+    width: 100%;
+  }
+}
+
+.unit-preview__notice {
+  padding: 0 1rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+}
+
+.unit-preview__detail {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}

@@ -1,0 +1,20 @@
+<mat-toolbar class="shell__toolbar">
+  <button matIconButton type="button" aria-label="Переключить меню" (click)="toggleSidenav()">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span class="shell__title">{{ appName }}</span>
+
+  <span class="shell__spacer"></span>
+
+  <mh-instance-switcher />
+</mat-toolbar>
+
+<mat-sidenav-container class="shell__container">
+  <mat-sidenav class="shell__sidenav" mode="side" [opened]="sidenavOpened()" disableClose>
+    <mh-nav-menu />
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell__content">
+    <router-outlet />
+  </mat-sidenav-content>
+</mat-sidenav-container>

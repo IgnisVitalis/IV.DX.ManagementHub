@@ -1,0 +1,62 @@
+<div class="card-view__toolbar">
+  @if (canCreate()) {
+    <button matIconButton type="button" aria-label="Создать" (click)="create()">
+      <mat-icon>add</mat-icon>
+    </button>
+  }
+
+  <button
+    matIconButton
+    type="button"
+    aria-label="Обновить"
+    [disabled]="isLoading()"
+    (click)="reload()"
+  >
+    <mat-icon>refresh</mat-icon>
+  </button>
+</div>
+
+@if (isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (actionError(); as error) {
+  <p class="card-view__notice card-view__error">{{ error }}</p>
+}
+
+@if (error(); as error) {
+  <div class="card-view__notice">
+    <p>Не удалось загрузить представление.</p>
+    <p class="card-view__detail">{{ error }}</p>
+    <button matButton (click)="reload()">Повторить</button>
+  </div>
+} @else if (isUnresolved()) {
+  <div class="card-view__notice">
+    <p>Определение представления не найдено или не содержит типа записей.</p>
+  </div>
+} @else if (isEmpty()) {
+  <div class="card-view__notice">
+    <p>Нет записей.</p>
+  </div>
+} @else {
+  <div class="card-view__grid">
+    @for (item of cards().items; track item.id) {
+      <mat-card appearance="outlined" class="card-view__card">
+        <div class="card-view__card-actions">
+          <mh-unit-actions
+            [typeName]="cards().typeName"
+            [id]="item.id"
+            [canEdit]="canEdit()"
+            [canDelete]="canDelete()"
+            [canExport]="canExport()"
+            (changed)="reload()"
+            (deleted)="reload()"
+            (failed)="onFailed($event)"
+          />
+        </div>
+
+        <mat-card-content class="card-view__card-title">{{ item.title }}</mat-card-content>
+      </mat-card>
+    }
+  </div>
+}

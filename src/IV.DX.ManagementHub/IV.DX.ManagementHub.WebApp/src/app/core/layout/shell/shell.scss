@@ -1,0 +1,46 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // Lets the nested sidenav container shrink instead of overflowing the page.
+  min-height: 0;
+}
+
+.shell__toolbar {
+  // M3 top app bar sits on a container surface; `color="primary"` is a no-op here.
+  background-color: var(--mat-sys-surface-container);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  gap: 0.5rem;
+}
+
+.shell__title {
+  font: var(--mat-sys-title-medium);
+}
+
+.shell__spacer {
+  flex: 1;
+}
+
+mh-instance-switcher {
+  align-self: center;
+}
+
+.shell__container {
+  flex: 1;
+  min-height: 0;
+  background-color: var(--mat-sys-surface);
+}
+
+.shell__sidenav {
+  width: 16rem;
+  border-inline-end: 1px solid var(--mat-sys-outline-variant);
+}
+
+.shell__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+}

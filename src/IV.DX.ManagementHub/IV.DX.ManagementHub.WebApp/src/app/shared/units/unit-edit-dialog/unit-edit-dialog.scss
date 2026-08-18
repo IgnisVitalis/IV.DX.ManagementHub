@@ -1,0 +1,50 @@
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.unit-edit__collection {
+  display: flex;
+  flex-direction: column;
+}
+
+.unit-edit__collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.unit-edit__collection-name {
+  font: var(--mat-sys-title-small);
+}
+
+// The row form sits inside the section, indented so it reads as part of it.
+.unit-edit__row-form {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 2px solid var(--mat-sys-primary);
+}
+
+.unit-edit__row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-block-end: 0.5rem;
+}
+
+.unit-edit__row-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.unit-edit__empty {
+  margin: 0 0 0.5rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.unit-edit__error {
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+}

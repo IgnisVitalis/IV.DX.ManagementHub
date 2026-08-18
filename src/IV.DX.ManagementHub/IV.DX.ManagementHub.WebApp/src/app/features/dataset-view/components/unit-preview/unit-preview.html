@@ -1,0 +1,74 @@
+<header class="unit-preview__header">
+  <span class="unit-preview__type">{{ preview().typeName || 'Элемент' }}</span>
+
+  <span class="unit-preview__actions">
+    <mh-unit-actions
+      [typeName]="typeName()"
+      [id]="id()"
+      [canEdit]="canEdit()"
+      [canDelete]="canDelete()"
+      [canExport]="canExport()"
+      (changed)="onChanged()"
+      (deleted)="onDeleted()"
+      (failed)="onFailed($event)"
+    />
+
+    <button matIconButton type="button" aria-label="Закрыть превью" (click)="closed.emit()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </span>
+</header>
+
+@if (actionError(); as error) {
+  <p class="unit-preview__notice unit-preview__error">{{ error }}</p>
+}
+
+@if (isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error(); as error) {
+  <div class="unit-preview__notice">
+    <p>Не удалось загрузить элемент.</p>
+    <p class="unit-preview__detail">{{ error }}</p>
+    <button matButton (click)="reload()">Повторить</button>
+  </div>
+} @else {
+  <mat-accordion class="unit-preview__groups" multi>
+    @for (group of preview().groups; track group.name) {
+      <mat-expansion-panel [expanded]="group.expanded">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ group.name }}</mat-panel-title>
+          @if (group.kind === 'multi' && !group.isEmpty) {
+            <mat-panel-description>{{ group.rows.length }}</mat-panel-description>
+          }
+        </mat-expansion-panel-header>
+
+        @if (group.isEmpty) {
+          <p class="unit-preview__detail">—</p>
+        } @else if (group.kind === 'single') {
+          <dl class="unit-preview__fields">
+            @for (field of group.fields; track field.name) {
+              <dt>{{ field.name }}</dt>
+              <dd>{{ field.value }}</dd>
+            }
+          </dl>
+        } @else {
+          <div class="unit-preview__scroll">
+            <table mat-table [dataSource]="group.rows">
+              @for (column of group.columns; track column) {
+                <ng-container [matColumnDef]="column">
+                  <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+                  <td mat-cell *matCellDef="let row">{{ row[column] }}</td>
+                </ng-container>
+              }
+
+              <tr mat-header-row *matHeaderRowDef="group.columns"></tr>
+              <tr mat-row *matRowDef="let row; columns: group.columns"></tr>
+            </table>
+          </div>
+        }
+      </mat-expansion-panel>
+    }
+  </mat-accordion>
+}

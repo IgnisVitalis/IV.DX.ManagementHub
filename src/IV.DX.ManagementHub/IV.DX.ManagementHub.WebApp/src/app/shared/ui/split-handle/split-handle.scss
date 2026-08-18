@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: 0.75rem;
+  cursor: col-resize;
+  touch-action: none;
+  // Keeps the grip visible without drawing a full-height border of its own.
+  padding: 0 0.25rem;
+}
+
+.split-handle__grip {
+  width: 1px;
+  background-color: var(--mat-sys-outline-variant);
+}
+
+:host(:hover) .split-handle__grip,
+:host(:focus-visible) .split-handle__grip,
+:host(.split-handle--active) .split-handle__grip {
+  width: 2px;
+  background-color: var(--mat-sys-primary);
+}
+
+:host(:focus-visible) {
+  outline: none;
+}

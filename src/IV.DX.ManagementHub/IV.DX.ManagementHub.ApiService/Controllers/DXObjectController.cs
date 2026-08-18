@@ -116,20 +116,21 @@ namespace IV.DataProvider.WebApp.Services.ApiService.Controllers.v1
         /// <summary>Update an existing object of the specified type by Id.</summary>
         [HttpPut("{id:guid}")]
         [Consumes("application/json")]
-        [Produces("application/json")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<JObject>> UpdateAsync([FromRoute] string typeName, [FromRoute] Guid id, [FromBody] JObject body)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public async Task<IActionResult> UpdateAsync([FromRoute] string typeName, [FromRoute] Guid id, [FromBody] JObject body)
         {
             var ct = HttpContext.RequestAborted;
             var client = await clientFactory.CreateFromContextAsync(ct);
 
             using var content = new StringContent(body.ToString(Formatting.None), Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync($"api/management/{typeName}", content, ct);
+            // PUT, addressed by id: posting to the collection would create a second
+            // record instead of updating the one asked for.
+            using var response = await client.PutAsync($"api/management/{typeName}/{id}", content, ct);
             if (!response.IsSuccessStatusCode)
                 return StatusCode((int)response.StatusCode);
 
-            var responseBody = await response.Content.ReadAsStringAsync(ct);
-            return JObject.Parse(responseBody);
+            // DX answers 204 for an update, so there is no body to forward.
+            return NoContent();
         }
 
         /// <summary>Remove an object of the specified type by Id.</summary>

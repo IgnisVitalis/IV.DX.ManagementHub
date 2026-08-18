@@ -1,0 +1,35 @@
+@if (canEdit()) {
+  <button
+    matIconButton
+    type="button"
+    aria-label="Редактировать"
+    [disabled]="isRunning()"
+    (click)="edit()"
+  >
+    <mat-icon>edit</mat-icon>
+  </button>
+}
+
+@if (canExport()) {
+  <button
+    matIconButton
+    type="button"
+    aria-label="Экспортировать"
+    [disabled]="isRunning()"
+    (click)="exportUnit()"
+  >
+    <mat-icon>download</mat-icon>
+  </button>
+}
+
+@if (canDelete()) {
+  <button
+    matIconButton
+    type="button"
+    aria-label="Удалить"
+    [disabled]="isRunning()"
+    (click)="remove()"
+  >
+    <mat-icon>delete</mat-icon>
+  </button>
+}

@@ -25,6 +25,19 @@
 - C#: follow existing formatting and naming conventions.
 - Keep changes minimal and consistent with nearby code.
 
+## UI: which project, which rules
+
+The repository currently hosts two UIs side by side while the Angular rewrite is in
+progress. Pick the rule set by the project you are touching:
+
+| Project | UI stack | Rules |
+|---|---|---|
+| `IV.DX.ManagementHub.Web` | Fluent UI Blazor | the section below |
+| `IV.DX.ManagementHub.WebApp` | Angular + Material | [WebApp/AGENTS.md](src/IV.DX.ManagementHub/IV.DX.ManagementHub.WebApp/AGENTS.md) |
+
+`IV.DX.ManagementHub.Web` is kept intact as the reference implementation until the
+rewrite is finished — do not port changes into it and do not delete it.
+
 ## UI (Fluent UI Blazor) rule
 
 When implementing or adjusting UI (especially dialogs, viewers, grids, and layout) in `IV.DX.ManagementHub.Web`:

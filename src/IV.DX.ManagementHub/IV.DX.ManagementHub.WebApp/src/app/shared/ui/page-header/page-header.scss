@@ -1,0 +1,27 @@
+.page-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'title actions'
+    'subtitle actions';
+  align-items: center;
+  gap: 0 1rem;
+  padding-block-end: 1rem;
+}
+
+.page-header__title {
+  grid-area: title;
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+}
+
+.page-header__subtitle {
+  grid-area: subtitle;
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+.page-header__actions {
+  grid-area: actions;
+}

@@ -1,0 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// Checkboxes carry no form-field padding of their own.
+mat-checkbox {
+  margin-block: 0.5rem 1rem;
+}
+
+.unit-field__required {
+  margin: -0.75rem 0 0.75rem;
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+}

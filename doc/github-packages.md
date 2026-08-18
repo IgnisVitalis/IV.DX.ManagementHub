@@ -48,12 +48,16 @@ falls back to `GITHUB_TOKEN` when the secret is absent, so either route works.
 ./scripts/build.ps1
 ```
 
-Before building, it rewrites the `PackageReference` versions to the newest available —
-GitHub Packages first, the local feed (`~/.nuget/local-feed`) only for versions not
-published yet. `IV.DX` and `IV.DX.PostgreSQL` are moved together, since a provider is
-only valid against the exact core version it was built with. It never downgrades a
-reference; if a project points at something newer than what is published, it warns,
-because CI can only restore published versions.
+Before building, it rewrites the `PackageReference` versions to the newest available
+anywhere — GitHub Packages and the local feed (`~/.nuget/local-feed`) are both
+consulted and the higher version wins, so a package you have just packed locally is
+picked up ahead of the published one. `IV.DX` and `IV.DX.PostgreSQL` are moved
+together, since a provider is only valid against the exact core version it was built
+with. It never downgrades a reference.
+
+Resolving to a local-only version prints a warning: it is the right choice while you
+are working, but CI can restore only what has been published, so that version has to
+reach GitHub Packages before a tag will build.
 
 Pin any family explicitly when you need to: `-DxVersion`, `-DxPresentationVersion`,
 `-DxWebApiVersion`, `-DxWebApiAuthVersion`, `-DxWebApiManagementVersion`, or skip the

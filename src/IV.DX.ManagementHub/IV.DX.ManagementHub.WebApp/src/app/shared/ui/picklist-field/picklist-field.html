@@ -1,0 +1,16 @@
+<mat-form-field appearance="outline" (click)="open()">
+  <mat-label>{{ label() }}</mat-label>
+
+  <input
+    matInput
+    type="text"
+    readonly
+    role="combobox"
+    aria-haspopup="dialog"
+    [value]="text()"
+    (keydown.enter)="open()"
+    (keydown.space)="open()"
+  />
+
+  <mat-icon matSuffix>arrow_drop_down</mat-icon>
+</mat-form-field>

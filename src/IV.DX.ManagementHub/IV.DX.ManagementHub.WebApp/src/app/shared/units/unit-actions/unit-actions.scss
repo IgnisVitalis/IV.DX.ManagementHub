@@ -1,0 +1,8 @@
+// inline-flex, not flex: inside a table cell a block-level flex box stretches to
+// the full column width and the buttons end up floating in its middle. Shrinking
+// to content lets the cell's own alignment place them.
+:host {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}

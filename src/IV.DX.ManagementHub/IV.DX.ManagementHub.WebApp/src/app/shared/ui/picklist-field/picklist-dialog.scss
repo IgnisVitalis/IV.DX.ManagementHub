@@ -1,0 +1,26 @@
+.picklist__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.picklist__search {
+  width: 100%;
+}
+
+.picklist__list {
+  padding: 0;
+  min-height: 0;
+}
+
+.picklist__viewport {
+  // Tall enough to be worth scrolling, short enough to leave the dialog usable.
+  height: min(50vh, 24rem);
+}
+
+.picklist__empty {
+  margin: 0;
+  padding: 1rem 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}

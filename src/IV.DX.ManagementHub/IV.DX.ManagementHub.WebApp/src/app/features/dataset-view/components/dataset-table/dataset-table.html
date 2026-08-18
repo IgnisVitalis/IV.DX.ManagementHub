@@ -1,0 +1,40 @@
+<div class="dataset-table__scroll">
+  <table mat-table [dataSource]="sortedRows()" matSort (matSortChange)="sort.set($event)">
+    @for (column of columns(); track column.name) {
+      <ng-container [matColumnDef]="column.name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ column.name }}</th>
+        <td mat-cell *matCellDef="let row">{{ row.display[column.name] }}</td>
+      </ng-container>
+    }
+
+    @if (hasActions()) {
+      <ng-container [matColumnDef]="actionsColumn" stickyEnd>
+        <th mat-header-cell *matHeaderCellDef class="dataset-table__actions-cell"></th>
+        <td mat-cell *matCellDef="let row" class="dataset-table__actions-cell">
+          <!-- The click must not reach the row, or acting on a row would also select it. -->
+          <mh-unit-actions
+            (click)="$event.stopPropagation()"
+            [typeName]="typeName()"
+            [id]="row.id"
+            [canEdit]="canEdit()"
+            [canDelete]="canDelete()"
+            [canExport]="canExport()"
+            (changed)="changed.emit()"
+            (deleted)="deleted.emit($event)"
+            (failed)="failed.emit($event)"
+          />
+        </td>
+      </ng-container>
+    }
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns()"
+      class="dataset-table__row"
+      [class.dataset-table__row--selected]="row.id === selectedId()"
+      [attr.aria-selected]="row.id === selectedId()"
+      (click)="select(row)"
+    ></tr>
+  </table>
+</div>

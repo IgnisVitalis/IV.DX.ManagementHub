@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  // Lets the table own the remaining height and scroll inside itself.
+  min-height: 0;
+  height: 100%;
+  padding: 0.5rem 1.5rem 1.5rem;
+  gap: 0.25rem;
+}
+
+.dataset-view__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+// Table takes the remaining room; the preview keeps the width set by dragging.
+.dataset-view__split {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+
+  &:has(mh-unit-preview) {
+    grid-template-columns: minmax(0, 1fr) auto var(--preview-width);
+  }
+}
+
+mh-dataset-table {
+  min-height: 0;
+}
+
+mh-unit-preview {
+  min-height: 0;
+}
+
+.dataset-view__notice {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+}
+
+.dataset-view__detail {
+  font: var(--mat-sys-body-small);
+}
+
+.dataset-view__action-error {
+  margin: 0;
+  color: var(--mat-sys-error);
+}

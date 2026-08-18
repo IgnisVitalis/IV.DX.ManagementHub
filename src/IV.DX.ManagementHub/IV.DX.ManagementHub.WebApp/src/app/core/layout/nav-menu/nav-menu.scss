@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.nav-menu__static {
+  padding-block-end: 0;
+}
+
+// A nav list mixes links with group toggles. Material only resets the user-agent
+// button chrome inside `mat-action-list`, so a `<button mat-list-item>` in a
+// `mat-nav-list` keeps its native border and background; apply the same reset.
+mat-nav-list button.mat-mdc-list-item {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+
+.nav-menu__notice {
+  padding: 1rem;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+
+  p {
+    margin: 0 0 0.75rem;
+  }
+}

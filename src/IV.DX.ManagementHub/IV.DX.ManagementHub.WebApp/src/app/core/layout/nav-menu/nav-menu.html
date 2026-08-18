@@ -1,0 +1,71 @@
+@if (instancesLink(); as instancesLink) {
+  <mat-nav-list class="nav-menu__static">
+    <a
+      mat-list-item
+      [routerLink]="instancesLink"
+      routerLinkActive
+      #instances="routerLinkActive"
+      [activated]="instances.isActive"
+    >
+      <span matListItemTitle>Instances</span>
+    </a>
+  </mat-nav-list>
+
+  <mat-divider />
+}
+
+@if (isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (error()) {
+  <div class="nav-menu__notice">
+    <p>Не удалось загрузить навигацию.</p>
+    <button matButton (click)="reload()">Повторить</button>
+  </div>
+} @else if (isEmpty()) {
+  <div class="nav-menu__notice">
+    <p>Навигация пуста — метаданные не содержат элементов для этого запроса.</p>
+  </div>
+} @else {
+  <mat-nav-list>
+    @for (row of rows(); track row.id) {
+      @let indent = row.level + 1;
+
+      @if (row.link !== null) {
+        <a
+          mat-list-item
+          [routerLink]="row.link"
+          routerLinkActive
+          #link="routerLinkActive"
+          [activated]="link.isActive"
+          [style.padding-inline-start.rem]="indent"
+          [attr.aria-expanded]="row.hasChildren ? row.expanded : null"
+          (click)="row.hasChildren && toggle(row.id)"
+        >
+          <span matListItemTitle>{{ row.name }}</span>
+          @if (row.hasChildren) {
+            <mat-icon matListItemIcon>{{
+              row.expanded ? 'expand_more' : 'chevron_right'
+            }}</mat-icon>
+          }
+        </a>
+      } @else if (row.hasChildren) {
+        <button
+          mat-list-item
+          type="button"
+          [style.padding-inline-start.rem]="indent"
+          [attr.aria-expanded]="row.expanded"
+          (click)="toggle(row.id)"
+        >
+          <span matListItemTitle>{{ row.name }}</span>
+          <mat-icon matListItemIcon>{{ row.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+        </button>
+      } @else {
+        <mat-list-item disabled [style.padding-inline-start.rem]="indent">
+          <span matListItemTitle>{{ row.name }}</span>
+        </mat-list-item>
+      }
+    }
+  </mat-nav-list>
+}

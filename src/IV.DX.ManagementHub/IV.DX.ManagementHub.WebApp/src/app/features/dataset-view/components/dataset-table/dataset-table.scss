@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  min-height: 0;
+}
+
+// Wide tables scroll inside their own box so the page never scrolls sideways.
+.dataset-table__scroll {
+  overflow: auto;
+  max-height: 100%;
+}
+
+table {
+  width: 100%;
+}
+
+.dataset-table__row {
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--mat-sys-surface-container-highest);
+  }
+}
+
+.dataset-table__row--selected {
+  background-color: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
+// Actions hug the right edge and stay put while the table scrolls sideways.
+.dataset-table__actions-cell {
+  text-align: end;
+  white-space: nowrap;
+  padding-inline-start: 1rem;
+  background-color: inherit;
+}

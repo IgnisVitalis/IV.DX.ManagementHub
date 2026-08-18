@@ -1,0 +1,75 @@
+@switch (field().kind) {
+  @case ('bool') {
+    <mat-checkbox [checked]="value() === true" (change)="value.set($event.checked)">
+      {{ field().column.name }}
+    </mat-checkbox>
+  }
+
+  @case ('select') {
+    <mh-picklist-field
+      [label]="field().column.name"
+      [options]="field().options"
+      [value]="pickValue()"
+      (valueChange)="value.set($event)"
+      [allowNull]="!field().required"
+    />
+  }
+
+  @case ('textarea') {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ field().column.name }}</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        [value]="value()"
+        [attr.maxlength]="field().maxLength"
+        (input)="setFromInput($event)"
+      ></textarea>
+    </mat-form-field>
+  }
+
+  @case ('number') {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ field().column.name }}</mat-label>
+      <input matInput type="number" [value]="value()" (input)="setFromInput($event)" />
+    </mat-form-field>
+  }
+
+  @case ('datetime') {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ field().column.name }}</mat-label>
+      <input matInput type="datetime-local" [value]="value()" (input)="setFromInput($event)" />
+    </mat-form-field>
+  }
+
+  @case ('secret') {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ field().column.name }}</mat-label>
+      <input
+        matInput
+        type="password"
+        autocomplete="new-password"
+        [value]="value()"
+        (input)="setFromInput($event)"
+      />
+      <mat-hint>Пустое поле оставит текущее значение без изменений</mat-hint>
+    </mat-form-field>
+  }
+
+  @default {
+    <mat-form-field appearance="outline">
+      <mat-label>{{ field().column.name }}</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="value()"
+        [attr.maxlength]="field().maxLength"
+        (input)="setFromInput($event)"
+      />
+    </mat-form-field>
+  }
+}
+
+@if (invalid()) {
+  <p class="unit-field__required">Обязательное поле</p>
+}

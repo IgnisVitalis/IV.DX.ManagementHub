@@ -90,48 +90,51 @@ namespace IV.DX.ManagementHub.Web.Services
             client.BaseAddress = new Uri(apiUrl.TrimEnd('/') + "/");
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", authState.AccessToken);
-            client.DefaultRequestHeaders.TryAddWithoutValidation("X-MH-Instance", instanceKey);
 
             return Task.FromResult(client);
         }
 
+        // The instance travels in the path, not in a header: HTTP caches key on the
+        // URL, so a header would let one instance's response be served for another.
+        private string Scoped(string relativePath) => $"api/i/{instanceKey}/{relativePath}";
+
         public string GetCollectionUri(string typeName, string? filter = null) =>
-            BuildCollectionUri($"api/{typeName}", filter);
+            BuildCollectionUri(Scoped(typeName), filter);
 
         public string GetItemUri(string typeName, Guid id) =>
-            $"api/{typeName}/{id}";
+            Scoped($"{typeName}/{id}");
 
         public string GetCreateUri(string typeName) =>
-            $"api/{typeName}";
+            Scoped(typeName);
 
         public string GetUpdateUri(string typeName, Guid id) =>
-            $"api/{typeName}/{id}";
+            Scoped($"{typeName}/{id}");
 
         public string GetDeleteUri(string typeName, Guid id) =>
-            $"api/{typeName}/{id}";
+            Scoped($"{typeName}/{id}");
 
         public string GetByIdsUri(string typeName) =>
-            $"api/{typeName}/by-ids";
+            Scoped($"{typeName}/by-ids");
 
         public string GetSearchUri(string typeName) =>
-            $"api/{typeName}/search";
+            Scoped($"{typeName}/search");
 
         public string GetUnitStructureUri(string typeName) =>
-            $"api/DXUnitStructure/{typeName}";
+            Scoped($"DXUnitStructure/{typeName}");
 
         public string GetQueryResultUri(Guid dxQueryId, Guid? dxFilterId = null) =>
             dxFilterId.HasValue
-                ? $"api/DXQueryResult/{dxQueryId}/{dxFilterId.Value}"
-                : $"api/DXQueryResult/{dxQueryId}";
+                ? Scoped($"DXQueryResult/{dxQueryId}/{dxFilterId.Value}")
+                : Scoped($"DXQueryResult/{dxQueryId}");
 
         public string GetByDefinitionUri(Guid definitionId) =>
-            $"api/{definitionId}";
+            Scoped($"{definitionId}");
 
         public string GetByDefinitionItemUri(Guid definitionId, Guid id) =>
-            $"api/{definitionId}/{id}";
+            Scoped($"{definitionId}/{id}");
 
         public string GetByDefinitionByIdsUri(Guid definitionId) =>
-            $"api/{definitionId}/by-ids";
+            Scoped($"{definitionId}/by-ids");
 
         private static string BuildCollectionUri(string baseUri, string? filter)
         {

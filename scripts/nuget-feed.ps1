@@ -1,10 +1,11 @@
 #!/usr/bin/env pwsh
 # Shared NuGet feed helpers. Dot-sourced by build.ps1 and pack.ps1, not run directly.
 #
-# Package versions are discovered from GitHub Packages first and from the local
-# sources (local feed, global package cache) only as a fallback: a version that
-# exists nowhere but this machine cannot be restored by CI or by anyone else, so
-# it is picked up only while the package has not been published yet.
+# Package versions are discovered from both GitHub Packages and the local sources
+# (local feed, global package cache), and the newest wins wherever it lives - a local
+# build is usually ahead of the feed precisely because it is the one being worked on.
+# Resolving to a local-only version warns, because CI can restore only what has been
+# published, but it does not change the choice.
 
 $GitHubPackagesOwner = if ($env:IV_DX_GITHUB_OWNER) { $env:IV_DX_GITHUB_OWNER } else { "IgnisVitalis" }
 $GitHubPackagesSourceName = "github"
@@ -237,29 +238,35 @@ function Get-LatestFeedVersion {
         Get-LocalPackageVersions -PackageId $packageId
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($gitHubVersion)) {
-        $gitHubParsed = $null
-        $localParsed = $null
+    $gitHubParsed = $null
+    $localParsed = $null
+    $gitHubOk = [version]::TryParse($gitHubVersion, [ref]$gitHubParsed)
+    $localOk = [version]::TryParse($localVersion, [ref]$localParsed)
 
-        if ([version]::TryParse($gitHubVersion, [ref]$gitHubParsed) -and
-            [version]::TryParse($localVersion, [ref]$localParsed) -and
-            $localParsed -gt $gitHubParsed) {
-            Write-Warning "Local $familyName $localVersion is newer than the published $gitHubVersion. Using $gitHubVersion - publish the local build or pass an explicit version to override."
+    # The newest version wins wherever it lives. A local build is normally ahead of the
+    # feed precisely because it is the one being worked on, so preferring the published
+    # version would pin every consumer to the previous release.
+    if ($localOk -and (-not $gitHubOk -or $localParsed -gt $gitHubParsed)) {
+        if ($gitHubOk) {
+            Write-Warning "$familyName $localVersion is local only - newer than the published $gitHubVersion, so CI cannot restore it until it is published."
+        }
+        else {
+            Write-Warning "$familyName $localVersion is local only - CI cannot restore it until it is published."
         }
 
+        Write-Host "Resolved $familyName $localVersion from local packages."
+        $script:LastFeedVersionSource = "local"
+        return $localVersion
+    }
+
+    if ($gitHubOk) {
         Write-Host "Resolved $familyName $gitHubVersion from GitHub Packages."
         $script:LastFeedVersionSource = "github"
         return $gitHubVersion
     }
 
-    if (-not [string]::IsNullOrWhiteSpace($localVersion)) {
-        Write-Host "Resolved $familyName $localVersion from local packages (not published to GitHub Packages)."
-        $script:LastFeedVersionSource = "local"
-        return $localVersion
-    }
-
     $script:LastFeedVersionSource = "none"
-    return $localVersion
+    return $null
 }
 
 function Get-LastFeedVersionSource {

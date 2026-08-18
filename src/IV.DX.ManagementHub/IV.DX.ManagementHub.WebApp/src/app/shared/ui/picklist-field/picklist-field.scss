@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+// The whole field is the trigger, so nothing inside should look typeable.
+input {
+  cursor: pointer;
+}
