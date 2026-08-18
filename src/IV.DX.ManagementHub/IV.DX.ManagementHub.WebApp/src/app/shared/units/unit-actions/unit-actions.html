@@ -1,35 +1,26 @@
-@if (canEdit()) {
-  <button
-    matIconButton
-    type="button"
-    aria-label="Редактировать"
-    [disabled]="isRunning()"
-    (click)="edit()"
-  >
-    <mat-icon>edit</mat-icon>
-  </button>
-}
-
-@if (canExport()) {
-  <button
-    matIconButton
-    type="button"
-    aria-label="Экспортировать"
-    [disabled]="isRunning()"
-    (click)="exportUnit()"
-  >
-    <mat-icon>download</mat-icon>
-  </button>
-}
-
-@if (canDelete()) {
-  <button
-    matIconButton
-    type="button"
-    aria-label="Удалить"
-    [disabled]="isRunning()"
-    (click)="remove()"
-  >
-    <mat-icon>delete</mat-icon>
-  </button>
+@for (action of actions(); track action.icon) {
+  @if (showLabels()) {
+    <!-- A labelled action needs a text button: matIconButton has a fixed size and
+         the label would spill out of it. -->
+    <button
+      matButton
+      type="button"
+      [attr.aria-label]="action.label"
+      [disabled]="isRunning()"
+      (click)="action.run()"
+    >
+      <mat-icon>{{ action.icon }}</mat-icon>
+      {{ action.label }}
+    </button>
+  } @else {
+    <button
+      matIconButton
+      type="button"
+      [attr.aria-label]="action.label"
+      [disabled]="isRunning()"
+      (click)="action.run()"
+    >
+      <mat-icon>{{ action.icon }}</mat-icon>
+    </button>
+  }
 }

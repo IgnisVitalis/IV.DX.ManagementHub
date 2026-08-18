@@ -5,4 +5,8 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
+  gap: 0.25rem;
+  // No wrapping: inside the narrow actions column it would stack the icons and
+  // blow up the row height.
+  white-space: nowrap;
 }

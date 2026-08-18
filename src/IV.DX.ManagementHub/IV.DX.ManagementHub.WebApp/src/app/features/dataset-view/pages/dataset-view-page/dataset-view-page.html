@@ -43,7 +43,7 @@
     <mh-dataset-table
       [columns]="table().columns"
       [rows]="table().rows"
-      [(selectedId)]="selectedId"
+      [(selectedIds)]="selectedIds"
       [typeName]="typeName()"
       [canEdit]="canEdit()"
       [canDelete]="canDelete()"
@@ -53,10 +53,10 @@
       (failed)="onActionFailed($event)"
     />
 
-    @if (selectedId(); as selectedId) {
-      @if (typeName()) {
-        <mh-split-handle (moved)="resizePreview($event)" />
+    @if (selectedIds().length > 0 && typeName()) {
+      <mh-split-handle (moved)="resizePreview($event)" />
 
+      @if (singleSelectedId(); as selectedId) {
         <mh-unit-preview
           [typeName]="typeName()"
           [id]="selectedId"
@@ -66,6 +66,30 @@
           (closed)="clearSelection()"
           (changed)="reloadRows()"
         />
+      } @else {
+        <section class="dataset-view__selection">
+          <header class="dataset-view__selection-header">
+            <span class="dataset-view__selection-count">Выбрано: {{ selectedIds().length }}</span>
+
+            <mh-unit-actions
+              [typeName]="typeName()"
+              [ids]="selectedIds()"
+              [canEdit]="canEdit()"
+              [canDelete]="canDelete()"
+              [canExport]="canExport()"
+              [showLabels]="true"
+              (changed)="reloadRows()"
+              (deleted)="onDeleted($event)"
+              (failed)="onActionFailed($event)"
+            />
+          </header>
+
+          <ul class="dataset-view__selection-list">
+            @for (row of selectedRows(); track row.id) {
+              <li>{{ labelOf(row) }}</li>
+            }
+          </ul>
+        </section>
       }
     }
   </div>

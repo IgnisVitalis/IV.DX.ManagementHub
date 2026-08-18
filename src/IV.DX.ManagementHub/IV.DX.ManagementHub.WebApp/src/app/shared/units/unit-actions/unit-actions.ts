@@ -36,28 +36,55 @@ export class UnitActions {
   private readonly commands = inject(UnitCommands);
 
   readonly typeName = input.required<string>();
-  readonly id = input.required<string>();
+  /** Records to act on. Editing needs exactly one; the rest work on many. */
+  readonly ids = input.required<readonly string[]>();
 
   readonly canEdit = input(false);
   readonly canDelete = input(false);
   readonly canExport = input(false);
 
-  /** The record was saved; rows need reloading. */
+  /** Labels next to the icons; the panel uses them, table rows do not. */
+  readonly showLabels = input(false);
+
+  /** The records were saved; rows need reloading. */
   readonly changed = output<void>();
-  /** The record is gone; whoever shows it has to let go of the id. */
-  readonly deleted = output<string>();
+  /** The records are gone; whoever shows them has to let go of the ids. */
+  readonly deleted = output<readonly string[]>();
   readonly failed = output<string>();
 
   protected readonly isRunning = signal(false);
 
-  protected readonly hasAny = computed(
-    () => this.canEdit() || this.canDelete() || this.canExport(),
+  /** Editing addresses one record, so it is offered only for a single selection. */
+  private readonly canEditOne = computed(() => this.canEdit() && this.ids().length === 1);
+  private readonly hasSelection = computed(() => this.ids().length > 0);
+
+  /**
+   * Actions to render, in a fixed order. Built here rather than spelled out three
+   * times in the template, which is what made the icon-only and labelled variants
+   * drift apart.
+   */
+  protected readonly actions = computed(() =>
+    [
+      { icon: 'edit', label: 'Изменить', visible: this.canEditOne(), run: () => this.edit() },
+      {
+        icon: 'download',
+        label: 'Экспорт',
+        visible: this.canExport() && this.hasSelection(),
+        run: () => this.exportUnit(),
+      },
+      {
+        icon: 'delete',
+        label: 'Удалить',
+        visible: this.canDelete() && this.hasSelection(),
+        run: () => this.remove(),
+      },
+    ].filter((action) => action.visible),
   );
 
   protected async edit(): Promise<void> {
     const saved = await this.openDialog<unknown, string | boolean>(UnitEditDialog, {
       typeName: this.typeName(),
-      id: this.id(),
+      id: this.ids()[0],
     });
 
     if (saved === true) {
@@ -66,9 +93,15 @@ export class UnitActions {
   }
 
   protected async remove(): Promise<void> {
+    const ids = this.ids();
+    const count = ids.length;
+
     const confirmed = await this.openDialog<unknown, boolean>(ConfirmDialog, {
-      title: 'Удалить элемент?',
-      message: `Элемент ${this.typeName()} будет удалён безвозвратно.`,
+      title: count === 1 ? 'Удалить элемент?' : `Удалить элементы (${count})?`,
+      message:
+        count === 1
+          ? `Элемент ${this.typeName()} будет удалён безвозвратно.`
+          : `Записей ${this.typeName()}: ${count}. Они будут удалены безвозвратно.`,
       confirmLabel: 'Удалить',
     });
 
@@ -77,14 +110,14 @@ export class UnitActions {
     }
 
     await this.run(async () => {
-      await this.commands.delete(this.typeName(), this.id());
-      this.deleted.emit(this.id());
+      await this.commands.deleteMany(this.typeName(), ids);
+      this.deleted.emit(ids);
       this.changed.emit();
     });
   }
 
   protected async exportUnit(): Promise<void> {
-    await this.run(() => this.commands.export(this.typeName(), this.id()));
+    await this.run(() => this.commands.export(this.typeName(), this.ids()));
   }
 
   private openDialog<TData, TResult>(

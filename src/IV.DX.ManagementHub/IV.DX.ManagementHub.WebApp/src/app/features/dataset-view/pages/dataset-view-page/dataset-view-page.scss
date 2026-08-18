@@ -20,7 +20,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 
-  &:has(mh-unit-preview) {
+  &:has(mh-split-handle) {
     grid-template-columns: minmax(0, 1fr) auto var(--preview-width);
   }
 }
@@ -49,4 +49,32 @@ mh-unit-preview {
 .dataset-view__action-error {
   margin: 0;
   color: var(--mat-sys-error);
+}
+
+// Bulk panel: the same slot the single-record preview occupies.
+.dataset-view__selection {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
+.dataset-view__selection-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-block-start: 0.25rem;
+}
+
+.dataset-view__selection-count {
+  font: var(--mat-sys-title-small);
+}
+
+.dataset-view__selection-list {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  overflow: auto;
+  min-height: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
 }

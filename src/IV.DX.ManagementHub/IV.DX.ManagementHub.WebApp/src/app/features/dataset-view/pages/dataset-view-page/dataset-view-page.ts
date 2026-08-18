@@ -6,8 +6,10 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
 
 import { DatasetTable } from '../../components/dataset-table/dataset-table';
+import type { DatasetRow } from '../../models/dataset-table';
 import { describeError } from '@core/api/describe-error';
 import { SplitHandle } from '@shared/ui/split-handle/split-handle';
+import { UnitActions } from '@shared/units/unit-actions/unit-actions';
 import {
   UnitEditDialog,
   type UnitEditDialogData,
@@ -31,6 +33,7 @@ import { DatasetViewService } from '../../services/dataset-view.service';
     DatasetTable,
     UnitPreview,
     SplitHandle,
+    UnitActions,
   ],
   templateUrl: './dataset-view-page.html',
   styleUrl: './dataset-view-page.scss',
@@ -50,7 +53,25 @@ export class DatasetViewPage {
   protected readonly table = this.view.table;
   protected readonly definition = this.view.definition;
 
-  protected readonly selectedId = signal<string | null>(null);
+  protected readonly selectedIds = signal<readonly string[]>([]);
+
+  /** Rows behind the selection, for the summary shown next to bulk actions. */
+  protected readonly selectedRows = computed(() => {
+    const ids = new Set(this.selectedIds());
+
+    return this.table().rows.filter((row) => ids.has(row.id));
+  });
+
+  /** First non-empty cell of a row: the closest thing to a title it has. */
+  protected labelOf(row: DatasetRow): string {
+    const value = Object.values(row.display).find((text) => text !== '' && text !== '—');
+
+    return value ?? row.id;
+  }
+
+  protected readonly singleSelectedId = computed(() =>
+    this.selectedIds().length === 1 ? this.selectedIds()[0] : null,
+  );
 
   /** Failure of a row action, shown above the table. */
   protected readonly actionError = signal<string | null>(null);
@@ -59,11 +80,11 @@ export class DatasetViewPage {
   protected readonly canDelete = computed(() => this.definition()?.isDeletable ?? false);
   protected readonly canExport = computed(() => this.definition()?.isExportable ?? false);
 
-  /** A row was deleted: let go of it before the rows reload. */
-  protected onDeleted(id: string): void {
-    if (this.selectedId() === id) {
-      this.selectedId.set(null);
-    }
+  /** Rows were deleted: let go of them before the table reloads. */
+  protected onDeleted(ids: readonly string[]): void {
+    const gone = new Set(ids);
+
+    this.selectedIds.update((selected) => selected.filter((id) => !gone.has(id)));
   }
 
   protected onActionFailed(message: string): void {
@@ -94,7 +115,7 @@ export class DatasetViewPage {
 
     if (typeof createdId === 'string') {
       this.view.reload();
-      this.selectedId.set(createdId);
+      this.selectedIds.set([createdId]);
     }
   }
 
@@ -107,12 +128,12 @@ export class DatasetViewPage {
   }
 
   protected clearSelection(): void {
-    this.selectedId.set(null);
+    this.selectedIds.set([]);
   }
 
   /** Explicit refresh: start from a clean slate. */
   protected reload(): void {
-    this.selectedId.set(null);
+    this.selectedIds.set([]);
     this.view.reload();
   }
 

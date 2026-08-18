@@ -44,11 +44,28 @@ export class UnitCommands {
   }
 
   /**
+   * Deletes several records.
+   *
+   * Sequentially, like the Blazor confirmation dialog: the API has no bulk
+   * delete, and firing them in parallel would make a partial failure harder to
+   * report than it already is.
+   */
+  async deleteMany(typeName: string, ids: readonly string[]): Promise<void> {
+    for (const id of ids) {
+      await this.delete(typeName, id);
+    }
+  }
+
+  /**
    * Downloads one record as formatted JSON, keeping the file name the Blazor
    * version used so exports stay interchangeable with existing migrations.
    */
-  async export(typeName: string, id: string): Promise<void> {
-    const record = await firstValueFrom(this.http.get(this.itemUrl(typeName, id)));
+  async export(typeName: string, ids: readonly string[]): Promise<void> {
+    const record =
+      ids.length === 1
+        ? await firstValueFrom(this.http.get(this.itemUrl(typeName, ids[0])))
+        : await firstValueFrom(this.http.post(`${this.base()}/${typeName}/by-ids`, ids));
+
     const blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
