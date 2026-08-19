@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -7,16 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\IV.DX.ManagementHub.Common\IV.DX.ManagementHub.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+    <PackageReference Include="IV.DX" Version="0.112.0" />
+    <PackageReference Include="IV.DX.PostgreSQL" Version="0.112.0" />
+    <PackageReference Include="IV.DX.Presentation" Version="0.110.0" />
+    <PackageReference Include="IV.DX.WebApi" Version="0.111.0" />
+    <PackageReference Include="IV.DX.WebApi.Auth" Version="0.111.0" />
+    <PackageReference Include="IV.DX.WebApi.Management" Version="0.111.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="MigrationScripts\ManagementHub.json" />
+    <EmbeddedResource Include="MigrationScripts\ManagementHub\**\*.dx" />
   </ItemGroup>
 
 </Project>

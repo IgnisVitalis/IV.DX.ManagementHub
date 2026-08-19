@@ -25,31 +25,19 @@
 - C#: follow existing formatting and naming conventions.
 - Keep changes minimal and consistent with nearby code.
 
-## UI: which project, which rules
+## Projects
 
-The repository currently hosts two UIs side by side while the Angular rewrite is in
-progress. Pick the rule set by the project you are touching:
+| Project | Role |
+|---|---|
+| `IV.DX.ManagementHub.ApiService` | the host: DX bootstrap, seeds, auth, instance routing, API controllers |
+| `IV.DX.ManagementHub.Common` | shared models |
+| `IV.DX.ManagementHub.WebApp` | the UI — Angular + Material |
 
-| Project | UI stack | Rules |
-|---|---|---|
-| `IV.DX.ManagementHub.Web` | Fluent UI Blazor | the section below |
-| `IV.DX.ManagementHub.WebApp` | Angular + Material | [WebApp/AGENTS.md](src/IV.DX.ManagementHub/IV.DX.ManagementHub.WebApp/AGENTS.md) |
+The Blazor UI (`IV.DX.ManagementHub.Web`) was removed once the Angular app covered
+its functionality; the host that lived inside it moved into `ApiService`. Its
+sources remain in git history if something needs to be looked up.
 
-`IV.DX.ManagementHub.Web` is kept intact as the reference implementation until the
-rewrite is finished — do not port changes into it and do not delete it.
+## UI rule
 
-## UI (Fluent UI Blazor) rule
-
-When implementing or adjusting UI (especially dialogs, viewers, grids, and layout) in `IV.DX.ManagementHub.Web`:
-
-1. **Always prefer Fluent UI Blazor features first**  
-   Try to achieve the desired behavior using Fluent UI components and their parameters/settings (e.g., `FluentStack`, `FluentGrid`, `FluentDivider`, `FluentCard`, `FluentDataGrid` options, typography/label settings).
-
-2. **Fluent UI Blazor examples**
-   Use examples using https://fluentui-blazor.azurewebsites.net/
-
-2. **Use custom CSS only as a last resort**  
-   Add CSS only when Fluent components cannot express the behavior (typical examples: sticky headers, nested scrolling/flex `min-height: 0`, overflow fixes, small spacing/polish).
-
-3. **Keep styling consistent with Fluent**  
-   When CSS is necessary, prefer Fluent design tokens/CSS variables (e.g., `--neutral-foreground-rest`, `--neutral-layer-1`) and scope styles narrowly (component-scoped `.razor.css` when possible).
+All UI work happens in `IV.DX.ManagementHub.WebApp` and follows
+[WebApp/AGENTS.md](src/IV.DX.ManagementHub/IV.DX.ManagementHub.WebApp/AGENTS.md).

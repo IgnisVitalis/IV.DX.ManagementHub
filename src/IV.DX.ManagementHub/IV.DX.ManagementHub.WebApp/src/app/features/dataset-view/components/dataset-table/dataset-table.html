@@ -10,12 +10,12 @@
         />
       </th>
       <td mat-cell *matCellDef="let row" class="dataset-table__select-cell">
-        <!-- The row click already toggles selection; letting the checkbox bubble
-             would toggle it twice and leave the state inverted. -->
+        <!-- Stops the row handler from firing too: a row click collapses the
+             selection to that row, which would undo the checkbox. -->
         <mat-checkbox
           (click)="$event.stopPropagation()"
           [checked]="isSelected(row)"
-          (change)="select(row)"
+          (change)="toggle(row)"
           aria-label="Выбрать строку"
         />
       </td>

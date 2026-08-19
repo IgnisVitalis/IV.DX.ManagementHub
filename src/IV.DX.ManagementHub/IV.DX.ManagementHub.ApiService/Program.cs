@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using IV.DataProvider.WebApp.Services.Web.Contracts;
-using IV.DataProvider.WebApp.Services.Web.Services;
 using IV.DX.Application.Contracts.Abstractions;
 using IV.DX.Hosting;
 using IV.DX.Kernel.Models;
@@ -10,20 +8,11 @@ using IV.DX.WebApi.Auth.DependencyInjection;
 using IV.DX.WebApi.DependencyInjection;
 using IV.DX.WebApi.Management.DependencyInjection;
 using IV.DX.ManagementHub.ApiService.Bootstrap;
-using IV.DX.ManagementHub.ApiService.Controllers;  // DXApiControllerBase assembly
 using IV.DX.ManagementHub.ApiService.Services;
 using IV.DX.ManagementHub.Common.Models;
-using IV.DX.ManagementHub.Web.Components;
-using IV.DX.ManagementHub.Web.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Console log panel infrastructure — created before DI so the provider can hold a direct reference
-var consoleLogBroadcaster = new ConsoleLogBroadcaster();
-builder.Services.AddSingleton(consoleLogBroadcaster);
-builder.Logging.AddProvider(new ConsoleLoggerProvider(consoleLogBroadcaster));
 
 // --- DX Core ---
 builder.Services
@@ -54,21 +43,12 @@ builder.Services.AddDXWebApiDefaults();
 // --- Controllers ---
 builder.Services.AddControllers()
     .AddDXWebApiAuthControllers()           // api/auth/* (DX login/refresh/logout)
-    .AddDXManagementControllers()           // api/management/* (DX CRUD, adds Newtonsoft)
-    .AddApplicationPart(typeof(DXApiControllerBase).Assembly);  // MH proxy controllers
+    .AddDXManagementControllers();          // api/management/* (DX CRUD, adds Newtonsoft)
 
 // --- DX Rate limiting ---
 builder.Services.AddDXWebApiRateLimiting(builder.Configuration);
 
-// --- Blazor ---
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-builder.Services.AddFluentUIComponents();
-
-builder.Services.AddOutputCache();
-
-// --- MH services ---
+// --- Host services ---
 builder.Services.AddHttpClient();
 
 // In Development, the ASP.NET Core dev certificate isn't in the OpenSSL trust
@@ -88,16 +68,10 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddSingleton<InstanceApiClientFactory>();
 
-builder.Services.AddScoped<IApiClientResolver, ApiClientResolver>();
-builder.Services.AddScoped<AppState>();
-builder.Services.AddScoped<AppAuthState>();
-builder.Services.AddScoped<IV.DX.ManagementHub.Web.Services.ConsoleLogService>();
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
@@ -229,10 +203,6 @@ app.Use(async (context, next) =>
     await next();
 });
 
-app.UseAntiforgery();
-app.UseOutputCache();
-app.MapStaticAssets();
-app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 app.MapControllers();
 
 app.Run();

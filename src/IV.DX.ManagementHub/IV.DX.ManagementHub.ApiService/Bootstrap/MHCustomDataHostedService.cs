@@ -1,7 +1,7 @@
 using IV.DX.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace IV.DX.ManagementHub.Web.Services;
+namespace IV.DX.ManagementHub.ApiService.Bootstrap;
 
 // Runs MH custom data migrations after DX core and DX Presentation have fully initialized.
 // Must be registered after both AddDX(...).RegisterHostedService() and AddDXPresentation().RegisterHostedService().

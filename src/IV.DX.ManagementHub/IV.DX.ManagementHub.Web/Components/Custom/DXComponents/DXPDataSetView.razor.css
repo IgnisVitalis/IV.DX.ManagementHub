@@ -1,9 +1,0 @@
-.dx-bulk-confirm-list {
-    max-height: 240px;
-    overflow: auto;
-    overscroll-behavior: contain;
-    padding: 0.5rem;
-    border: 1px solid var(--neutral-stroke-divider-rest);
-    border-radius: 0.25rem;
-    background: var(--neutral-layer-1);
-}

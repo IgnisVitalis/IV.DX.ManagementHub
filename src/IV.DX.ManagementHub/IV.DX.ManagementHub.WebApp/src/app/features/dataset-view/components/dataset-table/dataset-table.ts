@@ -96,8 +96,21 @@ export class DatasetTable {
     return sort === null ? this.rows() : sortDatasetRows(this.rows(), sort.active, sort.direction);
   });
 
-  /** Clicking a row toggles it, the same as its checkbox. */
+  /**
+   * Clicking a row means "show me this one": the selection collapses to it and
+   * the preview opens. Building a set of several records is the checkboxes' job,
+   * so a row click must never add to or remove from that set.
+   *
+   * Clicking the same row again keeps it selected rather than closing the
+   * preview — re-reading a record should not make it disappear. The preview has
+   * its own close button.
+   */
   protected select(row: DatasetRow): void {
+    this.selectedIds.set([row.id]);
+  }
+
+  /** Checkbox: adds to or removes from the selection, leaving the rest alone. */
+  protected toggle(row: DatasetRow): void {
     this.selectedIds.update((ids) =>
       ids.includes(row.id) ? ids.filter((id) => id !== row.id) : [...ids, row.id],
     );

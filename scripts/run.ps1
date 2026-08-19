@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 param(
-    [string]$WebPath      = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web/IV.DX.ManagementHub.Web.csproj",
+    [string]$WebPath      = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.ApiService/IV.DX.ManagementHub.ApiService.csproj",
     [string]$WebAppPath   = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.WebApp",
     [string]$SolutionPath = "src/IV.DX.ManagementHub/IV.DX.ManagementHub.sln",
 
@@ -20,7 +20,7 @@ param(
     [switch]$NoRestore,
     [switch]$NoBuild,
 
-    # Run only one of the two UIs.
+    # Run only one side.
     [switch]$SkipAngular,
     [switch]$SkipWeb,
 
@@ -31,7 +31,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
-$webRoot = Join-Path $repoRoot "src/IV.DX.ManagementHub/IV.DX.ManagementHub.Web"
+$webRoot = Join-Path $repoRoot "src/IV.DX.ManagementHub/IV.DX.ManagementHub.ApiService"
 
 Set-Location $repoRoot
 
@@ -257,7 +257,7 @@ try {
         }
 
         Write-Host ""
-        Write-Host "Blazor UI + API ready: $probeUrl" -ForegroundColor Green
+        Write-Host "API ready: $probeUrl" -ForegroundColor Green
 
         # Hand the resolved address to the dev-server proxy so the two cannot
         # disagree about where the API lives (see proxy.conf.mjs).
