@@ -1,156 +1,166 @@
 # Agent Instructions (IV.DX.ManagementHub.WebApp)
 
-Правила для нового UI на Angular + Material.
-Старый Blazor-проект `IV.DX.ManagementHub.Web` этими правилами **не** покрывается —
-для него действует секция "UI (Fluent UI Blazor) rule" в корневом [AGENTS.md](../../../AGENTS.md).
+Rules for the ManagementHub UI: Angular + Material. This is the only UI in the
+repository — the Blazor app it replaced has been removed.
 
-## Область действия
+## Scope
 
-- Изменения по новому UI делаются только здесь. `IV.DX.ManagementHub.Web` не трогаем:
-  он остаётся эталоном для сравнения, пока перенос не завершён.
-- Приложение управляется метаданными с Web API: навигация, таблицы, карточки и формы
-  строятся из описаний, а не хардкодятся под конкретную сущность.
+- The application is driven by metadata from the Web API: navigation, tables, cards
+  and forms are built from descriptions rather than hardcoded per entity. Whenever
+  something can be derived from metadata, derive it.
 
-## 1. Структура — feature based
+## 1. Structure — feature based
 
 ```
 src/app/
-├── core/       # синглтоны: конфиг, auth, http-перехватчики, оболочка, навигация
-├── features/   # по папке на функциональную область
-└── shared/     # переиспользуемое: ui/ (презентация) и units/ (UI над метаданными)
+├── core/       # singletons: config, auth, http interceptors, shell, navigation
+├── features/   # one folder per functional area
+└── shared/     # reusable: ui/ (presentation) and units/ (UI over metadata)
 ```
 
-1. **Направление зависимостей строгое:** `features/` → `core/` и `shared/`.
-   Обратных зависимостей нет: `core/` и `shared/` ничего не знают о фичах.
-2. **Фичи не импортируют друг друга.** Понадобилось общее — поднимаем в `shared/`
-   или в `core/` (состояние и инфраструктура). Прямой импорт из соседней фичи —
-   повод остановиться и обсудить.
-3. **`shared/` делится по степени «умности»**, и обе части не зависят от `features/`:
-   - `shared/ui/` — чистая презентация: компоненты, пайпы, директивы без инжекта
-     состояния приложения;
-   - `shared/units/` — переиспользуемый UI над метаданными DX (поле, диалог
-     редактирования, действия над записью). Ему можно инжектить сервисы из
-     `core/`: иначе каждая фича переизобретала бы одно и то же.
+1. **The dependency direction is strict:** `features/` → `core/` and `shared/`.
+   There are no reverse dependencies: `core/` and `shared/` know nothing about
+   features.
+2. **Features do not import each other.** When something is needed by two of them,
+   lift it into `shared/` or into `core/` (state and infrastructure). A direct
+   import from a sibling feature is a reason to stop and discuss.
+3. **`shared/` is split by how much it knows**, and neither half depends on
+   `features/`:
+   - `shared/ui/` — pure presentation: components, pipes and directives that inject
+     no application state;
+   - `shared/units/` — reusable UI over DX metadata (a field, the edit dialog, the
+     actions on a record). It may inject services from `core/`: otherwise every
+     feature would reinvent the same thing.
 
-   Компонент переезжает в `shared/` в тот момент, когда его начинает использовать
-   вторая фича, а не заранее.
-4. Внутри фичи: `pages/` (умные, маршрутизируемые), `components/` (презентационные),
-   `services/`, `models/`. Пустые папки заранее не создаём.
-5. У каждой фичи свой `<name>.routes.ts`, подключаемый **лениво** через `loadChildren`.
-   Проверка: в выводе `ng build` фича должна быть отдельным lazy chunk.
-6. Импорты между слоями — через алиасы `@core/*`, `@features/*`, `@shared/*`, `@env/*`,
-   а не `../../../..`. Внутри одной папки — обычный относительный путь.
-7. Файлы именуются по Angular style guide 2025: `shell.ts`, а не `shell.component.ts`.
-   Префикс селекторов — `mh-`.
+   A component moves into `shared/` when a second feature starts using it, not
+   before.
+4. Inside a feature: `pages/` (smart, routed), `components/` (presentational),
+   `services/`, `models/`. Do not create empty folders up front.
+5. Every feature has its own `<name>.routes.ts`, mounted **lazily** through
+   `loadChildren`. The check: `ng build` must show the feature as a separate lazy
+   chunk.
+6. Imports across layers go through the `@core/*`, `@features/*`, `@shared/*` and
+   `@env/*` aliases, never `../../../..`. Inside one folder a relative path is fine.
+7. Files are named after the Angular 2025 style guide: `shell.ts`, not
+   `shell.component.ts`. The selector prefix is `mh-`.
 
-## 2. UI — минималистичный и функциональный
+## 2. UI — minimal and functional
 
-1. **Сначала возможности Angular Material.** Нужное поведение сначала ищем в компонентах
-   и их параметрах (`MatTable` с `matSort`/`matPaginator`, `MatSidenav`, `MatFormField`,
-   `appearance`, `density`), и только потом пишем своё.
-   Примеры и API: https://material.angular.dev/
-2. **Кастомный CSS — крайняя мера.** Оправдан там, где компонентами не выражается:
-   sticky-шапки, вложенный скролл (`min-height: 0` во flex), overflow, мелкие отступы.
-3. **Только системные токены темы** — `var(--mat-sys-surface)`, `--mat-sys-on-surface`,
-   `--mat-sys-outline-variant`, `font: var(--mat-sys-body-medium)`. Хардкод цветов,
-   размеров шрифта и теней запрещён: тема и тёмный режим должны работать сами.
-   Стили держим в `.scss` рядом с компонентом (view encapsulation), не в глобальном файле.
-4. **Минимализм по существу:**
-   - плотность и воздух вместо рамок и заливок; разделяем пространством, а не линиями;
-   - на экране одно главное действие, остальные — вторичные кнопки или меню;
-   - иконка, цвет и бордер добавляются только когда несут смысл (статус, тип, ошибка),
-     не для украшения;
-   - для плотных данных — таблица, а не карточки; карточки только когда у элемента
-     есть визуальный или разнородный контент;
-   - никакой анимации сверх дефолтной материаловской.
-5. **Функциональность важнее оформления.** Каждый экран обязан обрабатывать три состояния:
-   загрузка, пусто, ошибка. Пустое состояние объясняет, что делать дальше.
-6. **Доступность:** у иконочных кнопок `aria-label`, у полей — `mat-label`, ошибки — через
-   `mat-error`. Диалоги открываются `MatDialog` (он сам делает focus trap), самодельных
-   модалок не пишем.
-7. Плотные экраны и таблицы делаем адаптивными по ширине через горизонтальный скролл
-   внутри контейнера — страница целиком горизонтально скроллиться не должна.
+1. **Angular Material features come first.** Look for the behaviour in the
+   components and their options (`MatTable` with `matSort`/`matPaginator`,
+   `MatSidenav`, `MatFormField`, `appearance`, `density`) before writing your own.
+   Examples and API: https://material.angular.dev/
+2. **Custom CSS is the last resort.** It is justified where the components cannot
+   express the behaviour: sticky headers, nested scrolling (`min-height: 0` in a
+   flex box), overflow, small spacing fixes.
+3. **Theme system tokens only** — `var(--mat-sys-surface)`, `--mat-sys-on-surface`,
+   `--mat-sys-outline-variant`, `font: var(--mat-sys-body-medium)`. Hardcoded
+   colours, font sizes and shadows are not allowed: theming and dark mode have to
+   keep working on their own. Styles live in the `.scss` next to the component (view
+   encapsulation), not in the global file.
+4. **Minimalism that means something:**
+   - density and whitespace instead of borders and fills; separate with space, not
+     with lines;
+   - one primary action per screen, the rest are secondary buttons or a menu;
+   - an icon, a colour or a border is added only when it carries meaning (status,
+     type, error), never for decoration;
+   - dense data goes into a table, not into cards; cards are for records with visual
+     or heterogeneous content;
+   - no animation beyond Material's defaults.
+5. **Function over decoration.** Every screen must handle three states: loading,
+   empty and error. The empty state explains what to do next.
+6. **Accessibility:** icon buttons carry an `aria-label`, fields carry a
+   `mat-label`, errors go through `mat-error`. Dialogs are opened with `MatDialog`
+   (it does the focus trapping); do not hand-roll modals.
+7. Dense screens and tables adapt by scrolling horizontally **inside their own
+   container** — the page itself must never scroll sideways.
+8. The interface language is English. Keep user-facing text, `aria-label`s and
+   route titles in English.
 
-## 3. Код
+## 3. Code
 
-1. Компоненты **standalone**, без NgModule; зависимости перечисляются в `imports`.
-2. `changeDetection: ChangeDetectionStrategy.OnPush` — на всех компонентах.
-3. Приложение **zoneless**. Состояние — сигналы: `signal()`, `computed()`, `linkedSignal()`,
-   `resource()`. Никаких `setTimeout` для "дать Angular перерисоваться" и никаких
-   `ChangeDetectorRef.detectChanges()`.
-4. Вход/выход — функции `input()`, `input.required()`, `model()`, `output()`,
-   а не декораторы `@Input`/`@Output`.
-5. Зависимости — через `inject()`, а не параметры конструктора.
-6. В шаблонах новый control flow: `@if`, `@for` (с `track`), `@switch`, `@let`.
-   `*ngIf`/`*ngFor` не используем.
-7. **`resource.value()` бросает при ошибке.** У `httpResource`/`resource` сигнал
-   `value()` в состоянии ошибки кидает `ResourceValueError`, и `defaultValue` от
-   этого не спасает. Если такой сигнал прочитать из шаблона или из вычисления
-   URL зависимого ресурса, падает весь рендер: пользователь видит вечный
-   спиннер вместо сообщения об ошибке. Наружу из сервиса отдаём только
-   безопасные обёртки:
+1. Components are **standalone**, without NgModule; dependencies are listed in
+   `imports`.
+2. `changeDetection: ChangeDetectionStrategy.OnPush` on every component.
+3. The application is **zoneless**. State lives in signals: `signal()`,
+   `computed()`, `linkedSignal()`, `resource()`. No `setTimeout` to "let Angular
+   repaint" and no `ChangeDetectorRef.detectChanges()`.
+4. Inputs and outputs are the `input()`, `input.required()`, `model()` and
+   `output()` functions, not the `@Input` / `@Output` decorators.
+5. Dependencies come from `inject()`, not from constructor parameters.
+6. Templates use the current control flow: `@if`, `@for` (with `track`), `@switch`,
+   `@let`. `*ngIf` and `*ngFor` are not used.
+7. **`resource.value()` throws in the error state.** For `httpResource` / `resource`
+   the `value()` signal throws a `ResourceValueError` while the resource has failed,
+   and `defaultValue` does not save you. Reading such a signal from a template, or
+   from the URL computation of a dependent resource, takes the whole render down:
+   the user sees an endless spinner instead of the error. Read it only through the
+   shared helper:
 
    ```ts
-   readonly definition = computed(() =>
-     this.definitionResource.hasValue() ? this.definitionResource.value() : null,
-   );
+   readonly definition = resourceValue(this.definitionResource, null);
    ```
 
-   `hasValue()` — единственная проверка, которая сама не бросает.
-8. **Ресурсы с параметрами — фабрика, а не класс.** Если ресурсу нужны сигналы,
-   которыми владеет компонент (входы), DI-сервис их получить не может. Тогда
-   пишем функцию-фабрику в `core/`, вызываем её в инициализаторе поля компонента
-   (это injection context) — HTTP остаётся вне компонента, а тестируется она
-   через `TestBed.runInInjectionContext`. Пример: `core/units/unit-preview.resources.ts`.
-   Для параметров из маршрута остаётся обычный сервис, который сам читает
-   `ActivatedRoute` и предоставляется компонентом страницы.
-9. HTTP только в сервисах; компонент не собирает URL и не знает про эндпоинты.
-   Базовый адрес берётся из `APP_CONFIG`, пути относительные — dev-прокси и прод
-   работают одинаково.
-10. Модели ответов API типизируем в `models/`. `any` не используем; для неизвестной
-   формы — `unknown` с явным сужением.
-11. Подписки руками не держим: `async` pipe, `toSignal()`, `resource()` или
-   `takeUntilDestroyed()`.
-12. Форматирование — Prettier из репозитория. Перед сдачей: `npm run build` и `npm test`
-    должны проходить.
+   `hasValue()`, which the helper uses, is the only check that never throws.
+   See `core/api/resource.ts`.
+8. **Resources with parameters are a factory, not a class.** When a resource needs
+   signals owned by a component (its inputs), a DI-created service cannot receive
+   them. Write a factory function in `core/` and call it from a field initializer of
+   the component (an injection context) — HTTP stays out of the component, and the
+   factory is testable through `TestBed.runInInjectionContext`. Example:
+   `core/units/unit-record.resources.ts`. For parameters that come from the route,
+   keep an ordinary service that reads `ActivatedRoute` and is provided by the page
+   component; `core/api/component-view.resources.ts` does exactly that.
+9. HTTP lives in services; a component never builds a URL and knows no endpoints.
+   The base address comes from `InstancesService.apiBase()`, so every request is
+   scoped to the instance in the URL.
+10. API response models are typed in `models/`. Do not use `any`; for an unknown
+    shape use `unknown` and narrow it explicitly.
+11. Do not hold subscriptions by hand: use the `async` pipe, `toSignal()`,
+    `resource()` or `takeUntilDestroyed()`.
+12. Formatting is the repository's Prettier. Before handing work over, `npm run
+    build` and `npm test` must pass.
 
-## Контракт DX API (проверено на живом сервере)
+## The DX API contract (verified against a live server)
 
-Полезно знать до того, как что-то писать поверх:
+Worth knowing before building anything on top. The application addresses these
+through the instance prefix (`/api/i/{instanceKey}/...`); the shapes below are what
+DX itself returns.
 
-- запись: `GET /api/management/{TypeName}/{id}` → `{Meta, Data:{Items:[запись]}}`,
-  где поля главного элемента лежат прямо в записи, а вложенные — в `DXElements`;
-- сохранение: `PUT` тем же телом → **204**. Надёжнее всего патчить то, что вернул
-  GET: тогда `Meta` и нетронутые элементы гарантированно доезжают обратно;
-- создание: `POST /api/management/{TypeName}` → **201** и `{id}`. `Id` записи
-  генерирует сервер, `Meta.Op` необязателен, коллекции можно передать сразу;
-- строки коллекций: **`Id` генерирует клиент** — строка, отправленная без него,
-  сохраняется с нулевым GUID. Внешние ключи (`DXUnitId`, `{Тип}Id`) сервер
-  проставляет сам, придумывать их не надо;
-- удаление строки коллекции — просто не передать её в `Items`;
-- секреты (`HashedString`, `EncryptedString`) API отдаёт пустыми: отправлять их
-  обратно пустыми нельзя, иначе затрёте хранимое значение;
-- строки `DXColumnDefinitionElement` с именами `Id`, `TimeStamp`, `DXUnitId` —
-  системные, DX ведёт их сам. Их прячут из отображения (так же делает Blazor),
-  но **оставляют в состоянии редактора**: строка, не попавшая в payload,
-  удаляется.
+- a record: `GET .../{TypeName}/{id}` → `{Meta, Data:{Items:[record]}}`, where the
+  main element's fields sit directly on the record and nested ones live under
+  `DXElements`;
+- saving: `PUT` with the same body → **204**. The safest approach is to patch what
+  `GET` returned: `Meta` and the untouched elements then travel back intact;
+- creating: `POST .../{TypeName}` → **201** and `{id}`. The server generates the
+  record's `Id`, `Meta.Op` is optional, and collections may be sent along;
+- collection rows: **the client generates the `Id`** — a row sent without one is
+  stored with an empty GUID. The foreign keys (`DXUnitId`, `{Type}Id`) are filled in
+  by the server; do not invent them;
+- deleting a collection row means leaving it out of `Items`;
+- secrets (`HashedString`, `EncryptedString`) come back empty from the API: never
+  send them back empty, or you will wipe the stored value;
+- `DXColumnDefinitionElement` rows named `Id`, `TimeStamp` or `DXUnitId` are DX's
+  own bookkeeping columns. They are hidden from the view (the Blazor UI did the
+  same) but **kept in the editor's state**: a row missing from the payload is
+  deleted.
 
-### Известные ограничения бэкенда
+### Known backend limitations
 
-`PUT` для `DXElementDefinitionUnit` возвращает 500 — воспроизводится и голым
-curl, если отправить обратно ровно то, что отдал `GET`, так что это не UI.
-Сохранение такого типа запускает миграцию схемы, и DX генерирует некорректный
-SQL (`ALTER COLUMN ... SET NULL` вместо `DROP NOT NULL`); на другой записи тот же
-`PUT` жалуется, что `update method for DXRelationDefinitionUnit isn't implemented
-yet`. Создание (`POST`) при этом работает. Ошибку от сервера показываем как есть
-— см. `core/api/describe-error.ts`.
+`PUT` for `DXElementDefinitionUnit` answers 500 — reproducible with plain curl by
+sending back exactly what `GET` returned, so it is not a UI problem. Saving that
+type triggers a schema migration and DX generates invalid SQL (`ALTER COLUMN ...
+SET NULL` instead of `DROP NOT NULL`); on another record the same `PUT` complains
+that the `update method for DXRelationDefinitionUnit isn't implemented yet`.
+Creating (`POST`) works. Show the server's error as it is — see
+`core/api/describe-error.ts`.
 
-## Команды
+## Commands
 
 ```bash
-npm start        # ng serve на 4200, /api проксируется на https://localhost:7097
-npm run build    # продакшн-сборка
+npm start        # ng serve on 4200, /api proxied to https://localhost:7097
+npm run build    # production build
 npm test         # vitest
 
-pwsh ../../../scripts/run.ps1   # из корня репо: .NET + оба UI сразу, для сравнения
+pwsh ../../../scripts/run.ps1   # from the repository root: the API host + Angular
 ```

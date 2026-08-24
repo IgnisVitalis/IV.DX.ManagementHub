@@ -1,181 +1,185 @@
 # IV.DX.ManagementHub.WebApp
 
-Angular 22 + Angular Material UI для ManagementHub.
-Заменяет (постепенно) Blazor-приложение `IV.DX.ManagementHub.Web`, которое остаётся нетронутым.
+The ManagementHub UI: Angular 22 + Angular Material. It replaced the Blazor app
+(`IV.DX.ManagementHub.Web`), which has been removed — its sources are still in git
+history, and the API host that used to live inside it moved to
+`IV.DX.ManagementHub.ApiService`.
 
-## Стек
+## Stack
 
-|                    |                                                                  |
-| ------------------ | ---------------------------------------------------------------- |
-| Angular            | 22 (standalone, **zoneless**, signals)                           |
-| UI                 | Angular Material 22, тема Material 3 (`azure`/`blue`)            |
-| Стили              | SCSS, системные переменные `--mat-sys-*`                         |
-| Тесты              | Vitest (`ng test`)                                               |
-| Именование файлов  | Angular 2025 style guide (`shell.ts`, а не `shell.component.ts`) |
-| Префикс селекторов | `mh-`                                                            |
+|                 |                                                                    |
+| --------------- | ------------------------------------------------------------------ |
+| Angular         | 22 (standalone, **zoneless**, signals)                             |
+| UI              | Angular Material 22, Material 3 theme (`azure`/`blue`)             |
+| Styles          | SCSS, the `--mat-sys-*` system variables                           |
+| Tests           | Vitest (`ng test`)                                                 |
+| File naming     | Angular 2025 style guide (`shell.ts`, not `shell.component.ts`)    |
+| Selector prefix | `mh-`                                                              |
 
-## Команды
-
-```bash
-npm start        # ng serve, http://localhost:4200, /api проксируется на бэкенд
-npm run build    # продакшн-сборка в dist/management-hub
-npm test         # unit-тесты (vitest)
-```
-
-Чтобы поднять оба UI сразу (старый Blazor + новый Angular) для сравнения:
+## Commands
 
 ```bash
-pwsh scripts/run.ps1                  # из корня репозитория: build .NET -> run .Web -> run Angular
-pwsh scripts/run.ps1 -NoBuild         # без пересборки .NET
-pwsh scripts/run.ps1 -SkipAngular     # только старый Blazor
-pwsh scripts/run.ps1 -SkipWeb         # только Angular (бэкенд уже запущен отдельно)
+npm start        # ng serve on http://localhost:4200, /api proxied to the backend
+npm run build    # production build into dist/management-hub
+npm test         # unit tests (vitest)
 ```
 
-Бюджет initial-бандла в `angular.json` поднят до 700 kB: диалоги Material тянут
-CDK overlay, и часть общей инфраструктуры бандлер поднимает в eager-чанк. Сам код
-диалогов лежит в ленивом чанке фичи, в eager-части его нет.
+To run the API and the UI together, from the repository root:
 
-### Инстансы и адреса API
+```bash
+pwsh scripts/run.ps1                  # build .NET -> run the API host -> run Angular
+pwsh scripts/run.ps1 -NoBuild         # skip the .NET build
+pwsh scripts/run.ps1 -SkipAngular     # API only
+pwsh scripts/run.ps1 -SkipWeb         # Angular only (the API is already running)
+```
 
-Хаб работает с несколькими инстансами DX. Ключ инстанса — часть URL, а не
-заголовок: HTTP-кеши ключуются по адресу, поэтому заголовок позволил бы отдать
-ответ одного инстанса вместо другого, если где-то в цепочке не выставлен `Vary`.
+The initial-bundle budget in `angular.json` is raised to 700 kB: Material dialogs
+pull in the CDK overlay, and the bundler hoists part of that shared infrastructure
+into the eager chunk. The dialog code itself stays in the feature's lazy chunk.
 
-| Что | Куда идёт |
-|---|---|
-| данные выбранного инстанса | `/api/i/{instanceKey}/...` |
-| список инстансов (данные самого хаба) | `/api/management/MHInstanceUnit` |
+### Instances and API addresses
 
-Экраны, описанные метаданными самого хаба (карточки Instances), открываются в
-инстансе хаба — `hubInstanceKey` в `environment`. У удалённого инстанса этих
-метаданных просто нет, он ответит 404.
+The hub works against several DX instances. The instance key is part of the URL
+rather than a header: HTTP caches key on the address, so a header would let one
+instance's response be served for another wherever `Vary` is not set.
 
-`npm start` использует [proxy.conf.mjs](proxy.conf.mjs): все запросы `/api/**`
-уходят на `https://localhost:7097` (профиль `https` проекта `IV.DX.ManagementHub.Web`,
-он же хостит Web API). `secure: false` — потому что dev-сертификат ASP.NET
-не лежит в OpenSSL-хранилище на Linux.
+| What                                     | Where it goes                    |
+| ---------------------------------------- | -------------------------------- |
+| data of the selected instance            | `/api/i/{instanceKey}/...`       |
+| the instance list (the hub's own data)   | `/api/management/MHInstanceUnit` |
 
-Пользовательский логин ещё не перенесён, поэтому тот же прокси получает служебный
-токен через `/api/service-auth/token` и подставляет его в заголовок `Authorization`.
-Ключ живёт в конфиге dev-сервера и **не попадает в браузер**; в продакшн-сборке
-этого файла нет вовсе, так что удалять из клиента будет нечего.
+Screens described by the hub's own metadata (the Instances cards) open in the hub's
+instance — `hubInstanceKey` in `environment`. A remote instance simply does not
+have that metadata and answers 404.
 
-## Структура (feature-based)
+`npm start` uses [proxy.conf.mjs](proxy.conf.mjs): every `/api/**` request goes to
+`https://localhost:7097`, the `https` profile of `IV.DX.ManagementHub.ApiService`,
+which hosts the Web API. `secure: false` is there because the ASP.NET dev
+certificate is not in the OpenSSL trust store on Linux.
+
+The user login is not ported yet, so the same proxy fetches a service token from
+`/api/service-auth/token` and puts it into the `Authorization` header. The key
+lives in the dev-server config and **never reaches the browser**; the file does not
+exist in a production build, so there will be nothing to strip from the client.
+
+## Structure (feature-based)
 
 ```
 src/
 ├── environments/            # environment.ts + environment.development.ts (fileReplacements)
 └── app/
-    ├── app.ts               # корневой компонент: только <router-outlet />
-    ├── app.config.ts        # провайдеры приложения (router, http, zoneless)
-    ├── app.routes.ts        # корневые маршруты, монтируют фичи внутрь Shell
+    ├── app.ts               # root component: just <router-outlet />
+    ├── app.config.ts        # application providers (router, http, zoneless)
+    ├── app.routes.ts        # root routes, mounting features inside the Shell
     │
-    ├── core/                # singleton-инфраструктура, импортируется один раз
-    │   ├── api/             # контракты ответов DX, ошибки, помощники ресурсов
-    │   │   ├── models/      #   PascalCase — как на проводе
+    ├── core/                # singleton infrastructure, imported once
+    │   ├── api/             # DX response contracts, errors, resource helpers
+    │   │   ├── models/      #   PascalCase — as it comes off the wire
     │   │   ├── describe-error.ts
-    │   │   ├── resource.ts  #   безопасное чтение ресурса и текст ошибки
-    │   │   └── component-view.resources.ts  # цепочка «определение → данные»
-    │   ├── config/          # AppConfig + APP_CONFIG (значения из environment)
-    │   ├── instances/       # список инстансов, текущий ключ из маршрута, guard
-    │   ├── layout/          # оболочка приложения
-    │   │   ├── instance-switcher/ # выбор инстанса в тулбаре
+    │   │   ├── resource.ts  #   safe resource reads and error text
+    │   │   └── component-view.resources.ts  # the "definition -> data" chain
+    │   ├── config/          # AppConfig + APP_CONFIG (values from environment)
+    │   ├── instances/       # instance list, current key from the route, guards
+    │   ├── layout/          # the application shell
+    │   │   ├── instance-switcher/ # instance picker in the toolbar
     │   │   ├── shell/       #   toolbar + sidenav + <router-outlet />
-    │   │   └── nav-menu/    #   боковое меню
-    │   ├── navigation/      # загрузка навигации из метаданных, дерево, ссылки
-    │   └── units/           # структура DX-типа, запись, форматирование значений
+    │   │   └── nav-menu/    #   side navigation
+    │   ├── navigation/      # navigation from metadata: loading, tree, links
+    │   └── units/           # DX type structure, record, value formatting
     │
-    ├── features/            # по одной папке на функциональную область
-    │   ├── card-view/       # записи в виде карточек (/cards/:componentId)
+    ├── features/            # one folder per functional area
+    │   ├── card-view/       # records as cards (/cards/:componentId)
     │   ├── dashboard/
-    │   └── dataset-view/    # таблица по метаданным (/view/:componentId)
+    │   └── dataset-view/    # metadata-driven table (/view/:componentId)
     │       ├── dataset-view.routes.ts
-    │       ├── dataset-view.mapper.ts       # DX-ответы -> модели таблицы
-    │       ├── sort-rows.ts                 # сортировка по сырым значениям
+    │       ├── dataset-view.mapper.ts       # DX responses -> table models
+    │       ├── sort-rows.ts                 # sorting on the raw values
     │       ├── models/
-    │       ├── services/                    # загрузка определения и строк
-    │       ├── components/dataset-table/    # MatTable + колонка действий
-    │       ├── components/unit-preview/     # превью выбранной строки + действия
-    │       └── pages/dataset-view-page/     # страница = "умный" компонент
+    │       ├── services/                    # loads the definition and the rows
+    │       ├── components/dataset-table/    # MatTable + the actions column
+    │       ├── components/unit-preview/     # preview of the selected row + actions
+    │       └── pages/dataset-view-page/     # a page is the "smart" component
     │
-    └── shared/              # переиспользуемое, без состояния приложения
-        ├── ui/              # чистая презентация
-        │   ├── confirm-dialog/ # подтверждение необратимых действий
-        │   ├── notice/         # сообщение вместо содержимого (ошибка, пусто)
+    └── shared/              # reusable, free of application state
+        ├── ui/              # pure presentation
+        │   ├── confirm-dialog/ # confirmation of irreversible actions
+        │   ├── notice/         # a message in place of content (error, empty)
         │   ├── page-header/
-        │   ├── picklist-field/ # выбор объекта из длинного списка с поиском
-        │   └── split-handle/   # перетаскиваемый разделитель панелей
-        └── units/           # UI над метаданными DX, общий для фич
-            ├── unit-actions/     # правка/экспорт/удаление одной записи
-            ├── unit-edit-dialog/ # редактирование элемента и коллекций
-            └── unit-field/       # один контрол по типу колонки
+        │   ├── picklist-field/ # picking an object out of a long searchable list
+        │   └── split-handle/   # draggable divider between panes
+        └── units/           # UI over DX metadata, shared by features
+            ├── unit-actions/     # edit / export / delete one record
+            ├── unit-edit-dialog/ # editing the main element and collections
+            └── unit-field/       # one control per column type
 ```
 
-### Правила
+### Rules
 
-1. **`core/`** — то, что существует в единственном экземпляре: конфиг, аутентификация,
-   HTTP-перехватчики, оболочка и навигация. Фичи зависят от `core/`, но не наоборот.
-2. **`features/<name>/`** — самодостаточный кусок функциональности со своим
-   `<name>.routes.ts`. Фичи **не импортируют друг друга**; общее уезжает в `shared/`.
-   Внутри фичи принят порядок: `pages/` (умные, маршрутизируемые),
-   `components/` (презентационные), `services/`, `models/`.
-3. **`shared/`** — презентационные компоненты, пайпы, директивы. Без инжекта
-   состояния приложения, без зависимости от `features/`.
-4. Каждая фича подключается **лениво** через `loadChildren` — это видно в сборке
-   отдельными чанками.
-5. Компоненты: `standalone` (по умолчанию), `ChangeDetectionStrategy.OnPush`,
-   `input()`/`signal()` вместо декораторов и мутабельных полей.
+1. **`core/`** — whatever exists in a single copy: configuration, authentication,
+   HTTP interceptors, the shell and the navigation. Features depend on `core/`,
+   never the other way round.
+2. **`features/<name>/`** — a self-contained piece of functionality with its own
+   `<name>.routes.ts`. Features **do not import each other**; anything common moves
+   to `shared/`. Inside a feature: `pages/` (smart, routed), `components/`
+   (presentational), `services/`, `models/`.
+3. **`shared/`** — reusable code that knows nothing about features. `shared/ui/` is
+   pure presentation; `shared/units/` is UI over DX metadata and may inject `core/`
+   services.
+4. Every feature is loaded **lazily** through `loadChildren` — visible in the build
+   as separate chunks.
+5. Components are `standalone` (the default), use
+   `ChangeDetectionStrategy.OnPush`, and `input()` / `signal()` instead of
+   decorators and mutable fields.
 
-### Алиасы путей
+### Path aliases
 
-Настроены в [tsconfig.json](tsconfig.json), чтобы не плодить `../../../..`:
+Configured in [tsconfig.json](tsconfig.json) so `../../../..` never appears:
 
-| Алиас         | Путь                 |
+| Alias         | Path                 |
 | ------------- | -------------------- |
 | `@core/*`     | `src/app/core/*`     |
 | `@features/*` | `src/app/features/*` |
 | `@shared/*`   | `src/app/shared/*`   |
 | `@env/*`      | `src/environments/*` |
 
-## Что дальше
+## Status
 
-Перенесено:
+Ported:
 
-- построение навигации из метаданных Web API (`core/navigation/`);
-- dataset view: таблица по метаданным — колонки из `QueryDefinition`,
-  строки из запроса, сортировка (`features/dataset-view/`). Клик по строке
-  открывает превью этого элемента, чекбоксы набирают несколько — это два
-  независимых механизма: клик по строке не трогает набор, а чекбокс не
-  открывает превью. При нескольких выбранных вместо превью показывается
-  панель с массовыми действиями и списком выбранного;
-- превью элемента по клику на строку: структура типа из
-  `unit-structure/{TypeName}` + запись, разложенные по секциям (главный элемент,
-  обязательные, необязательные). Значения форматируются по типу колонки:
-  enum и связи показываются подписью, секреты маскируются (`core/units/`).
-  Коллекции внутри элемента рисуются таблицей, ширина панели меняется
-  перетаскиванием разделителя;
-- действия: создание (POST, кнопка в тулбаре), редактирование главного элемента
-  и коллекций (диалог, сохранение через PUT), удаление с подтверждением,
-  экспорт в `.dx`. Доступны в строке таблицы, в шапке превью и над списком
-  выбранного — одним компонентом `unit-actions`. Правка требует ровно одного
-  элемента, удаление и экспорт работают с любым количеством (экспорт
-  нескольких идёт через `by-ids`). Строки коллекций добавляются, правятся во
-  вложенной форме и удаляются. Кнопки показываются по флагам `isCreatable`/`isEditable`/`isDeletable`/
-  `isExportable` из определения представления.
+- navigation built from Web API metadata (`core/navigation/`);
+- dataset view: a metadata-driven table — columns from `QueryDefinition`, rows from
+  the query, sorting (`features/dataset-view/`). Clicking a row opens the preview of
+  that record; the checkboxes build a selection. The two are independent: a row
+  click never touches the selection, and a checkbox never opens the preview. With
+  several records selected, the preview is replaced by a panel with bulk actions and
+  the list of what is selected;
+- record preview: the type structure from `unit-structure/{TypeName}` plus the
+  record, laid out in sections (main element, required, optional). Values are
+  formatted by column type: enums and relations show their label, secrets are masked
+  (`core/units/`). Collections inside an element are rendered as a table, and the
+  panel width is set by dragging the divider;
+- actions: create (POST, a toolbar button), edit of the main element and of the
+  collections (a dialog, saved with PUT), delete with confirmation, export to `.dx`.
+  They are available in a table row, in the preview header and above the selection —
+  all through one `unit-actions` component. Editing needs exactly one record; delete
+  and export work with any number (exporting several goes through `by-ids`).
+  Collection rows are added, edited in a nested form and removed. Buttons appear
+  according to the `isCreatable` / `isEditable` / `isDeletable` / `isExportable`
+  flags of the view definition;
+- card view: records of one type as cards, with actions and creation. The
+  "Instances" menu entry links to it statically — no navigation metadata points at
+  that screen, in Angular or in Blazor;
+- **working with several DX instances**: the instance key lives in the route
+  (`/app/:instanceKey/...`), requests go to `/api/i/{key}/...`, and the toolbar has a
+  switcher. Switching is a navigation, so data refetches on its own and one
+  instance's cache cannot leak into another.
 
-- карточное представление: записи одного типа карточками, с действиями и
-  созданием. Пункт меню «Instances» ведёт на него статически — метаданных
-  навигации для этого экрана нет ни в Angular, ни в Blazor;
-- **работа с несколькими инстансами DX**: ключ инстанса лежит в маршруте
-  (`/app/:instanceKey/...`), запросы идут на `/api/i/{key}/...`, в тулбаре
-  переключатель. Переключение — это навигация, поэтому данные перезапрашиваются
-  сами и кэш одного инстанса не может протечь в другой.
+Still to port from the Blazor version:
 
-Осталось перенести из Blazor-версии:
-
-- редактирование одиночных вложенных элементов (single elements) — сейчас
-  редактируются главный элемент и коллекции;
-- клик по карточке (`DXPClickAction`): в Blazor он переключает активный
-  инстанс, а переключения инстансов в Angular-версии пока нет вовсе;
-- скачивание Blob-колонок (сейчас показывается «файл»);
-- аутентификация пользователя — сейчас токен подставляет dev-прокси.
+- editing single nested elements — the main element and the collections are covered,
+  single elements are not;
+- the card click action (`DXPClickAction`): in Blazor it switched the active
+  instance through a DX action, which cannot work over HTTP because its effect is
+  browser navigation;
+- downloading Blob columns (a placeholder `file` is shown instead);
+- user authentication — the dev proxy supplies the token for now.
