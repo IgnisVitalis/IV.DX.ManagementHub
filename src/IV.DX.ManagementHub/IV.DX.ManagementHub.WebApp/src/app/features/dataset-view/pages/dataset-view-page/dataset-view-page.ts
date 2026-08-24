@@ -7,7 +7,8 @@ import { firstValueFrom } from 'rxjs';
 
 import { DatasetTable } from '../../components/dataset-table/dataset-table';
 import type { DatasetRow } from '../../models/dataset-table';
-import { describeError } from '@core/api/describe-error';
+import { errorMessage } from '@core/api/resource';
+import { Notice } from '@shared/ui/notice/notice';
 import { SplitHandle } from '@shared/ui/split-handle/split-handle';
 import { UnitActions } from '@shared/units/unit-actions/unit-actions';
 import {
@@ -27,6 +28,7 @@ import { DatasetViewService } from '../../services/dataset-view.service';
 @Component({
   selector: 'mh-dataset-view-page',
   imports: [
+    Notice,
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
@@ -46,10 +48,7 @@ export class DatasetViewPage {
 
   protected readonly isLoading = this.view.isLoading;
   protected readonly isUnresolved = this.view.isUnresolved;
-  protected readonly error = computed(() => {
-    const error = this.view.error();
-    return error === undefined ? null : describeError(error);
-  });
+  protected readonly error = errorMessage(this.view.error);
   protected readonly table = this.view.table;
   protected readonly definition = this.view.definition;
 

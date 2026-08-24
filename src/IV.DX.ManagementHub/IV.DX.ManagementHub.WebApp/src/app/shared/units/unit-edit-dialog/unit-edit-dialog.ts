@@ -25,6 +25,7 @@ import {
   type CollectionRow,
 } from '@core/units/collection-edit';
 import { describeError } from '@core/api/describe-error';
+import { errorMessage } from '@core/api/resource';
 import { toEditorFields, type EditorField } from '@core/units/editor-field';
 import type { UnitElement } from '@core/units/models/unit-structure';
 import { UnitCommands } from '@core/units/unit-commands.service';
@@ -79,10 +80,7 @@ export class UnitEditDialog {
   private readonly resources = unitRecordResources(this.typeName, this.id);
 
   protected readonly isLoading = this.resources.isLoading;
-  protected readonly loadError = computed(() => {
-    const error = this.resources.error();
-    return error === undefined ? null : describeError(error);
-  });
+  protected readonly loadError = errorMessage(this.resources.error);
 
   protected readonly fields = computed(() => toEditorFields(this.resources.structure()));
   protected readonly elements = computed(() => collectionElements(this.resources.structure()));

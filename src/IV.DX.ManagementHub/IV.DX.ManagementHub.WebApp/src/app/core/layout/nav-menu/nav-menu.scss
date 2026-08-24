@@ -17,12 +17,6 @@ mat-nav-list button.mat-mdc-list-item {
   text-align: start;
 }
 
-.nav-menu__notice {
+.nav-menu__message {
   padding: 1rem;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-small);
-
-  p {
-    margin: 0 0 0.75rem;
-  }
 }

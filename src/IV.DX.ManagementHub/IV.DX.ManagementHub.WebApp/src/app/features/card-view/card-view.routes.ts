@@ -4,7 +4,7 @@ import type { Routes } from '@angular/router';
 export const CARD_VIEW_ROUTES: Routes = [
   {
     path: ':componentId',
-    title: 'Карточки',
+    title: 'Cards',
     loadComponent: () =>
       import('./pages/card-view-page/card-view-page').then((m) => m.CardViewPage),
   },

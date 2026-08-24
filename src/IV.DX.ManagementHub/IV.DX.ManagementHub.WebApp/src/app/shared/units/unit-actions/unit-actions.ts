@@ -65,16 +65,16 @@ export class UnitActions {
    */
   protected readonly actions = computed(() =>
     [
-      { icon: 'edit', label: 'Изменить', visible: this.canEditOne(), run: () => this.edit() },
+      { icon: 'edit', label: 'Edit', visible: this.canEditOne(), run: () => this.edit() },
       {
         icon: 'download',
-        label: 'Экспорт',
+        label: 'Export',
         visible: this.canExport() && this.hasSelection(),
         run: () => this.exportUnit(),
       },
       {
         icon: 'delete',
-        label: 'Удалить',
+        label: 'Delete',
         visible: this.canDelete() && this.hasSelection(),
         run: () => this.remove(),
       },
@@ -97,12 +97,12 @@ export class UnitActions {
     const count = ids.length;
 
     const confirmed = await this.openDialog<unknown, boolean>(ConfirmDialog, {
-      title: count === 1 ? 'Удалить элемент?' : `Удалить элементы (${count})?`,
+      title: count === 1 ? 'Delete record?' : `Delete records (${count})?`,
       message:
         count === 1
-          ? `Элемент ${this.typeName()} будет удалён безвозвратно.`
-          : `Записей ${this.typeName()}: ${count}. Они будут удалены безвозвратно.`,
-      confirmLabel: 'Удалить',
+          ? `This ${this.typeName()} record will be deleted permanently.`
+          : `${count} ${this.typeName()} records will be deleted permanently.`,
+      confirmLabel: 'Delete',
     });
 
     if (confirmed !== true) {

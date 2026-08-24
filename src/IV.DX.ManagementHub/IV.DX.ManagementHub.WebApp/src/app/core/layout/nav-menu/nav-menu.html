@@ -19,14 +19,13 @@
 }
 
 @if (error()) {
-  <div class="nav-menu__notice">
-    <p>Не удалось загрузить навигацию.</p>
-    <button matButton (click)="reload()">Повторить</button>
-  </div>
+  <mh-notice class="nav-menu__message" retryable (retry)="reload()">
+    Could not load the navigation.
+  </mh-notice>
 } @else if (isEmpty()) {
-  <div class="nav-menu__notice">
-    <p>Навигация пуста — метаданные не содержат элементов для этого запроса.</p>
-  </div>
+  <mh-notice class="nav-menu__message">
+    The navigation is empty — the metadata holds no items for this query.
+  </mh-notice>
 } @else {
   <mat-nav-list>
     @for (row of rows(); track row.id) {

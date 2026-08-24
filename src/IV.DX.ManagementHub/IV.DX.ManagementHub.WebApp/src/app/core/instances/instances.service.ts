@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, type ActivatedRouteSnapshot } from '@angular/router';
 import { filter } from 'rxjs';
 
+import { resourceValue } from '@core/api/resource';
 import { APP_CONFIG } from '@core/config/app-config';
 import { toInstances } from './instances.mapper';
 import type { Instance } from './models/instance';
@@ -48,9 +49,7 @@ export class InstancesService {
     { parse: toInstances, defaultValue: [] },
   );
 
-  readonly instances = computed<readonly Instance[]>(() =>
-    this.resource.hasValue() ? this.resource.value() : [],
-  );
+  readonly instances = resourceValue<readonly Instance[]>(this.resource, []);
 
   readonly isLoading = this.resource.isLoading;
   readonly error = this.resource.error;

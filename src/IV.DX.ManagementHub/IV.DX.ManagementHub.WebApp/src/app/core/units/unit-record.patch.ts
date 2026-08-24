@@ -104,7 +104,7 @@ export function applyEdits(
   const item = payload?.Data?.Items?.[0];
 
   if (item === undefined) {
-    throw new Error('Запись не содержит данных для сохранения.');
+    throw new Error('The record carries no data to save.');
   }
 
   for (const column of columns) {

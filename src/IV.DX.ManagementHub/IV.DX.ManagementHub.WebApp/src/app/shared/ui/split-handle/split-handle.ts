@@ -20,7 +20,7 @@ const KEYBOARD_STEP = 16;
   host: {
     role: 'separator',
     'aria-orientation': 'vertical',
-    'aria-label': 'Изменить ширину панели',
+    'aria-label': 'Resize the panel',
     tabindex: '0',
     '[class.split-handle--active]': 'isDragging()',
     '(pointerdown)': 'onPointerDown($event)',

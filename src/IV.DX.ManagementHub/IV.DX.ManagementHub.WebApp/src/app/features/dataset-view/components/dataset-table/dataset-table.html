@@ -6,7 +6,7 @@
           [checked]="allSelected()"
           [indeterminate]="someSelected()"
           (change)="toggleAll()"
-          aria-label="Выбрать все строки"
+          aria-label="Select all rows"
         />
       </th>
       <td mat-cell *matCellDef="let row" class="dataset-table__select-cell">
@@ -16,7 +16,7 @@
           (click)="$event.stopPropagation()"
           [checked]="isSelected(row)"
           (change)="toggle(row)"
-          aria-label="Выбрать строку"
+          aria-label="Select row"
         />
       </td>
     </ng-container>

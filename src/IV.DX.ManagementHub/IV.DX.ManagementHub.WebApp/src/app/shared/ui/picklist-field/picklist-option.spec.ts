@@ -24,6 +24,6 @@ describe('filterOptions', () => {
   });
 
   it('yields nothing when there is no match', () => {
-    expect(filterOptions(options, 'нет такого')).toEqual([]);
+    expect(filterOptions(options, 'no such option')).toEqual([]);
   });
 });

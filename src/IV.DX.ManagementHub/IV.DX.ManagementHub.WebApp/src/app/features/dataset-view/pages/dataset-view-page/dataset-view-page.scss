@@ -33,24 +33,6 @@ mh-unit-preview {
   min-height: 0;
 }
 
-.dataset-view__notice {
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-medium);
-
-  p {
-    margin: 0 0 0.75rem;
-  }
-}
-
-.dataset-view__detail {
-  font: var(--mat-sys-body-small);
-}
-
-.dataset-view__action-error {
-  margin: 0;
-  color: var(--mat-sys-error);
-}
-
 // Bulk panel: the same slot the single-record preview occupies.
 .dataset-view__selection {
   display: flex;

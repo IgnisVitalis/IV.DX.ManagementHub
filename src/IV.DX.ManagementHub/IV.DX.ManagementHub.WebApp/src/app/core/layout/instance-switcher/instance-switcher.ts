@@ -58,12 +58,12 @@ export class InstanceSwitcher {
   );
 
   protected readonly currentTitle = computed(
-    () => this.instances.current()?.title ?? this.instances.currentKey() ?? 'Инстанс',
+    () => this.instances.current()?.title ?? this.instances.currentKey() ?? 'Instance',
   );
 
   protected async choose(): Promise<void> {
     const data: PicklistDialogData = {
-      title: 'Инстанс',
+      title: 'Instance',
       options: this.options(),
       value: this.instances.currentKey() ?? null,
       allowNull: false,

@@ -97,7 +97,7 @@ export function rowLabel(element: UnitElement, row: CollectionRow): string {
     .slice(0, 3)
     .join(' · ');
 
-  return label === '' ? 'Без названия' : label;
+  return label === '' ? 'Untitled' : label;
 }
 
 /** Turns edited rows into wire rows, keeping fields the editor never showed. */
@@ -158,7 +158,7 @@ export function applyCollectionEdits(
   const item = cloned?.Data?.Items?.[0];
 
   if (item === undefined) {
-    throw new Error('Запись не содержит данных для сохранения.');
+    throw new Error('The record carries no data to save.');
   }
 
   const existingElements = (item.DXElements ?? {}) as Record<

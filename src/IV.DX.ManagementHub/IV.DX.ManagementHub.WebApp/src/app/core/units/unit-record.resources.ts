@@ -1,6 +1,7 @@
 import { computed, inject, type Signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 
+import { resourceValue } from '@core/api/resource';
 import { InstancesService } from '@core/instances/instances.service';
 import type { UnitStructure } from './models/unit-structure';
 import { toUnitStructure } from './unit-structure.mapper';
@@ -22,9 +23,7 @@ export interface UnitRecordResources {
  * calling component, and a DI-created service cannot receive those. Call it from
  * an injection context (a component field initializer). HTTP still stays out of
  * the component itself.
- *
- * Every `resource.value()` read is gated by `hasValue()`, which returns false in
- * the error state — reading it unguarded throws and takes the template down.
+
  */
 export function unitRecordResources(
   typeName: Signal<string | undefined>,
@@ -58,8 +57,8 @@ export function unitRecordResources(
   );
 
   return {
-    structure: computed(() => (structureResource.hasValue() ? structureResource.value() : null)),
-    record: computed(() => (recordResource.hasValue() ? recordResource.value() : null)),
+    structure: resourceValue(structureResource, null),
+    record: resourceValue(recordResource, null),
     isLoading: computed(() => structureResource.isLoading() || recordResource.isLoading()),
     error: computed(() => structureResource.error() ?? recordResource.error()),
     reload: () => {

@@ -103,7 +103,7 @@ describe('toUnitPreview', () => {
     const grants = preview.groups[1];
 
     expect(grants.columns).toEqual(['Read', 'Effect', 'DXUnit']);
-    expect(grants.rows).toEqual([{ Read: 'Да', Effect: 'Allow', DXUnit: 'MHInstanceUnit' }]);
+    expect(grants.rows).toEqual([{ Read: 'Yes', Effect: 'Allow', DXUnit: 'MHInstanceUnit' }]);
     expect(grants.isEmpty).toBe(false);
   });
 

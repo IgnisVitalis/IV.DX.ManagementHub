@@ -36,6 +36,6 @@ describe('describeError', () => {
 
   it('handles plain errors and anything else', () => {
     expect(describeError(new Error('boom'))).toBe('boom');
-    expect(describeError('строка')).toBe('строка');
+    expect(describeError('plain text')).toBe('plain text');
   });
 });

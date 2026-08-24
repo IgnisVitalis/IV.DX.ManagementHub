@@ -15,7 +15,7 @@ export class UnitCommands {
     const base = this.instances.apiBase();
 
     if (base === undefined) {
-      throw new Error('Не выбран инстанс DX.');
+      throw new Error('No DX instance is selected.');
     }
 
     return base;

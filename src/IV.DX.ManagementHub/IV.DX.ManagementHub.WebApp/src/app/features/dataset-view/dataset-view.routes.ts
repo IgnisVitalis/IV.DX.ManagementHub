@@ -9,7 +9,7 @@ import type { Routes } from '@angular/router';
 export const DATASET_VIEW_ROUTES: Routes = [
   {
     path: ':componentId',
-    title: 'Набор данных',
+    title: 'Dataset',
     loadComponent: () =>
       import('./pages/dataset-view-page/dataset-view-page').then((m) => m.DatasetViewPage),
   },

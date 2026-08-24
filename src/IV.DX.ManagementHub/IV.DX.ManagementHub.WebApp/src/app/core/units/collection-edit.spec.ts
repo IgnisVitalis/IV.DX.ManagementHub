@@ -104,13 +104,11 @@ describe('newCollectionRow', () => {
 
 describe('rowLabel', () => {
   it('summarises a row through the column formatters', () => {
-    expect(rowLabel(grants, { id: 'g', values: { Read: true, Effect: 1 } })).toBe('Да · Allow');
+    expect(rowLabel(grants, { id: 'g', values: { Read: true, Effect: 1 } })).toBe('Yes · Allow');
   });
 
   it('falls back when every value is empty', () => {
-    expect(rowLabel(grants, { id: 'g', values: { Read: null, Effect: null } })).toBe(
-      'Без названия',
-    );
+    expect(rowLabel(grants, { id: 'g', values: { Read: null, Effect: null } })).toBe('Untitled');
   });
 });
 

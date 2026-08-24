@@ -5,15 +5,17 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 
-import { describeError } from '@core/api/describe-error';
+import { errorMessage } from '@core/api/resource';
 import { toUnitPreview } from '@core/units/unit-preview.mapper';
 import { unitRecordResources } from '@core/units/unit-record.resources';
+import { Notice } from '@shared/ui/notice/notice';
 import { UnitActions } from '@shared/units/unit-actions/unit-actions';
 
 /** Details of the row selected in the table, built from DX metadata. */
 @Component({
   selector: 'mh-unit-preview',
   imports: [
+    Notice,
     MatButtonModule,
     MatExpansionModule,
     MatIconModule,
@@ -47,10 +49,7 @@ export class UnitPreview {
 
   protected readonly isLoading = this.resources.isLoading;
 
-  protected readonly error = computed(() => {
-    const error = this.resources.error();
-    return error === undefined ? null : describeError(error);
-  });
+  protected readonly error = errorMessage(this.resources.error);
 
   protected readonly actionError = signal<string | null>(null);
 

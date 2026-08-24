@@ -17,8 +17,8 @@ function column(type: number, extra: Partial<UnitColumn> = {}): UnitColumn {
 
 describe('formatValue', () => {
   it('renders booleans as words, including false', () => {
-    expect(formatValue(column(DXColumnType.Bool), true)).toBe('Да');
-    expect(formatValue(column(DXColumnType.Bool), false)).toBe('Нет');
+    expect(formatValue(column(DXColumnType.Bool), true)).toBe('Yes');
+    expect(formatValue(column(DXColumnType.Bool), false)).toBe('No');
     expect(formatValue(column(DXColumnType.Bool), null)).toBe(EMPTY_VALUE);
   });
 

@@ -24,10 +24,6 @@
   flex-shrink: 0;
 }
 
-.unit-preview__error {
-  color: var(--mat-sys-error);
-}
-
 .unit-preview__groups {
   overflow: auto;
   min-height: 0;
@@ -61,17 +57,7 @@
   }
 }
 
-.unit-preview__notice {
+// Notices sit inside the padded panel body.
+.unit-preview__message {
   padding: 0 1rem;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-medium);
-
-  p {
-    margin: 0 0 0.75rem;
-  }
-}
-
-.unit-preview__detail {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
 }

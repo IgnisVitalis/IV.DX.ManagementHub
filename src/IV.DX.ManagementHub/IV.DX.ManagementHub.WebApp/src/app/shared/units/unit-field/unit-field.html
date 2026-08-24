@@ -52,7 +52,7 @@
         [value]="value()"
         (input)="setFromInput($event)"
       />
-      <mat-hint>Пустое поле оставит текущее значение без изменений</mat-hint>
+      <mat-hint>Leave empty to keep the current value</mat-hint>
     </mat-form-field>
   }
 
@@ -71,5 +71,5 @@
 }
 
 @if (invalid()) {
-  <p class="unit-field__required">Обязательное поле</p>
+  <p class="unit-field__required">Required field</p>
 }

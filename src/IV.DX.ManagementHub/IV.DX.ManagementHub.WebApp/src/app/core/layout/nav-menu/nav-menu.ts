@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { APP_CONFIG } from '@core/config/app-config';
 import { InstancesService } from '@core/instances/instances.service';
+import { Notice } from '@shared/ui/notice/notice';
 import { NavigationService } from '@core/navigation/navigation.service';
 import { flattenNavTree } from '@core/navigation/nav-tree';
 import { navLinkOf } from '@core/navigation/nav-link';
@@ -17,6 +18,7 @@ import type { NavItem } from '@core/navigation/models/nav-item';
 @Component({
   selector: 'mh-nav-menu',
   imports: [
+    Notice,
     RouterLink,
     RouterLinkActive,
     MatButtonModule,

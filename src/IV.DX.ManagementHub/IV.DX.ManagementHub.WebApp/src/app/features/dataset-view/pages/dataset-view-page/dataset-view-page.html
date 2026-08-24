@@ -1,6 +1,6 @@
 <div class="dataset-view__toolbar">
   @if (canCreate()) {
-    <button matIconButton type="button" aria-label="Создать" (click)="create()">
+    <button matIconButton type="button" aria-label="Create" (click)="create()">
       <mat-icon>add</mat-icon>
     </button>
   }
@@ -8,7 +8,7 @@
   <button
     matIconButton
     type="button"
-    aria-label="Обновить"
+    aria-label="Refresh"
     [disabled]="isLoading()"
     (click)="reload()"
   >
@@ -21,23 +21,15 @@
 }
 
 @if (actionError(); as error) {
-  <p class="dataset-view__detail dataset-view__action-error">{{ error }}</p>
+  <mh-notice tone="error">{{ error }}</mh-notice>
 }
 
 @if (error(); as error) {
-  <div class="dataset-view__notice">
-    <p>Не удалось загрузить набор данных.</p>
-    <p class="dataset-view__detail">{{ error }}</p>
-    <button matButton (click)="reload()">Повторить</button>
-  </div>
+  <mh-notice [detail]="error" retryable (retry)="reload()"> Could not load the dataset. </mh-notice>
 } @else if (isUnresolved()) {
-  <div class="dataset-view__notice">
-    <p>Определение представления не найдено или не содержит запроса.</p>
-  </div>
+  <mh-notice>The view definition was not found, or it names no query.</mh-notice>
 } @else if (isEmpty()) {
-  <div class="dataset-view__notice">
-    <p>Нет данных.</p>
-  </div>
+  <mh-notice>No data.</mh-notice>
 } @else {
   <div class="dataset-view__split" [style.--preview-width.px]="previewWidth()">
     <mh-dataset-table
@@ -69,7 +61,7 @@
       } @else {
         <section class="dataset-view__selection">
           <header class="dataset-view__selection-header">
-            <span class="dataset-view__selection-count">Выбрано: {{ selectedIds().length }}</span>
+            <span class="dataset-view__selection-count">Selected: {{ selectedIds().length }}</span>
 
             <mh-unit-actions
               [typeName]="typeName()"

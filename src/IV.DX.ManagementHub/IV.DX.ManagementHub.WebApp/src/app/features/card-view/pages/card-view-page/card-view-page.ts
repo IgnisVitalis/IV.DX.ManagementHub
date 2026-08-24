@@ -6,7 +6,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
 
-import { describeError } from '@core/api/describe-error';
+import { errorMessage } from '@core/api/resource';
+import { Notice } from '@shared/ui/notice/notice';
 import { UnitActions } from '@shared/units/unit-actions/unit-actions';
 import {
   UnitEditDialog,
@@ -17,7 +18,14 @@ import { CardViewService } from '../../services/card-view.service';
 /** Records of one unit definition shown as cards. */
 @Component({
   selector: 'mh-card-view-page',
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressBarModule, UnitActions],
+  imports: [
+    Notice,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatProgressBarModule,
+    UnitActions,
+  ],
   templateUrl: './card-view-page.html',
   styleUrl: './card-view-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,10 +42,7 @@ export class CardViewPage {
 
   protected readonly actionError = signal<string | null>(null);
 
-  protected readonly error = computed(() => {
-    const error = this.view.error();
-    return error === undefined ? null : describeError(error);
-  });
+  protected readonly error = errorMessage(this.view.error);
 
   protected readonly isEmpty = computed(
     () => !this.isLoading() && !this.error() && this.cards().items.length === 0,

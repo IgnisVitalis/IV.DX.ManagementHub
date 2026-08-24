@@ -26,7 +26,7 @@ function formatDateTime(raw: unknown): string {
 export function formatValue(column: UnitColumn, raw: unknown): string {
   switch (column.type) {
     case DXColumnType.Bool:
-      return raw === true ? 'Да' : raw === false ? 'Нет' : EMPTY_VALUE;
+      return raw === true ? 'Yes' : raw === false ? 'No' : EMPTY_VALUE;
 
     // Never render a secret, even when the API returns one.
     case DXColumnType.HashedString:
@@ -35,7 +35,7 @@ export function formatValue(column: UnitColumn, raw: unknown): string {
 
     case DXColumnType.Blob:
       // Blob download is not ported yet; say so rather than print binary.
-      return raw === null || raw === undefined ? EMPTY_VALUE : 'файл';
+      return raw === null || raw === undefined ? EMPTY_VALUE : 'file';
 
     default:
       break;

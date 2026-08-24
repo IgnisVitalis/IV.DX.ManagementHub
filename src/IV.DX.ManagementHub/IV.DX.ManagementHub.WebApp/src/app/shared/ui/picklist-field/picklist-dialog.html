@@ -2,7 +2,7 @@
 
 <mat-dialog-content class="picklist__content">
   <mat-form-field appearance="outline" class="picklist__search">
-    <mat-label>Поиск</mat-label>
+    <mat-label>Search</mat-label>
     <input matInput type="search" [value]="search()" (input)="onSearch($event)" />
     <mat-icon matSuffix>search</mat-icon>
   </mat-form-field>
@@ -15,7 +15,7 @@
     }
 
     @if (filtered().length === 0) {
-      <p class="picklist__empty">Ничего не найдено</p>
+      <p class="picklist__empty">Nothing found</p>
     } @else {
       <cdk-virtual-scroll-viewport [itemSize]="itemSize" class="picklist__viewport">
         <a
@@ -32,5 +32,5 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button matButton mat-dialog-close>Отмена</button>
+  <button matButton mat-dialog-close>Cancel</button>
 </mat-dialog-actions>

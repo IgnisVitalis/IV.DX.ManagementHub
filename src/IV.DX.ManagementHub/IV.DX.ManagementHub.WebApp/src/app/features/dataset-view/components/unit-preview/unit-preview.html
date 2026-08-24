@@ -1,5 +1,5 @@
 <header class="unit-preview__header">
-  <span class="unit-preview__type">{{ preview().typeName || 'Элемент' }}</span>
+  <span class="unit-preview__type">{{ preview().typeName || 'Record' }}</span>
 
   <span class="unit-preview__actions">
     <mh-unit-actions
@@ -13,14 +13,14 @@
       (failed)="onFailed($event)"
     />
 
-    <button matIconButton type="button" aria-label="Закрыть превью" (click)="closed.emit()">
+    <button matIconButton type="button" aria-label="Close preview" (click)="closed.emit()">
       <mat-icon>close</mat-icon>
     </button>
   </span>
 </header>
 
 @if (actionError(); as error) {
-  <p class="unit-preview__notice unit-preview__error">{{ error }}</p>
+  <mh-notice tone="error" class="unit-preview__message">{{ error }}</mh-notice>
 }
 
 @if (isLoading()) {
@@ -28,11 +28,9 @@
 }
 
 @if (error(); as error) {
-  <div class="unit-preview__notice">
-    <p>Не удалось загрузить элемент.</p>
-    <p class="unit-preview__detail">{{ error }}</p>
-    <button matButton (click)="reload()">Повторить</button>
-  </div>
+  <mh-notice class="unit-preview__message" [detail]="error" retryable (retry)="reload()">
+    Could not load the record.
+  </mh-notice>
 } @else {
   <mat-accordion class="unit-preview__groups" multi>
     @for (group of preview().groups; track group.name) {
